@@ -9,9 +9,9 @@ using Game.Settings;
 using Game.UI;
 using Game.UI.Widgets;
 
-namespace LessMotorcycles
+namespace VehicleController
 {
-    [FileLocation($"ModsSettings/{nameof(LessMotorcycles)}/{nameof(LessMotorcycles)}")]
+    [FileLocation($"ModsSettings/{nameof(VehicleController)}/{nameof(VehicleController)}")]
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -31,7 +31,7 @@ namespace LessMotorcycles
         {
             set
             {
-                LessMotorcyclesSystem.Instance.ApplySettings();
+                VehicleControllerSystem.Instance.ApplySettings();
             }
         }
 
@@ -40,7 +40,7 @@ namespace LessMotorcycles
         {
             set
             {
-                LessMotorcyclesSystem.Instance.DeleteInstances();
+                VehicleControllerSystem.Instance.DeleteInstances();
             }
         }
 

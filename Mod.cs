@@ -6,11 +6,11 @@ using Game;
 using Game.Modding;
 using Game.SceneFlow;
 
-namespace LessMotorcycles
+namespace VehicleController
 {
     public class Mod : IMod
     {
-        public static ILog log = LogManager.GetLogger($"{nameof(LessMotorcycles)}.{nameof(Mod)}")
+        public static ILog log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(Mod)}")
             .SetShowsErrorsInUI(false);
 
         private Setting m_Setting;
@@ -23,13 +23,13 @@ namespace LessMotorcycles
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
 
-            updateSystem.UpdateAt<LessMotorcyclesSystem>(SystemUpdatePhase.MainLoop);
+            updateSystem.UpdateAt<VehicleControllerSystem>(SystemUpdatePhase.MainLoop);
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(m_Setting));
 
-            AssetDatabase.global.LoadSettings(nameof(LessMotorcycles), m_Setting, new Setting(this));
+            AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
         }
 

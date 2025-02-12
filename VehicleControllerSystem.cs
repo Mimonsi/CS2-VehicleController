@@ -12,9 +12,9 @@ using Unity.Entities;
 using UnityEngine;
 using PersonalCar = Game.Vehicles.PersonalCar;
 
-namespace LessMotorcycles
+namespace VehicleController
 {
-    public partial class LessMotorcyclesSystem : GameSystemBase
+    public partial class VehicleControllerSystem : GameSystemBase
     {
         private static ILog Logger;
 
@@ -22,7 +22,7 @@ namespace LessMotorcycles
         private EntityQuery instanceQuery;
 
         private PrefabSystem prefabSystem;
-        public static LessMotorcyclesSystem Instance { get; private set; }
+        public static VehicleControllerSystem Instance { get; private set; }
 
         protected override void OnCreate()
         {
