@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.Logging;
-using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
 using Game.Prefabs;
 using Game.SceneFlow;
-using Game.Vehicles;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
@@ -44,14 +42,28 @@ namespace VehicleController
             {
                 Any =
                 [
-                    ComponentType.ReadOnly<Game.Vehicles.PersonalCar>(),
+                    ComponentType.ReadOnly<PersonalCar>(),
                 ],
             };
             instanceQuery = GetEntityQuery(instanceQueryDesc);
 
-
+            
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            GameManager.instance.RegisterUpdater(SaveVanillaProbabilities);
             GameManager.instance.RegisterUpdater(UpdateProbabilities);
+        }
+        
+        private void SaveVanillaProbabilities()
+        {
+            Logger.Info("Saving vanilla probabilities");
+            var entities = prefabQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
+                {
+                    VehicleClass.SetVanillaProbability(prefabSystem.GetPrefabName(entity), personalCarData.m_Probability);
+                }
+            }
         }
 
         private void UpdateProbabilities()
@@ -63,14 +75,7 @@ namespace VehicleController
                 if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
                 {
                     var prefabName = prefabSystem.GetPrefabName(entity);
-                    if (prefabName.Contains("Motorbike"))
-                    {
-                        personalCarData.m_Probability = Setting.Instance.MotorbikeProbability;
-                    }
-                    if (prefabName.Contains("Scooter"))
-                    {
-                        personalCarData.m_Probability = Setting.Instance.ScooterProbability;
-                    }
+                    personalCarData.m_Probability = VehicleClass.GetProbability(prefabName);
                     EntityManager.SetComponentData(entity, personalCarData);
                     EntityManager.AddComponent<BatchesUpdated>(entity);
                 }
