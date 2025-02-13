@@ -92,6 +92,10 @@
         <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Resources\" />
+    </ItemGroup>
+
     <Target Name="GetAdditionalFiles" AfterTargets="AfterBuild">
         <ItemGroup>
             <AdditionalFilesToDeploy Include="$(AdditionalFilesDirectory)\**\*.*" />

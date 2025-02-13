@@ -1,31 +1,13 @@
 ﻿<Publish>
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="81012" />
+	<ModId Value="" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="Vehicle Variation Packs" />
+	<DisplayName Value="Vehicle Controller" />
 	<!--Short description of the mod-->
 	<ShortDescription Value="Allows you to load custom variations for vehicle colors, reflecting a more realistic distribution" />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="This is a long description" /-->
 	<LongDescription>
-## Vehicle Variation Packs (Car Variation Changer)
-This mod allows you to load custom variations for vehicle colors, reflecting a more realistic distribution. Currently, there are 3 preinstalled packs:
-
-
-- **Realistic Global** - A more realistic distribution of colors. Generalized for all vehicles, based on real world data
-- **Vanilla** - The default game colors
-- **German Vehicle Pack** - Realistic Global with German Service Vehicle Variations
-
-## Features
-- Affects Colors of Personal Vehicles, Parked Vehicles, Motorcycles, and Service Vehicles
-- Supports user-created variation packs (create json files in mod folder)
-- Change active variation in the mod settings during gameplay, no reload/restart required
-
-## Cascading Packs
-The mod will only override assets that are explicitly included in the pack. That means, that you can choose a pack that changes all assets, and then switch to a pack that only changes police cars, and the police cars will be changed to the new pack, while all other vehicles will remain the same as the first pack.
-
-## Acknowledgement
-Thanks to **krzychu124** for helping me with the first steps of accessing vehicle color.
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/Thumbnail.jpg" />
