@@ -1,9 +1,9 @@
 import { ModRegistrar } from "cs2/modding";
-import { HelloWorldComponent } from "mods/hello-world";
+import { VehicleSelectorComponent } from "mods/VehicleSelectorComponent";
 
 const register: ModRegistrar = (moduleRegistry) => {
 
-    moduleRegistry.append('Menu', HelloWorldComponent);
+    moduleRegistry.append('GameTopLeft', VehicleSelectorComponent);
 }
 
 export default register;
