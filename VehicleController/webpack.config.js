@@ -2,6 +2,7 @@ const path = require("path");
 const MOD = require("./mod.json");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { CSSPresencePlugin } = require("./tools/css-presence");
+const webpack = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const gray = (text) => `\x1b[90m${text}\x1b[0m`;
 
@@ -23,6 +24,7 @@ const banner = `
 `;
 
 module.exports = {
+  devtool: false,
   mode: "production",
   stats: "none",
   entry: {
@@ -105,6 +107,7 @@ module.exports = {
     outputModule: true,
   },
   plugins: [
+    new webpack.EvalSourceMapDevToolPlugin({}),
     new MiniCssExtractPlugin(),
     new CSSPresencePlugin(),
     {
