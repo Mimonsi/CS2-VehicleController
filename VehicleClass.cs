@@ -138,6 +138,9 @@ public class VehicleClass
             case "Sports Car":
                 prob = Setting.Instance.SportsCarProbability;
                 break;
+            case "Pickup":
+                prob = Setting.Instance.PickupProbability;
+                break;
             case "SUV":
                 prob = Setting.Instance.SUVProbability;
                 break;

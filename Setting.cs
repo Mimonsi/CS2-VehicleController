@@ -42,6 +42,9 @@ namespace VehicleController
         public int SportsCarProbability { get; set; } = 100;
         
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int PickupProbability { get; set; } = 100;
+        
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SUVProbability { get; set; } = 100;
         
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
@@ -78,6 +81,7 @@ namespace VehicleController
             MinivanProbability = 100;
             SedanProbability = 100;
             SportsCarProbability = 100;
+            PickupProbability = 100;
             SUVProbability = 100;
             MuscleCarProbability = 100;
             VanProbability = 100;
