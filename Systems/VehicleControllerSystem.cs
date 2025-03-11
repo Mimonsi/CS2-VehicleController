@@ -10,7 +10,7 @@ using Unity.Entities;
 using UnityEngine;
 using PersonalCar = Game.Vehicles.PersonalCar;
 
-namespace VehicleController
+namespace VehicleController.Systems
 {
     public partial class VehicleControllerSystem : GameSystemBase
     {

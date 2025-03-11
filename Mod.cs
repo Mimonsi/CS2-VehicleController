@@ -5,6 +5,7 @@ using Colossal.PSI.Environment;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
+using VehicleController.Systems;
 
 namespace VehicleController
 {
