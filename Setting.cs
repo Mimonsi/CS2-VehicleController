@@ -63,19 +63,50 @@ namespace VehicleController
             }
         }
 
-        [SettingsUIButton]
+        /*[SettingsUIButton]
         public bool DeleteInstances
         {
             set
             {
                 VehicleControllerSystem.Instance.DeleteInstances();
             }
-        }
+        }*/
 
+        public bool ResetSettings
+        {
+            set
+            {
+                SetDefaults();
+            }
+        }
+        
+        public bool ResetSettingsVanilla
+        {
+            set
+            {
+                SetVanillaDefaults();
+            }
+        }
+        
         public override void SetDefaults()
         {
             MotorbikeProbability = 25;
             ScooterProbability = 50;
+            CityCarProbability = 100;
+            HatchbackProbability = 100;
+            MinivanProbability = 100;
+            SedanProbability = 100;
+            SportsCarProbability = 100;
+            PickupProbability = 100;
+            SUVProbability = 100;
+            MuscleCarProbability = 100;
+            VanProbability = 100;
+        }
+        
+        public void SetVanillaDefaults()
+        {
+            MotorbikeProbability = 100;
+            ScooterProbability = 100;
             CityCarProbability = 100;
             HatchbackProbability = 100;
             MinivanProbability = 100;
@@ -122,10 +153,22 @@ namespace VehicleController
                     $"Apply the changes to the probabilities."
                 },
 
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.DeleteInstances)), "Delete motorcycle instances"},
+                /*{m_Setting.GetOptionLabelLocaleID(nameof(Setting.DeleteInstances)), "Delete motorcycle instances"},
                 {
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.DeleteInstances)),
                     $"Deletes a percentage of all existing motorcycles and scooters. Example: If 'Motorcycle Probability' is set to 25, 25% of all motorcycles will be deleted."
+                },*/
+                
+                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetSettings)), "Reset settings to default"},
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetSettings)),
+                    $"Reset settings to default mod values."
+                },
+                
+                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetSettingsVanilla)), "Reset settings to vanilla"},
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetSettingsVanilla)),
+                    $"Reset settings to vanilla values. These settings will causes the same ratios of vehicles to spawn as in the base game."
                 },
             };
             
