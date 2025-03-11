@@ -1,5 +1,5 @@
 import { ModRegistrar } from "cs2/modding";
-import { VehicleSelectorComponent } from "mods/VehicleSelectorComponent";
+import VehicleSelectorComponent from "mods/VehicleSelectorComponent";
 
 const register: ModRegistrar = (moduleRegistry) => {
 
