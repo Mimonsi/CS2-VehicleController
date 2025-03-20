@@ -3,6 +3,7 @@ using Colossal.Entities;
 using Colossal.Logging;
 using Game;
 using Game.Common;
+using Game.Net;
 using Game.Prefabs;
 using Game.SceneFlow;
 using Unity.Collections;
@@ -16,7 +17,8 @@ namespace VehicleController.Systems
     {
         private static ILog Logger;
 
-        private EntityQuery prefabQuery;
+        private EntityQuery carQuery;
+        private EntityQuery trainQuery;
         private EntityQuery instanceQuery;
 
         private PrefabSystem prefabSystem;
@@ -28,35 +30,60 @@ namespace VehicleController.Systems
             Instance = this;
             Enabled = true;
             Logger = Mod.log;
-
-            EntityQueryDesc prefabQueryDesc = new EntityQueryDesc
+            
+            carQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
                 [
                     ComponentType.ReadOnly<PersonalCarData>(),
                 ]
-            };
-            prefabQuery = GetEntityQuery(prefabQueryDesc);
-
-            EntityQueryDesc instanceQueryDesc = new EntityQueryDesc
+            });
+            
+            trainQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                Any =
+                [
+                    ComponentType.ReadOnly<TrainData>(),
+                ]
+            });
+            
+            instanceQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
                 [
                     ComponentType.ReadOnly<PersonalCar>(),
                 ],
-            };
-            instanceQuery = GetEntityQuery(instanceQueryDesc);
+            });
 
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             GameManager.instance.RegisterUpdater(SaveVanillaProbabilities);
             GameManager.instance.RegisterUpdater(UpdateProbabilities);
+            GameManager.instance.RegisterUpdater(UpdateTrainParameters);
+        }
+
+        private void UpdateTrainParameters()
+        {
+            var entities = trainQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
+                {
+                    if (trainData.m_TrackType == TrackTypes.Train)
+                    {
+                        trainData.m_Acceleration = 2;
+                        trainData.m_Braking = 4;
+                        EntityManager.SetComponentData(entity, trainData);
+                        EntityManager.AddComponent<BatchesUpdated>(entity);
+                    }
+                }
+            }
         }
         
         private void SaveVanillaProbabilities()
         {
             Logger.Info("Saving vanilla probabilities");
-            var entities = prefabQuery.ToEntityArray(Allocator.Temp);
+            var entities = carQuery.ToEntityArray(Allocator.Temp);
             foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
@@ -69,13 +96,21 @@ namespace VehicleController.Systems
         private void UpdateProbabilities()
         {
             Logger.Info("Updating Probabilities");
-            var entities = prefabQuery.ToEntityArray(Allocator.Temp);
+            var entities = carQuery.ToEntityArray(Allocator.Temp);
             foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
                 {
                     var prefabName = prefabSystem.GetPrefabName(entity);
                     personalCarData.m_Probability = VehicleClass.GetProbability(prefabName);
+                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                    {
+                        var vehicleClass = VehicleClass.GetVehicleClass(prefabName);
+                        carData.m_Acceleration = vehicleClass.Acceleration;
+                        carData.m_Braking = vehicleClass.Braking;
+                        carData.m_MaxSpeed = vehicleClass.MaxSpeed;
+                        EntityManager.SetComponentData(entity, carData);
+                    }
                     EntityManager.SetComponentData(entity, personalCarData);
                     EntityManager.AddComponent<BatchesUpdated>(entity);
                 }
