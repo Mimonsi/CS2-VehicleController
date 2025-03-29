@@ -8,16 +8,18 @@
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="This is a long description" /-->
 	<LongDescription>
-A simple mod that changes some behaviours around vehicles.
+# Vehicle Controller
+Vehicle Controller lets you adjust the spawn rate of vehicle types. If you want your city to have many pickup cars and just a few SUVs and Motorcycles, this mod is for you!
+This mod also offers more realistic values for vehicle behaviour. In the base game almost all vehicles have the same acceleration and top speed, this mods adds more realism to the game.
 
-Features:
+## Features
 - Adjustable Percentage of Vanilla spawn rate for Motorbike, Scooters, SUVs, Pickups, Vans and more
 - Adjusted Max Speeds, Acceleration and Braking Power for all Vanilla Vehicles
 - Reduced Acceleration and Braking Power for Trains for more realistic behaviour
 
-Planned Features:
-- Detailed Settings for vehicle type behaviour
-- Add option to service buildings to select vehicles that can be spawned by that building
+## Planned Features
+- Adjustable settings for Car and Train Behaviour (acceleration, braking, max speed)
+- Options for service buildings to select vehicles that can be spawned by that building
 	</LongDescription>
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/VehicleController.png" />
@@ -28,14 +30,14 @@ Planned Features:
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/vehicle-controller.1732375/" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.2.0" />
+	<ModVersion Value="0.2.1" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.2.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="" />
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-- Initial Release
+- Add Settings to Enable/Disable improved vehicle behaviour (requires restart)
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />

@@ -9,48 +9,22 @@ using VehicleController.Systems;
 namespace VehicleController
 {
     [FileLocation($"ModsSettings/{nameof(VehicleController)}/{nameof(VehicleController)}")]
+    [SettingsUIGroupOrder(kSettingsGroup, kProbabilitiesGroup)]
+    [SettingsUIShowGroupName(kSettingsGroup, kProbabilitiesGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
+        public const string kMainSection = "Settings";
+        public const string kSettingsGroup = "GeneralSettings";
+        public const string kProbabilitiesGroup = "VehicleTypePropabilitySettings";
         public Setting(IMod mod) : base(mod)
         {
 
         }
-
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int MotorbikeProbability { get; set; } = 25;
-
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int ScooterProbability { get; set; } = 50;
         
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int CityCarProbability { get; set; } = 100;
+        #region General Settings
         
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int HatchbackProbability { get; set; } = 100;
-        
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int MinivanProbability { get; set; } = 100;
-        
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int SedanProbability { get; set; } = 100;
-        
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int SportsCarProbability { get; set; } = 100;
-        
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int PickupProbability { get; set; } = 100;
-        
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int SUVProbability { get; set; } = 100;
-        
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int MuscleCarProbability { get; set; } = 100;
-        
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int VanProbability { get; set; } = 100;
-        
-
+        [SettingsUISection(kMainSection, kSettingsGroup)]
         [SettingsUIButton]
         public bool ApplyChanges
         {
@@ -69,6 +43,7 @@ namespace VehicleController
             }
         }*/
 
+        [SettingsUISection(kMainSection, kSettingsGroup)]
         public bool ResetSettings
         {
             set
@@ -77,6 +52,7 @@ namespace VehicleController
             }
         }
         
+        [SettingsUISection(kMainSection, kSettingsGroup)]
         public bool ResetSettingsVanilla
         {
             set
@@ -84,6 +60,64 @@ namespace VehicleController
                 SetVanillaDefaults();
             }
         }
+
+
+        [SettingsUISection(kMainSection, kSettingsGroup)]
+        public bool EnableImprovedCarBehaviour { get; set; } = true;
+        
+        [SettingsUISection(kMainSection, kSettingsGroup)]
+        public bool EnableImprovedTrainBehaviour { get; set; } = true;
+
+        #endregion
+        
+
+        #region Probabilities
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int MotorbikeProbability { get; set; } = 25;
+
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int ScooterProbability { get; set; } = 50;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int CityCarProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int HatchbackProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int MinivanProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int SedanProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int SportsCarProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int PickupProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int SUVProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int MuscleCarProbability { get; set; } = 100;
+        
+        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int VanProbability { get; set; } = 100;
+        
+        #endregion
         
         public override void SetDefaults()
         {
@@ -131,6 +165,9 @@ namespace VehicleController
             var values = new Dictionary<string, string>
             {
                 { m_Setting.GetSettingsLocaleID(), "Vehicle Controller" },
+                {m_Setting.GetOptionGroupLocaleID(Setting.kSettingsGroup), "General Settings"},
+                {m_Setting.GetOptionGroupLocaleID(Setting.kProbabilitiesGroup), "Probability Settings"},
+                
 
                 /*{ m_Setting.GetOptionLabelLocaleID(nameof(Setting.MotorbikeProbability)), "Motorcycle Probability" },
                 {
@@ -143,6 +180,18 @@ namespace VehicleController
                     m_Setting.GetOptionDescLocaleID(nameof(Setting.ScooterProbability)),
                     $"Probability to spawn scooters. Default is 50%. 100% will spawn as many scooters as in vanilla, 0% will disable motorcycles."
                 },*/
+                
+                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedCarBehaviour)), "Enable Improved Car Behaviour"},
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedCarBehaviour)),
+                    $"Enable changed parameters for cars. This will impact acceleration, braking, and max speed. Requires restart."
+                },
+                
+                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedTrainBehaviour)), "Enable Improved Train Behaviour"},
+                {
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedTrainBehaviour)),
+                    $"Enable changed parameters for trains. This will impact acceleration, braking, and max speed. Requires restart."
+                },
 
                 {m_Setting.GetOptionLabelLocaleID(nameof(Setting.ApplyChanges)), "Apply Changes"},
                 {

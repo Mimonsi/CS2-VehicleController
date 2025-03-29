@@ -58,7 +58,7 @@ namespace VehicleController.Systems
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             GameManager.instance.RegisterUpdater(SaveVanillaProbabilities);
-            GameManager.instance.RegisterUpdater(UpdateProbabilities);
+            GameManager.instance.RegisterUpdater(UpdateComponents);
             GameManager.instance.RegisterUpdater(UpdateTrainParameters);
         }
 
@@ -71,10 +71,13 @@ namespace VehicleController.Systems
                 {
                     if (trainData.m_TrackType == TrackTypes.Train)
                     {
-                        trainData.m_Acceleration = 2;
-                        trainData.m_Braking = 4;
-                        EntityManager.SetComponentData(entity, trainData);
-                        EntityManager.AddComponent<BatchesUpdated>(entity);
+                        if (Setting.Instance.EnableImprovedTrainBehaviour) // TODO: Track original settings to not require restart
+                        {
+                            trainData.m_Acceleration = 2;
+                            trainData.m_Braking = 4;
+                            EntityManager.SetComponentData(entity, trainData);
+                            EntityManager.AddComponent<BatchesUpdated>(entity);
+                        }
                     }
                 }
             }
@@ -93,7 +96,7 @@ namespace VehicleController.Systems
             }
         }
 
-        private void UpdateProbabilities()
+        private void UpdateComponents()
         {
             Logger.Info("Updating Probabilities");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
@@ -106,10 +109,13 @@ namespace VehicleController.Systems
                     if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                     {
                         var vehicleClass = VehicleClass.GetVehicleClass(prefabName);
-                        carData.m_Acceleration = vehicleClass.Acceleration;
-                        carData.m_Braking = vehicleClass.Braking;
-                        carData.m_MaxSpeed = vehicleClass.MaxSpeed;
-                        EntityManager.SetComponentData(entity, carData);
+                        if (Setting.Instance.EnableImprovedCarBehaviour) // TODO: Track original settings to not require restart
+                        {
+                            carData.m_Acceleration = vehicleClass.Acceleration;
+                            carData.m_Braking = vehicleClass.Braking;
+                            carData.m_MaxSpeed = vehicleClass.MaxSpeed;
+                            EntityManager.SetComponentData(entity, carData);
+                        }
                     }
                     EntityManager.SetComponentData(entity, personalCarData);
                     EntityManager.AddComponent<BatchesUpdated>(entity);
@@ -124,7 +130,7 @@ namespace VehicleController.Systems
 
         public void ApplySettings()
         {
-            UpdateProbabilities();
+            UpdateComponents();
         }
 
         public void DeleteInstances()
