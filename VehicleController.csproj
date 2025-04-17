@@ -80,12 +80,19 @@
             <Private>false</Private>
         </Reference>
     </ItemGroup>
-
+    
     <ItemGroup>
         <None Include="$(ModPropsFile)" Link="Properties\Mod.props"/>
         <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <EmbeddedResource Include="Locale.json" />
+        <EmbeddedResource Include="Locale\*.json" />
+        <None Remove="Locale.json" />
+        <None Remove="Locale\*.json" />
+    </ItemGroup>
+    
     <ItemGroup>
       <Folder Include="Resources\" />
     </ItemGroup>

@@ -1,0 +1,36 @@
+{
+    "Options.SECTION[VehicleController.VehicleController.Mod]": "Vehicle Controller",
+    "Options.TAB[VehicleController.VehicleController.Mod.Settings]": "Settings",
+    "Options.GROUP[VehicleController.VehicleController.Mod.General Settings]": "General Settings",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetSettings]": "Reset settings to default",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ResetSettings]": "Reset settings to default mod values.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetSettingsVanilla]": "Reset settings to vanilla",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ResetSettingsVanilla]": "Reset settings to vanilla values. These settings will causes the same ratios of vehicles to spawn as in the base game.",
+    
+    "Options.TAB[VehicleController.VehicleController.Mod.Spawning Behavior]": "Spawning Behavior",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Probability Settings]": "Probability Settings",
+    
+    
+    
+    "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Properties]": "Vehicle Properties",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Properties]": "Vehicle Properties",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedCarBehavior]": "Enable Improved Car Behavior",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedCarBehavior]": "Enable changed parameters for cars. This will impact acceleration, braking, and max speed. Requires restart.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedTrainBehavior]": "Enable Improved Train Behavior",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedTrainBehavior]": "Enable changed parameters for trains. This will impact acceleration, braking, and max speed. Requires restart.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply Changes",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply the changes to the probabilities.",
+    
+    
+    "Options.TAB[VehicleController.VehicleController.Mod.About]": "About",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.NameText]": "Mod Name",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.NameText]": "",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.VersionText]": "Mod Version",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.VersionText]": "",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.AuthorText]": "Author",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.AuthorText]": "",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.KofiLink]": "Buy Me a Coffee (Ko-Fi)",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.KofiLink]": "Support the author.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.Discord]": "Discord",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.Discord]": "Feedback/Suggestions for the mod in the Cities: Skylines Modding Server."
+}

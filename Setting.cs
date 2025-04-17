@@ -14,17 +14,17 @@ namespace VehicleController
 {
     [FileLocation($"ModsSettings/{nameof(VehicleController)}/{nameof(VehicleController)}")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection)]
-    [SettingsUIGroupOrder(MainGroup, SpawnBehaviorGroup, VehiclePropertiesGroup, InfoGroup)]
-    [SettingsUIShowGroupName(MainGroup, SpawnBehaviorGroup)]
+    [SettingsUIGroupOrder(MainGroup, SpawnProbabilitiesGroup, VehiclePropertiesGroup, InfoGroup)]
+    [SettingsUIShowGroupName(MainGroup, SpawnProbabilitiesGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
         
         public const string MainSection = "Settings";
-        public const string MainGroup = "GeneralSettings";
+        public const string MainGroup = "General Settings";
         
-        public const string SpawnBehaviorSection = "Spawning Behaviour";
-        public const string SpawnBehaviorGroup = "Probability Settings";
+        public const string SpawnBehaviorSection = "Spawning Behavior";
+        public const string SpawnProbabilitiesGroup = "Probability Settings";
         
         public const string VehiclePropertiesSection = "Vehicle Properties";
         public const string VehiclePropertiesGroup = "Vehicle Properties";
@@ -40,9 +40,9 @@ namespace VehicleController
         
         #region MainSection
         
-        [SettingsUISection(MainSection, MainGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUIButton]
-        public bool ApplyChanges
+        public bool ApplyProbabilityChanges
         {
             set
             {
@@ -80,51 +80,51 @@ namespace VehicleController
         
         #region Probabilities
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MotorbikeProbability { get; set; } = 25;
 
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int ScooterProbability { get; set; } = 50;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int CityCarProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int HatchbackProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MinivanProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SedanProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SportsCarProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int PickupProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SUVProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MuscleCarProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int VanProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int TrailerProbability { get; set; } = 100; // TODO: Implement this
         
@@ -230,62 +230,7 @@ namespace VehicleController
         public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
-            var values = new Dictionary<string, string>
-            {
-                { m_Setting.GetSettingsLocaleID(), "Vehicle Controller" },
-                {m_Setting.GetOptionGroupLocaleID(Setting.MainGroup), "General Settings"},
-                {m_Setting.GetOptionGroupLocaleID(Setting.SpawnBehaviorGroup), "Probability Settings"},
-                
-
-                /*{ m_Setting.GetOptionLabelLocaleID(nameof(Setting.MotorbikeProbability)), "Motorcycle Probability" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.MotorbikeProbability)),
-                    $"Probability to spawn motorcycles. Default is 25%. 100% will spawn as many motorcycles as in vanilla, 0% will disable motorcycles."
-                },
-
-                { m_Setting.GetOptionLabelLocaleID(nameof(Setting.ScooterProbability)), "Scooter Probability" },
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ScooterProbability)),
-                    $"Probability to spawn scooters. Default is 50%. 100% will spawn as many scooters as in vanilla, 0% will disable motorcycles."
-                },*/
-                
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedCarBehavior)), "Enable Improved Car Behaviour"},
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedCarBehavior)),
-                    $"Enable changed parameters for cars. This will impact acceleration, braking, and max speed. Requires restart."
-                },
-                
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedTrainBehavior)), "Enable Improved Train Behaviour"},
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedTrainBehavior)),
-                    $"Enable changed parameters for trains. This will impact acceleration, braking, and max speed. Requires restart."
-                },
-
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.ApplyChanges)), "Apply Changes"},
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ApplyChanges)),
-                    $"Apply the changes to the probabilities."
-                },
-
-                /*{m_Setting.GetOptionLabelLocaleID(nameof(Setting.DeleteInstances)), "Delete motorcycle instances"},
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.DeleteInstances)),
-                    $"Deletes a percentage of all existing motorcycles and scooters. Example: If 'Motorcycle Probability' is set to 25, 25% of all motorcycles will be deleted."
-                },*/
-                
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetSettings)), "Reset settings to default"},
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetSettings)),
-                    $"Reset settings to default mod values."
-                },
-                
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.ResetSettingsVanilla)), "Reset settings to vanilla"},
-                {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.ResetSettingsVanilla)),
-                    $"Reset settings to vanilla values. These settings will causes the same ratios of vehicles to spawn as in the base game."
-                },
-            };
-            
+            var values = new Dictionary<string, string>();
             foreach(var (className, classFriendlyName) in VehicleClass.GetSettingClassNames())
             {
                 values.Add(m_Setting.GetOptionLabelLocaleID($"{className}Probability"), $"{classFriendlyName} Probability");
