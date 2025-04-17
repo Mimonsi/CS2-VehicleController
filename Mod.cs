@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Colossal.PSI.Environment;
@@ -16,6 +17,8 @@ namespace VehicleController
 
         private Setting m_Setting;
         private string path;
+        public const string Name = "Vehicle Controller";
+        public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
         public void OnLoad(UpdateSystem updateSystem)
         {

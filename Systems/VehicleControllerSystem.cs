@@ -71,7 +71,7 @@ namespace VehicleController.Systems
                 {
                     if (trainData.m_TrackType == TrackTypes.Train)
                     {
-                        if (Setting.Instance.EnableImprovedTrainBehaviour) // TODO: Track original settings to not require restart
+                        if (Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
                         {
                             trainData.m_Acceleration = 2;
                             trainData.m_Braking = 4;
@@ -109,7 +109,7 @@ namespace VehicleController.Systems
                     if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                     {
                         var vehicleClass = VehicleClass.GetVehicleClass(prefabName);
-                        if (Setting.Instance.EnableImprovedCarBehaviour) // TODO: Track original settings to not require restart
+                        if (Setting.Instance.EnableImprovedCarBehavior) // TODO: Track original settings to not require restart
                         {
                             carData.m_Acceleration = vehicleClass.Acceleration;
                             carData.m_Braking = vehicleClass.Braking;

@@ -1,30 +1,46 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Colossal;
 using Colossal.IO.AssetDatabase;
 using Game.Modding;
 using Game.Settings;
 using Game.UI;
+using UnityEngine;
 using VehicleController.Systems;
 
+
+// Settings structure inspired by Simple Mod Checker Plus by StarQ
 namespace VehicleController
 {
     [FileLocation($"ModsSettings/{nameof(VehicleController)}/{nameof(VehicleController)}")]
-    [SettingsUIGroupOrder(kSettingsGroup, kProbabilitiesGroup)]
-    [SettingsUIShowGroupName(kSettingsGroup, kProbabilitiesGroup)]
+    [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection)]
+    [SettingsUIGroupOrder(MainGroup, SpawnBehaviorGroup, VehiclePropertiesGroup, InfoGroup)]
+    [SettingsUIShowGroupName(MainGroup, SpawnBehaviorGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
-        public const string kMainSection = "Settings";
-        public const string kSettingsGroup = "GeneralSettings";
-        public const string kProbabilitiesGroup = "VehicleTypePropabilitySettings";
+        
+        public const string MainSection = "Settings";
+        public const string MainGroup = "GeneralSettings";
+        
+        public const string SpawnBehaviorSection = "Spawning Behaviour";
+        public const string SpawnBehaviorGroup = "Probability Settings";
+        
+        public const string VehiclePropertiesSection = "Vehicle Properties";
+        public const string VehiclePropertiesGroup = "Vehicle Properties";
+        
+        
+        public const string AboutSection = "About";
+        public const string InfoGroup = "Info";
+        
         public Setting(IMod mod) : base(mod)
         {
 
         }
         
-        #region General Settings
+        #region MainSection
         
-        [SettingsUISection(kMainSection, kSettingsGroup)]
+        [SettingsUISection(MainSection, MainGroup)]
         [SettingsUIButton]
         public bool ApplyChanges
         {
@@ -43,7 +59,7 @@ namespace VehicleController
             }
         }*/
 
-        [SettingsUISection(kMainSection, kSettingsGroup)]
+        [SettingsUISection(MainSection, MainGroup)]
         public bool ResetSettings
         {
             set
@@ -52,7 +68,7 @@ namespace VehicleController
             }
         }
         
-        [SettingsUISection(kMainSection, kSettingsGroup)]
+        [SettingsUISection(MainSection, MainGroup)]
         public bool ResetSettingsVanilla
         {
             set
@@ -60,62 +76,114 @@ namespace VehicleController
                 SetVanillaDefaults();
             }
         }
-
-
-        [SettingsUISection(kMainSection, kSettingsGroup)]
-        public bool EnableImprovedCarBehaviour { get; set; } = true;
-        
-        [SettingsUISection(kMainSection, kSettingsGroup)]
-        public bool EnableImprovedTrainBehaviour { get; set; } = true;
-
         #endregion
         
-
         #region Probabilities
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MotorbikeProbability { get; set; } = 25;
 
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int ScooterProbability { get; set; } = 50;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int CityCarProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int HatchbackProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MinivanProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SedanProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SportsCarProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int PickupProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SUVProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MuscleCarProbability { get; set; } = 100;
         
-        [SettingsUISection(kMainSection, kProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int VanProbability { get; set; } = 100;
+        
+        [SettingsUISection(SpawnBehaviorSection, SpawnBehaviorGroup)]
+        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
+        public int TrailerProbability { get; set; } = 100; // TODO: Implement this
+        
+        #endregion
+        
+        #region VehicleProperties
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
+        public bool EnableImprovedCarBehavior { get; set; } = true;
+        
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
+        public bool EnableImprovedTrainBehavior { get; set; } = true;
+
+        #endregion
+        
+        #region About
+        
+        [SettingsUISection(AboutSection, InfoGroup)]
+        public string NameText => Mod.Name;
+
+        [SettingsUISection(AboutSection, InfoGroup)]
+        public string VersionText => Mod.Version;
+
+        [SettingsUISection(AboutSection, InfoGroup)]
+        public string AuthorText => "Mimonsi";
+
+        [SettingsUIButtonGroup("Social")]
+        [SettingsUIButton]
+        [SettingsUISection(AboutSection, InfoGroup)]
+        public bool KofiLink
+        {
+            set
+            {
+                try
+                {
+                    Application.OpenURL($"https://ko-fi.com/mimonsi");
+                }
+                catch (Exception e)
+                {
+                    Mod.log.Info(e);
+                }
+            }
+        }
+        [SettingsUIButtonGroup("Social")]
+        [SettingsUIButton]
+        [SettingsUISection(AboutSection, InfoGroup)]
+        public bool Discord
+        {
+            set
+            {
+                try
+                {
+                    Application.OpenURL($"https://discord.com/channels/1024242828114673724/1330910837397000234");
+                }
+                catch (Exception e)
+                {
+                    Mod.log.Info(e);
+                }
+            }
+        }
         
         #endregion
         
@@ -165,8 +233,8 @@ namespace VehicleController
             var values = new Dictionary<string, string>
             {
                 { m_Setting.GetSettingsLocaleID(), "Vehicle Controller" },
-                {m_Setting.GetOptionGroupLocaleID(Setting.kSettingsGroup), "General Settings"},
-                {m_Setting.GetOptionGroupLocaleID(Setting.kProbabilitiesGroup), "Probability Settings"},
+                {m_Setting.GetOptionGroupLocaleID(Setting.MainGroup), "General Settings"},
+                {m_Setting.GetOptionGroupLocaleID(Setting.SpawnBehaviorGroup), "Probability Settings"},
                 
 
                 /*{ m_Setting.GetOptionLabelLocaleID(nameof(Setting.MotorbikeProbability)), "Motorcycle Probability" },
@@ -181,15 +249,15 @@ namespace VehicleController
                     $"Probability to spawn scooters. Default is 50%. 100% will spawn as many scooters as in vanilla, 0% will disable motorcycles."
                 },*/
                 
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedCarBehaviour)), "Enable Improved Car Behaviour"},
+                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedCarBehavior)), "Enable Improved Car Behaviour"},
                 {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedCarBehaviour)),
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedCarBehavior)),
                     $"Enable changed parameters for cars. This will impact acceleration, braking, and max speed. Requires restart."
                 },
                 
-                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedTrainBehaviour)), "Enable Improved Train Behaviour"},
+                {m_Setting.GetOptionLabelLocaleID(nameof(Setting.EnableImprovedTrainBehavior)), "Enable Improved Train Behaviour"},
                 {
-                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedTrainBehaviour)),
+                    m_Setting.GetOptionDescLocaleID(nameof(Setting.EnableImprovedTrainBehavior)),
                     $"Enable changed parameters for trains. This will impact acceleration, braking, and max speed. Requires restart."
                 },
 
