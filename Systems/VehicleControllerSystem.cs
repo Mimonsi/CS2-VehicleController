@@ -9,6 +9,7 @@ using Game.SceneFlow;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using VehicleController.Data;
 using PersonalCar = Game.Vehicles.PersonalCar;
 
 namespace VehicleController.Systems
@@ -34,25 +35,25 @@ namespace VehicleController.Systems
             carQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
-                [
-                    ComponentType.ReadOnly<PersonalCarData>(),
-                ]
+                    new []
+                    {ComponentType.ReadOnly<PersonalCarData>(),
+                    }
             });
             
             trainQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
-                [
-                    ComponentType.ReadOnly<TrainData>(),
-                ]
+                    new []{
+                        ComponentType.ReadOnly<TrainData>(),
+                    }
             });
             
             instanceQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
-                [
-                    ComponentType.ReadOnly<PersonalCar>(),
-                ],
+                    new[] {
+                        ComponentType.ReadOnly<PersonalCar>(),
+                    },
             });
 
             
