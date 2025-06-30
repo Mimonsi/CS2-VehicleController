@@ -187,11 +187,6 @@ namespace VehicleController
         }
         
         #endregion
-
-        public bool PrintDebug
-        {
-            set { VehicleControllerSystem.Instance.PrintDebug(); }
-        }
         
         public override void SetDefaults()
         {
