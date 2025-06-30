@@ -59,15 +59,54 @@ namespace VehicleController.Systems
 
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            GameManager.instance.RegisterUpdater(SaveVanillaProbabilities);
-            GameManager.instance.RegisterUpdater(UpdateComponents);
-            GameManager.instance.RegisterUpdater(UpdateTrainParameters);
+            GameManager.instance.RegisterUpdater(Initialize);
         }
 
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
 
+        }
+
+        public bool Initialize()
+        {
+            PrintDebug();
+            if (UpdateComponents())
+            {
+                PrintDebug();
+                return true;
+            }
+            PrintDebug();
+            return false;
+        }
+        
+        public void PrintDebug()
+        {
+            Logger.Info("Printing Debug");
+            var entities = carQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
+                {
+                    var prefabName = prefabSystem.GetPrefabName(entity);
+                    personalCarData.m_Probability = VehicleClass.GetProbability(prefabName);
+                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                    {
+                        var vehicleClass = VehicleClass.GetVehicleClass(prefabName);
+                        if (Setting.Instance.EnableImprovedCarBehavior)
+                        {
+                            Logger.Info("CarData for entity " + prefabName + ": " +
+                                        $"Acceleration: {carData.m_Acceleration}, " +
+                                        $"Braking: {carData.m_Braking}, " +
+                                        $"MaxSpeed: {carData.m_MaxSpeed}");
+                        }
+                    }
+                    else
+                    {
+                        Logger.Error("CarData component not found on entity " + prefabName);
+                    }
+                }
+            }
         }
 
         private bool UpdateTrainParameters()
@@ -83,6 +122,11 @@ namespace VehicleController.Systems
                     {
                         if (Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
                         {
+                            if (trainData.m_Acceleration == 0 && trainData.m_Braking == 0)
+                            {
+                                Logger.Debug("TrainData not initialized, retrying later");
+                                return false;
+                            }
                             trainData.m_Acceleration = 2;
                             trainData.m_Braking = 4;
                             EntityManager.SetComponentData(entity, trainData);
@@ -131,7 +175,13 @@ namespace VehicleController.Systems
 
         private bool UpdateComponents()
         {
-            Logger.Info("Updating Vehicle Properties");
+            if (!Setting.Instance.EnableImprovedCarBehavior) // TODO: Track original settings to not require restart
+            {
+                Logger.Info("Not Updating Car Properties, Improved Car Behavior is disabled.");
+                return true;
+            }
+            Logger.Info("Updating Car Properties");
+
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -143,13 +193,20 @@ namespace VehicleController.Systems
                     if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                     {
                         var vehicleClass = VehicleClass.GetVehicleClass(prefabName);
-                        if (Setting.Instance.EnableImprovedCarBehavior) // TODO: Track original settings to not require restart
+                        if (carData.m_Acceleration == 0 && carData.m_Braking == 0 && carData.m_MaxSpeed == 0)
                         {
-                            carData.m_Acceleration = vehicleClass.Acceleration;
-                            carData.m_Braking = vehicleClass.Braking;
-                            carData.m_MaxSpeed = vehicleClass.MaxSpeed;
-                            EntityManager.SetComponentData(entity, carData);
+                            Logger.Info("CarData not initialized, retrying later");
+                            return false;
                         }
+                        carData.m_Acceleration = vehicleClass.Acceleration;
+                        carData.m_Braking = vehicleClass.Braking;
+                        carData.m_MaxSpeed = vehicleClass.MaxSpeed;
+                        EntityManager.SetComponentData(entity, carData);
+                        /*Logger.Debug("Updated CarData for entity: " + prefabName +
+                                     $" with Acceleration: {carData.m_Acceleration}, " +
+                                     $"Braking: {carData.m_Braking}, " +
+                                     $"MaxSpeed: {carData.m_MaxSpeed}");*/
+                        count++;
                     }
                     else
                     {
@@ -160,7 +217,6 @@ namespace VehicleController.Systems
                 }
                 EntityManager.SetComponentData(entity, personalCarData);
                 EntityManager.AddComponent<BatchesUpdated>(entity);
-                count++;
             }
             
             if (count == 0)
