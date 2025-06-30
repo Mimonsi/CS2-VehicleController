@@ -70,19 +70,18 @@ namespace VehicleController.Systems
 
         public bool Initialize()
         {
-            PrintDebug();
             if (UpdateComponents())
             {
-                PrintDebug();
-                return true;
+                if (UpdateTrainParameters())
+                    return true;
             }
-            PrintDebug();
             return false;
         }
         
         public void PrintDebug()
         {
             Logger.Info("Printing Debug");
+            Logger.Info("");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             foreach (var entity in entities)
             {
@@ -107,6 +106,7 @@ namespace VehicleController.Systems
                     }
                 }
             }
+            Logger.Info("");
         }
 
         private bool UpdateTrainParameters()
