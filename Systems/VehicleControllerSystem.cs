@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.Logging;
+using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
 using Game.Net;
@@ -63,9 +64,17 @@ namespace VehicleController.Systems
             GameManager.instance.RegisterUpdater(UpdateTrainParameters);
         }
 
-        private void UpdateTrainParameters()
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
+            base.OnGameLoadingComplete(purpose, mode);
+
+        }
+
+        private bool UpdateTrainParameters()
+        {
+            Logger.Debug("Updating train parameters");
             var entities = trainQuery.ToEntityArray(Allocator.Temp);
+            int count = 0;
             foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
@@ -78,29 +87,53 @@ namespace VehicleController.Systems
                             trainData.m_Braking = 4;
                             EntityManager.SetComponentData(entity, trainData);
                             EntityManager.AddComponent<BatchesUpdated>(entity);
+                            Logger.Debug("Updated train parameters for entity: " + entity.Index);
                         }
                     }
+
+                    count++;
                 }
             }
+            
+            if (count == 0)
+            {
+                Logger.Debug("Failed to update train parameters, no TrainData found.");
+                return false;
+            }
+
+            Logger.Info($"Updated parameters for {count}/{entities.Length} train entities.");
+            return true;
         }
         
-        private void SaveVanillaProbabilities()
+        private bool SaveVanillaProbabilities()
         {
             Logger.Info("Saving vanilla probabilities");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
+            int count = 0;
             foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
                 {
+                    count++;
                     VehicleClass.SetVanillaProbability(prefabSystem.GetPrefabName(entity), personalCarData.m_Probability);
                 }
             }
+
+            if (count == 0)
+            {
+                Logger.Debug("Failed to save vanilla probabilities, no PersonalCarData found.");
+                return false;
+            }
+
+            Logger.Info($"Saved vanilla probabilities for {count}/{entities.Length} car entities.");
+            return true;
         }
 
-        private void UpdateComponents()
+        private bool UpdateComponents()
         {
-            Logger.Info("Updating Probabilities");
+            Logger.Info("Updating Vehicle Properties");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
+            int count = 0;
             foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
@@ -118,10 +151,26 @@ namespace VehicleController.Systems
                             EntityManager.SetComponentData(entity, carData);
                         }
                     }
+                    else
+                    {
+                        Logger.Error("CarData component not found on entity " + prefabName);
+                    }
                     EntityManager.SetComponentData(entity, personalCarData);
                     EntityManager.AddComponent<BatchesUpdated>(entity);
                 }
+                EntityManager.SetComponentData(entity, personalCarData);
+                EntityManager.AddComponent<BatchesUpdated>(entity);
+                count++;
             }
+            
+            if (count == 0)
+            {
+                Logger.Debug("Failed to update properties. No PersonalCarData found.");
+                return false;
+            }
+            
+            Logger.Info($"Updated properties for {count}/{entities.Length} car entities.");
+            return true;
         }
 
         protected override void OnUpdate()
