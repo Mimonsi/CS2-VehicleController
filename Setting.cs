@@ -138,7 +138,7 @@ namespace VehicleController
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         public bool EnableImprovedTrainBehavior { get; set; } = true;
         
-        private string _currentVehicleClass;
+        private string _currentVehicleClass = "Sedan";
         private static int CurrentVehicleClassVersion { get; set; }
 
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
@@ -157,7 +157,7 @@ namespace VehicleController
         public DropdownItem<string>[] GetVehicleClassDropdownItems()
         {
             var items = new List<DropdownItem<string>>();
-            /*foreach (var vehicleClass in VehicleClass.GetNames())
+            foreach (var vehicleClass in VehicleClass.GetNames())
             {
                 items.Add(new DropdownItem<string>()
                 {
@@ -165,7 +165,7 @@ namespace VehicleController
                     value = vehicleClass,
                 });
                 Mod.log.Info("Added vehicle class: " + vehicleClass);
-            }*/
+            }
 
             if (items.Count == 0)
             {
@@ -173,17 +173,7 @@ namespace VehicleController
                 items.Add(new DropdownItem<string>()
                 {
                     displayName = "Dummy Sedan",
-                    value = "Dummy Sedan",
-                });
-                items.Add(new DropdownItem<string>()
-                {
-                    displayName = "Dummy Motorbike",
-                    value = "Dummy Motorbike",
-                });
-                items.Add(new DropdownItem<string>()
-                {
-                    displayName = "Dummy Muscle Car",
-                    value = "Dummy Muscle Car",
+                    value = "Sedan",
                 });
             }
             
