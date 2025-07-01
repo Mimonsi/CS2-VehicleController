@@ -13,7 +13,15 @@
     
     
     "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Properties]": "Vehicle Properties",
-    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Properties]": "Vehicle Properties",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Class Properties]": "Vehicle Class Properties",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Property Pack]": "Vehicle Property Pack",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Pack Name",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Enter a name for your pack.",
+
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export Pack",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export your current properties to a json property pack file.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavePropertyChanges]": "Save Property Changes",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SavePropertyChanges]": "Save the changes to your current class.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedCarBehavior]": "Enable Improved Car Behavior",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedCarBehavior]": "Enable changed parameters for cars. This will impact acceleration, braking, and max speed. Requires restart.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedTrainBehavior]": "Enable Improved Train Behavior",

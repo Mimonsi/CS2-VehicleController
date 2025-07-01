@@ -9,6 +9,7 @@ using Game.SceneFlow;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using VehicleController.Data;
 using PersonalCar = Game.Vehicles.PersonalCar;
 
 namespace VehicleController.Systems

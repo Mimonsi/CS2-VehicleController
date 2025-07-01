@@ -5,7 +5,9 @@ using Colossal.IO.AssetDatabase;
 using Game.Modding;
 using Game.Settings;
 using Game.UI;
+using Game.UI.Widgets;
 using UnityEngine;
+using VehicleController.Data;
 using VehicleController.Systems;
 
 
@@ -14,8 +16,8 @@ namespace VehicleController
 {
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection)]
-    [SettingsUIGroupOrder(MainGroup, SpawnProbabilitiesGroup, VehiclePropertiesGroup, InfoGroup)]
-    [SettingsUIShowGroupName(MainGroup, SpawnProbabilitiesGroup)]
+    [SettingsUIGroupOrder(MainGroup, SpawnProbabilitiesGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, InfoGroup)]
+    [SettingsUIShowGroupName(MainGroup, SpawnProbabilitiesGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -27,7 +29,8 @@ namespace VehicleController
         public const string SpawnProbabilitiesGroup = "Probability Settings";
         
         public const string VehiclePropertiesSection = "Vehicle Properties";
-        public const string VehiclePropertiesGroup = "Vehicle Properties";
+        public const string VehiclePropertiesGroup = "Vehicle Class Properties";
+        public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
         
         
         public const string AboutSection = "About";
@@ -132,136 +135,94 @@ namespace VehicleController
         
         #region VehicleProperties
         
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         public bool EnableImprovedTrainBehavior { get; set; } = true;
+        
+        private VehicleClass _currentVehicleClass;
+        private static int CurrentVehicleClassVersion { get; set; }
+
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIValueVersion(typeof(Setting), nameof(CurrentVehicleClassVersion))]
+        [SettingsUIDropdown(typeof(Setting), nameof(GetVehicleClassDropdownItems))]
+        public VehicleClass CurrentVehicleClass
+        {
+            get => _currentVehicleClass;
+            set
+            {
+                _currentVehicleClass = value;
+                Mod.log.Info("Current vehicle class set to: " + value.Name);
+            }
+        }
+
+        public DropdownItem<VehicleClass>[] GetVehicleClassDropdownItems()
+        {
+            var items = new List<DropdownItem<VehicleClass>>();
+            foreach (var vehicleClass in VehicleClass.VehicleClasses)
+            {
+                items.Add(new DropdownItem<VehicleClass>()
+                {
+                    displayName = vehicleClass.Key,
+                    value = vehicleClass.Value,
+                });
+                Mod.log.Info("Added vehicle class: " + vehicleClass.Key);
+            }
+
+            if (items.Count == 0)
+            {
+                Mod.log.Info("No vehicle classes found, adding dummy classes");
+                items.Add(new DropdownItem<VehicleClass>()
+                {
+                    displayName = "Dummy Sedan",
+                    value = new VehicleClass()
+                });
+                items.Add(new DropdownItem<VehicleClass>()
+                {
+                    displayName = "Dummy Motorbike",
+                    value = new VehicleClass()
+                });
+                items.Add(new DropdownItem<VehicleClass>()
+                {
+                    displayName = "Dummy Muscle Car",
+                    value = new VehicleClass()
+                });
+            }
+            
+            return items.ToArray();
+        }
+
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUITextInput]
+        public string PackName { get; set; } = "My Custom Pack";
+
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIButton]
+        public bool ExportPack
+        {
+            set
+            {
+                // TODO: Implement
+            }
+        }
 
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
         [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int MotorbikeMaxSpeed { get; set; } = 210;
+        public int VehicleMaxSpeed { get; set; } = 210;
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
         [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int MotorbikeAcceleration { get; set; } = 10;
+        public int VehicleAcceleration { get; set; } = 10;
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
         [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int MotorbikeBraking { get; set; } = 15;
-        
-        
+        public int VehicleBraking { get; set; } = 15;
         
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int ScooterMaxSpeed { get; set; } = 60;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int ScooterAcceleration { get; set; } = 6;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int ScooterBraking { get; set; } = 10;
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int CityCarMaxSpeed { get; set; } = 100;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int CityCarAcceleration { get; set; } = 12;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int CityCarBraking { get; set; } = 10;
-        
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int HatchbackMaxSpeed { get; set; } = 160;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int HatchbackAcceleration { get; set; } = 8;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int HatchbackBraking { get; set; } = 15;
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int MinivanMaxSpeed { get; set; } = 180;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int MinivanAcceleration { get; set; } = 7;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int MinivanBraking { get; set; } = 15;
-        
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int SedanMaxSpeed { get; set; } = 160;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int SedanAcceleration { get; set; } = 8;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int SedanBraking { get; set; } = 15;
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int SportsCarMaxSpeed { get; set; } = 260;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int SportsCarAcceleration { get; set; } = 11;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int SportsCarBraking { get; set; } = 18;
-        
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int PickupMaxSpeed { get; set; } = 140;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int PickupAcceleration { get; set; } = 6;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int PickupBraking { get; set; } = 10;
-        
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int SUVMaxSpeed { get; set; } = 160;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int SUVAcceleration { get; set; } = 6;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int SUVBraking { get; set; } = 10;
-        
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int MuscleCarMaxSpeed { get; set; } = 240;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int MuscleCarAcceleration { get; set; } = 10;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int MuscleCarBraking { get; set; } = 16;
-        
-        
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int VanMaxSpeed { get; set; } = 140;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int VanAcceleration { get; set; } = 5;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int VanBraking { get; set; } = 11;
+        [SettingsUIButton]
+        public bool SavePropertyChanges
+        {
+            set
+            {
+                // TODO: Implement
+            }
+        }
         
         #endregion
         
@@ -316,117 +277,51 @@ namespace VehicleController
         public override void SetDefaults()
         {
             MotorbikeProbability = 25;
-            MotorbikeMaxSpeed = 210;
-            MotorbikeAcceleration = 10;
-            MotorbikeBraking = 15;
             
             ScooterProbability = 50;
-            ScooterMaxSpeed = 60;
-            ScooterAcceleration = 6;
-            ScooterBraking = 10;
             
             CityCarProbability = 100;
-            CityCarMaxSpeed = 100;
-            CityCarAcceleration = 12;
-            CityCarBraking = 10;
             
             HatchbackProbability = 100;
-            HatchbackMaxSpeed = 160; 
-            HatchbackAcceleration = 8;
-            HatchbackBraking = 15;
             
             MinivanProbability = 100;
-            MinivanMaxSpeed = 180;
-            MinivanAcceleration = 7;
-            MinivanBraking = 15;
             
             SedanProbability = 100;
-            SedanMaxSpeed = 160;
-            SedanAcceleration = 8;
-            SedanBraking = 15;
             
             SportsCarProbability = 100;
-            SportsCarMaxSpeed = 260;
-            SportsCarAcceleration = 11;
-            SportsCarBraking = 18;
             
             PickupProbability = 100;
-            PickupMaxSpeed = 140;
-            PickupAcceleration = 6;
-            PickupBraking = 10;
             
             SUVProbability = 100;
-            SUVMaxSpeed = 160;
-            SUVAcceleration = 6;
-            SUVBraking = 10;
             
             MuscleCarProbability = 100;
-            MuscleCarMaxSpeed = 240;
-            MuscleCarAcceleration = 10;
-            MuscleCarBraking = 16;
             
             VanProbability = 100;
-            VanMaxSpeed = 140;
-            VanAcceleration = 5;
-            VanBraking = 11;
         }
         
         public void SetVanillaDefaults()
         {
             MotorbikeProbability = 100;
-            MotorbikeMaxSpeed = 250;
-            MotorbikeAcceleration = 8;
-            MotorbikeBraking = 15;
             
             ScooterProbability = 100;
-            ScooterMaxSpeed = 60;
-            ScooterAcceleration = 8;
-            ScooterBraking = 15;
             
             CityCarProbability = 100;
-            CityCarMaxSpeed = 250;
-            CityCarAcceleration = 8;
-            CityCarBraking = 15;
             
             HatchbackProbability = 100;
-            HatchbackMaxSpeed = 250; 
-            HatchbackAcceleration = 8;
-            HatchbackBraking = 15;
             
             MinivanProbability = 100;
-            MinivanMaxSpeed = 250;
-            MinivanAcceleration = 8;
-            MinivanBraking = 15;
             
             SedanProbability = 100;
-            SedanMaxSpeed = 250;
-            SedanAcceleration = 8;
-            SedanBraking = 15;
             
             SportsCarProbability = 100;
-            SportsCarMaxSpeed = 250;
-            SportsCarAcceleration = 8;
-            SportsCarBraking = 15;
             
             PickupProbability = 100;
-            PickupMaxSpeed = 250;
-            PickupAcceleration = 8;
-            PickupBraking = 15;
             
             SUVProbability = 100;
-            SUVMaxSpeed = 250;
-            SUVAcceleration = 8;
-            SUVBraking = 15;
-            
+
             MuscleCarProbability = 100;
-            MuscleCarMaxSpeed = 300;
-            MuscleCarAcceleration = 10;
-            MuscleCarBraking = 16;
             
             VanProbability = 100;
-            VanMaxSpeed = 250;
-            VanAcceleration = 8;
-            VanBraking = 15;
         }
     }
 
@@ -446,17 +341,19 @@ namespace VehicleController
             foreach(var (className, classFriendlyName) in VehicleClass.GetSettingClassNames())
             {
                 values.Add(m_Setting.GetOptionLabelLocaleID($"{className}Probability"), $"{classFriendlyName} Probability");
-                values.Add(m_Setting.GetOptionDescLocaleID($"{className}Probability"), $"Probability to spawn {classFriendlyName}. Default is 100%. 100% will spawn as many {className} as in vanilla, 0% will disable {className}."); 
-                
-                values.Add(m_Setting.GetOptionLabelLocaleID($"{className}MaxSpeed"), $"{classFriendlyName} Max Speed");
-                values.Add(m_Setting.GetOptionDescLocaleID($"{className}MaxSpeed"), $"Maximum speed for vehicles of this class.");
-                
-                values.Add(m_Setting.GetOptionLabelLocaleID($"{className}Acceleration"), $"{classFriendlyName} Acceleration");
-                values.Add(m_Setting.GetOptionDescLocaleID($"{className}Acceleration"), $"Acceleration for vehicles of this class. Impacts how fast the vehicle can reach its maximum speed.");
-                
-                values.Add(m_Setting.GetOptionLabelLocaleID($"{className}Braking"), $"{classFriendlyName} Braking");
-                values.Add(m_Setting.GetOptionDescLocaleID($"{className}Braking"), $"Braking for vehicles of this class. Impacts how fast the vehicle can stop.");
+                values.Add(m_Setting.GetOptionDescLocaleID($"{className}Probability"), $"Probability to spawn {classFriendlyName}. Default is 100%. 100% will spawn as many {className} as in vanilla, 0% will disable {className}.");
             }
+            
+            values.Add(m_Setting.GetOptionLabelLocaleID($"VehicleMaxSpeed"), $"Selected Class Max Speed");
+            values.Add(m_Setting.GetOptionDescLocaleID($"VehicleMaxSpeed"), $"Maximum speed for vehicles of this class.");
+                
+            values.Add(m_Setting.GetOptionLabelLocaleID($"VehicleAcceleration"), $"Selected Class Acceleration");
+            values.Add(m_Setting.GetOptionDescLocaleID($"VehicleAcceleration"), $"Acceleration for vehicles of this class. Impacts how fast the vehicle can reach its maximum speed.");
+                
+            values.Add(m_Setting.GetOptionLabelLocaleID($"VehicleBraking"), $"Selected Class Braking");
+            values.Add(m_Setting.GetOptionDescLocaleID($"VehicleBraking"), $"Braking for vehicles of this class. Impacts how fast the vehicle can stop.");
+
+            // TODO: Values for planes and other vehicle types
             
             return values;
         }

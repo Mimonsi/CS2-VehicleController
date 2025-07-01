@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace VehicleController
+namespace VehicleController.Data
 {
 
     public class VehicleClass
@@ -12,9 +12,8 @@ namespace VehicleController
         public int MaxSpeed = 170; // Default is 250
         public int Acceleration = 8;
         public int Braking = 15;
-
-
-        private static readonly Dictionary<string, VehicleClass> VehicleClasses;
+        
+        public static Dictionary<string, VehicleClass> VehicleClasses { private set; get; }
 
         static VehicleClass()
         {
@@ -25,27 +24,27 @@ namespace VehicleController
                     Name = "Motorbike",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Motorbike01"},
-                    // MaxSpeed = 210,
-                    // Acceleration = 10,
-                    // Braking = 15
+                    MaxSpeed = 210,
+                    Acceleration = 10,
+                    Braking = 15
                 },
                 new VehicleClass()
                 {
                     Name = "Scooter",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Scooter01"},
-                    // MaxSpeed = 60,
-                    // Acceleration = 6,
-                    // Braking = 10,
+                    MaxSpeed = 60,
+                    Acceleration = 6,
+                    Braking = 10,
                 },
                 new VehicleClass()
                 {
                     Name = "City Car",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Car01"},
-                    // MaxSpeed = 120,
-                    // Acceleration = 12,
-                    // Braking = 10
+                    MaxSpeed = 100,
+                    Acceleration = 12,
+                    Braking = 10
                 },
                 new VehicleClass()
                 {
@@ -53,15 +52,18 @@ namespace VehicleController
                     VanillaProbability = 100,
                     Prefabs = new[] {"Car02", "Car03"},
                     // No Overrides
+                    MaxSpeed = 160,
+                    Acceleration = 8,
+                    Braking = 15
                 },
                 new VehicleClass()
                 {
                     Name = "Minivan",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Car04"},
-                    // MaxSpeed = 180,
-                    // Acceleration = 7,
-                    // Braking = 15
+                    MaxSpeed = 180,
+                    Acceleration = 7,
+                    Braking = 15
                 },
                 new VehicleClass()
                 {
@@ -69,51 +71,54 @@ namespace VehicleController
                     VanillaProbability = 100,
                     Prefabs = new[] {"Car05", "Car06"},
                     // No Overrides
+                    MaxSpeed = 160,
+                    Acceleration = 8,
+                    Braking = 15
                 },
                 new VehicleClass()
                 {
                     Name = "Sports Car",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Car07"},
-                    // MaxSpeed = 260,
-                    // Acceleration = 11,
-                    // Braking = 18
+                    MaxSpeed = 260,
+                    Acceleration = 11,
+                    Braking = 18
                 },
                 new VehicleClass()
                 {
                     Name = "Pickup",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Car08"},
-                    // MaxSpeed = 140,
-                    // Acceleration = 6,
-                    // Braking = 12
+                    MaxSpeed = 140,
+                    Acceleration = 6,
+                    Braking = 10
                 },
                 new VehicleClass()
                 {
                     Name = "SUV",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Car09"},
-                    // MaxSpeed = 160,
-                    // Acceleration = 6,
-                    // Braking = 10
+                    MaxSpeed = 160,
+                    Acceleration = 6,
+                    Braking = 10
                 },
                 new VehicleClass()
                 {
                     Name = "Muscle Car",
                     VanillaProbability = 100,
                     Prefabs = new[] {"MuscleCar01", "MuscleCar02", "MuscleCar03", "MuscleCar04", "MuscleCar05"},
-                    // MaxSpeed = 270,
-                    // Acceleration = 10,
-                    // Braking = 16
+                    MaxSpeed = 240,
+                    Acceleration = 10,
+                    Braking = 16
                 },
                 new VehicleClass()
                 {
                     Name = "Van",
                     VanillaProbability = 100,
                     Prefabs = new[] {"Van01"},
-                    // MaxSpeed = 140,
-                    // Acceleration = 5,
-                    // Braking = 11
+                    MaxSpeed = 140,
+                    Acceleration = 5,
+                    Braking = 11
                 }
             };
             VehicleClasses = new Dictionary<string, VehicleClass>();
@@ -151,38 +156,38 @@ namespace VehicleController
             switch (vehicleClass.Name)
             {
                 case "Motorbike":
-                    return (Setting.Instance.MotorbikeProbability, Setting.Instance.MotorbikeMaxSpeed,
-                        Setting.Instance.MotorbikeAcceleration, Setting.Instance.MotorbikeBraking);
+                    return (Setting.Instance.MotorbikeProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Scooter":
-                    return (Setting.Instance.ScooterProbability, Setting.Instance.ScooterMaxSpeed,
-                        Setting.Instance.ScooterAcceleration, Setting.Instance.ScooterBraking);
+                    return (Setting.Instance.ScooterProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "City Car":
-                    return (Setting.Instance.CityCarProbability, Setting.Instance.CityCarMaxSpeed,
-                        Setting.Instance.CityCarAcceleration, Setting.Instance.CityCarBraking);
+                    return (Setting.Instance.CityCarProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Hatchback":
-                    return (Setting.Instance.HatchbackProbability, Setting.Instance.HatchbackMaxSpeed,
-                        Setting.Instance.HatchbackAcceleration, Setting.Instance.HatchbackBraking);
+                    return (Setting.Instance.HatchbackProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Minivan":
-                    return (Setting.Instance.MinivanProbability, Setting.Instance.MinivanMaxSpeed,
-                        Setting.Instance.MinivanAcceleration, Setting.Instance.MinivanBraking);
+                    return (Setting.Instance.MinivanProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Sedan":
-                    return (Setting.Instance.SedanProbability, Setting.Instance.SedanMaxSpeed,
-                        Setting.Instance.SedanAcceleration, Setting.Instance.SedanBraking);
+                    return (Setting.Instance.SedanProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Sports Car":
-                    return (Setting.Instance.SportsCarProbability, Setting.Instance.SportsCarMaxSpeed,
-                        Setting.Instance.SportsCarAcceleration, Setting.Instance.SportsCarBraking);
+                    return (Setting.Instance.SportsCarProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Pickup":
-                    return (Setting.Instance.PickupProbability, Setting.Instance.PickupMaxSpeed,
-                        Setting.Instance.PickupAcceleration, Setting.Instance.PickupBraking);
+                    return (Setting.Instance.PickupProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "SUV":
-                    return (Setting.Instance.SUVProbability, Setting.Instance.SUVMaxSpeed,
-                        Setting.Instance.SUVAcceleration, Setting.Instance.SUVBraking);
+                    return (Setting.Instance.SUVProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Muscle Car":
-                    return (Setting.Instance.MuscleCarProbability, Setting.Instance.MuscleCarMaxSpeed,
-                        Setting.Instance.MuscleCarAcceleration, Setting.Instance.MuscleCarBraking);
+                    return (Setting.Instance.MuscleCarProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 case "Van":
-                    return (Setting.Instance.VanProbability, Setting.Instance.VanMaxSpeed,
-                        Setting.Instance.VanAcceleration, Setting.Instance.VanBraking);
+                    return (Setting.Instance.VanProbability, vehicleClass.MaxSpeed,
+                        vehicleClass.Acceleration, vehicleClass.Braking);
                 default:
                     Mod.log.Debug("Vehicle class not found, using default values");
                     return (100, 250, 8, 15);
