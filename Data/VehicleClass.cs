@@ -12,8 +12,8 @@ namespace VehicleController.Data
         public int MaxSpeed = 170; // Default is 250
         public int Acceleration = 8;
         public int Braking = 15;
-        
-        public static Dictionary<string, VehicleClass> VehicleClasses { private set; get; }
+
+        private static Dictionary<string, VehicleClass> VehicleClasses;
 
         static VehicleClass()
         {
@@ -126,6 +126,11 @@ namespace VehicleController.Data
             {
                 VehicleClasses.Add(vehicleClass.Name, vehicleClass);
             }
+        }
+        
+        public static string[] GetNames()
+        {
+            return VehicleClasses.Keys.ToArray();
         }
 
         public static void SetVanillaProbability(string className, int vanillaProbability)

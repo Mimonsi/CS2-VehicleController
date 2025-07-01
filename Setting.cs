@@ -138,52 +138,52 @@ namespace VehicleController
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         public bool EnableImprovedTrainBehavior { get; set; } = true;
         
-        private VehicleClass _currentVehicleClass;
+        private string _currentVehicleClass;
         private static int CurrentVehicleClassVersion { get; set; }
 
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUIValueVersion(typeof(Setting), nameof(CurrentVehicleClassVersion))]
         [SettingsUIDropdown(typeof(Setting), nameof(GetVehicleClassDropdownItems))]
-        public VehicleClass CurrentVehicleClass
+        public string CurrentVehicleClass
         {
             get => _currentVehicleClass;
             set
             {
                 _currentVehicleClass = value;
-                Mod.log.Info("Current vehicle class set to: " + value.Name);
+                Mod.log.Info("Current vehicle class set to: " + value);
             }
         }
 
-        public DropdownItem<VehicleClass>[] GetVehicleClassDropdownItems()
+        public DropdownItem<string>[] GetVehicleClassDropdownItems()
         {
-            var items = new List<DropdownItem<VehicleClass>>();
-            foreach (var vehicleClass in VehicleClass.VehicleClasses)
+            var items = new List<DropdownItem<string>>();
+            /*foreach (var vehicleClass in VehicleClass.GetNames())
             {
-                items.Add(new DropdownItem<VehicleClass>()
+                items.Add(new DropdownItem<string>()
                 {
-                    displayName = vehicleClass.Key,
-                    value = vehicleClass.Value,
+                    displayName = vehicleClass,
+                    value = vehicleClass,
                 });
-                Mod.log.Info("Added vehicle class: " + vehicleClass.Key);
-            }
+                Mod.log.Info("Added vehicle class: " + vehicleClass);
+            }*/
 
             if (items.Count == 0)
             {
                 Mod.log.Info("No vehicle classes found, adding dummy classes");
-                items.Add(new DropdownItem<VehicleClass>()
+                items.Add(new DropdownItem<string>()
                 {
                     displayName = "Dummy Sedan",
-                    value = new VehicleClass()
+                    value = "Dummy Sedan",
                 });
-                items.Add(new DropdownItem<VehicleClass>()
+                items.Add(new DropdownItem<string>()
                 {
                     displayName = "Dummy Motorbike",
-                    value = new VehicleClass()
+                    value = "Dummy Motorbike",
                 });
-                items.Add(new DropdownItem<VehicleClass>()
+                items.Add(new DropdownItem<string>()
                 {
                     displayName = "Dummy Muscle Car",
-                    value = new VehicleClass()
+                    value = "Dummy Muscle Car",
                 });
             }
             
