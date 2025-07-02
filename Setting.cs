@@ -16,8 +16,8 @@ namespace VehicleController
 {
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection)]
-    [SettingsUIGroupOrder(MainGroup, SpawnProbabilitiesGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, InfoGroup)]
-    [SettingsUIShowGroupName(MainGroup, SpawnProbabilitiesGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup)]
+    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, InfoGroup)]
+    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -26,10 +26,11 @@ namespace VehicleController
         public const string MainGroup = "General Settings";
         
         public const string SpawnBehaviorSection = "Spawning Behavior";
-        public const string SpawnProbabilitiesGroup = "Probability Settings";
+        public const string VehicleProbabilityPackGroup = "Probability Settings";
+        public const string VehicleProbabilityGroup = "Probability Settings";
         
         public const string VehiclePropertiesSection = "Vehicle Properties";
-        public const string VehiclePropertiesGroup = "Vehicle Class Properties";
+        public const string VehiclePropertiesGroup = "Vehicle Properties";
         public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
         
         
@@ -42,16 +43,6 @@ namespace VehicleController
         }
         
         #region MainSection
-        
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
-        [SettingsUIButton]
-        public bool ApplyProbabilityChanges
-        {
-            set
-            {
-                VehicleControllerSystem.Instance.ApplySettings();
-            }
-        }
 
         /*[SettingsUIButton]
         public bool DeleteInstances
@@ -86,7 +77,7 @@ namespace VehicleController
         private ProbabilityPack _currentProbabilityPack = ProbabilityPack.Default();
         private static int CurrentProbabilityPackVersion { get; set; }
 
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityPackGroup)]
         [SettingsUIValueVersion(typeof(Setting), nameof(CurrentProbabilityPackVersion))]
         [SettingsUIDropdown(typeof(Setting), nameof(GetProbabilityPacksDropdownItems))]
         public string CurrentProbabilityPack
@@ -95,7 +86,7 @@ namespace VehicleController
             set
             {
                 _currentProbabilityPack = ProbabilityPack.Load(value);
-                VehicleControllerSystem.Instance.LoadProbabilityPack(_currentProbabilityPack);   
+                VehiclePropertySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);   
             }
         }
         
@@ -116,47 +107,57 @@ namespace VehicleController
             return items.ToArray();
         }
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
+        [SettingsUIButton]
+        public bool ApplyProbabilityChanges
+        {
+            set
+            {
+                VehiclePropertySystem.Instance.ApplySettings();
+            }
+        }
+        
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MotorbikeProbability { get; set; } = 25;
 
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int ScooterProbability { get; set; } = 50;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int CityCarProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int HatchbackProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MinivanProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SedanProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SportsCarProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int PickupProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int SUVProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MuscleCarProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int VanProbability { get; set; } = 100;
         
@@ -244,6 +245,7 @@ namespace VehicleController
             set
             {
                 // TODO: Implement
+                VehicleProbabilitySystem.SaveValueChanges();
             }
         }
         

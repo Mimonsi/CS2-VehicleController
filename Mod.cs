@@ -27,7 +27,8 @@ namespace VehicleController
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
             
-            updateSystem.UpdateAt<VehicleControllerSystem>(SystemUpdatePhase.MainLoop);
+            updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
+            updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
