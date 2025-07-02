@@ -28,11 +28,17 @@ namespace VehicleController.Data
     
     public record PropertyPack
     {
-        public int version = 1;
+        public int Version = 1;
         public string Name;
         private Dictionary<string, PropertyPackEntry>? _entries;
         
-        public static PropertyPack Load(string name)
+        public PropertyPack(string name, int version = 1)
+        {
+            Name = name;
+            Version = version;
+        }
+        
+        public static PropertyPack LoadFromFile(string name)
         {
             Mod.log.Info("Loading probability pack " + name);
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
@@ -43,6 +49,12 @@ namespace VehicleController.Data
             }
             var json = File.ReadAllText(path);
             return JsonConvert.DeserializeObject<PropertyPack>(json) ?? throw new InvalidDataException($"Failed to deserialize property pack {name}");
+        }
+        
+        public void SaveToFile()
+        {
+            var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
+                "property", Name + ".json");
         }
         
         public PropertyPackEntry GetEntry(string prefabName)

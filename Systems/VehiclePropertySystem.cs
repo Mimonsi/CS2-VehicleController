@@ -51,6 +51,7 @@ namespace VehicleController.Systems
 
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            GameManager.instance.RegisterUpdater(SaveVanillaPack);
             GameManager.instance.RegisterUpdater(UpdateProperties);
             Logger.Info("VehiclePropertySystem created and updater registered.");
         }

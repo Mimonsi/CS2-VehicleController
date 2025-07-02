@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.Logging;
@@ -49,29 +50,30 @@ namespace VehicleController.Systems
             });
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            GameManager.instance.RegisterUpdater(SaveVanillaPack);
             GameManager.instance.RegisterUpdater(UpdateProbabilities);
             Logger.Info("VehicleProbabilitySystem created and updater registered.");
         }
-        
-        public void LoadProbabilityPack(ProbabilityPack pack)
-        {
-            if (!Enabled)
-                return;
-            _currentProbabilityPack = pack;
-            UpdateProbabilities();
-        }
-        
-        private bool SaveVanillaProbabilities()
+
+        private bool SaveVanillaPack()
         {
             Logger.Info("Saving vanilla probabilities");
+            ProbabilityPack pack = new ProbabilityPack("Vanilla");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
                 {
+                    if (personalCarData.m_Probability == 0)
+                    {
+                        Logger.Info("PersonalCarData not initialized, retrying later");
+                        return false;
+                    }
+                    var prefabName = prefabSystem.GetPrefabName(entity);
+                    pack.AddEntry(prefabName, personalCarData.m_Probability);
+                    VehicleClass.SetVanillaProbability(prefabName, personalCarData.m_Probability);
                     count++;
-                    VehicleClass.SetVanillaProbability(prefabSystem.GetPrefabName(entity), personalCarData.m_Probability);
                 }
             }
 
@@ -81,8 +83,25 @@ namespace VehicleController.Systems
                 return false;
             }
 
-            Logger.Info($"Saved vanilla probabilities for {count}/{entities.Length} car entities.");
-            return true;
+            try
+            {
+                pack.SaveToFile();
+                Logger.Info($"Saved vanilla probabilities for {count}/{entities.Length} car entities.");
+                return true;
+            }
+            catch (Exception x)
+            {
+                Logger.Error($"Error saving vanilla probabilities: {x.Message}", x);
+                return false;
+            }
+        }
+        
+        public void LoadProbabilityPack(ProbabilityPack pack)
+        {
+            if (!Enabled)
+                return;
+            _currentProbabilityPack = pack;
+            UpdateProbabilities();
         }
         
         private bool UpdateProbabilities()

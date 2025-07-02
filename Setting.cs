@@ -85,7 +85,7 @@ namespace VehicleController
             get => _currentProbabilityPack.Name;
             set
             {
-                _currentProbabilityPack = ProbabilityPack.Load(value);
+                _currentProbabilityPack = ProbabilityPack.LoadFromFile(value);
                 VehiclePropertySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);   
             }
         }

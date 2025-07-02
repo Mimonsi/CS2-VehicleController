@@ -27,11 +27,17 @@ namespace VehicleController.Data
     
     public record ProbabilityPack
     {
-        public int version = 1;
+        public int Version = 1;
         public string Name;
         private Dictionary<string, ProbabilityPackEntry>? _entries;
+
+        public ProbabilityPack(string name, int version = 1)
+        {
+            Name = name;
+            Version = version;
+        }
         
-        public static ProbabilityPack Load(string name)
+        public static ProbabilityPack LoadFromFile(string name)
         {
             Mod.log.Info("Loading probability pack " + name);
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
@@ -42,6 +48,28 @@ namespace VehicleController.Data
             }
             var json = File.ReadAllText(path);
             return JsonConvert.DeserializeObject<ProbabilityPack>(json) ?? throw new InvalidDataException($"Failed to deserialize probability pack {name}");
+        }
+
+        public void SaveToFile()
+        {
+            var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
+                "probability", Name + ".json");
+        }
+        
+        public bool AddEntry(string prefabName, int probability)
+        {
+            if (_entries == null)
+            {
+                _entries = new Dictionary<string, ProbabilityPackEntry>();
+                return true;
+            }
+            if (_entries.ContainsKey(prefabName))
+            {
+                return false;
+            }
+
+            _entries.Add(prefabName, new ProbabilityPackEntry(prefabName) { Probability = probability });
+            return true;
         }
         
         public ProbabilityPackEntry GetEntry(string prefabName)
