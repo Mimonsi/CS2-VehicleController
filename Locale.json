@@ -9,6 +9,8 @@
     
     "Options.TAB[VehicleController.VehicleController.Mod.Spawning Behavior]": "Spawning Behavior",
     "Options.GROUP[VehicleController.VehicleController.Mod.Probability Settings]": "Probability Settings",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.CurrentProbabilityPack]": "Current Probability Pack",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.CurrentProbabilityPack]": "Currently loaded probability pack. Select other pack to load it.",
     
     
     

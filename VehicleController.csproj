@@ -94,7 +94,8 @@
     </ItemGroup>
     
     <ItemGroup>
-      <Folder Include="Resources\" />
+      <Folder Include="Resources\packs\probability\" />
+      <Folder Include="Resources\packs\property\" />
     </ItemGroup>
 
     <!--<Target Name="BuildUI" AfterTargets="AfterBuild">

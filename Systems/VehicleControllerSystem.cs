@@ -23,6 +23,7 @@ namespace VehicleController.Systems
         private EntityQuery instanceQuery;
 
         private PrefabSystem prefabSystem;
+        private ProbabilityPack _currentProbabilityPack;
         public static VehicleControllerSystem Instance { get; private set; }
 
         protected override void OnCreate()
@@ -124,6 +125,48 @@ namespace VehicleController.Systems
             }
 
             Logger.Info($"Updated parameters for {count}/{entities.Length} train entities.");
+            return true;
+        }
+
+        private bool UpdateProbabilities()
+        {
+            Logger.Info("Updating Vehicle Probabilities");
+            var entities = carQuery.ToEntityArray(Allocator.Temp);
+            int count = 0;
+            foreach (var entity in entities)
+            {
+                if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
+                {
+                    var prefabName = prefabSystem.GetPrefabName(entity);
+                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                    {
+                        if (carData is { m_Acceleration: 0, m_Braking: 0, m_MaxSpeed: 0 })
+                        {
+                            Logger.Info("CarData not initialized, retrying later");
+                            return false;
+                        }
+
+                        var probability = _currentProbabilityPack.GetProbability(prefabName);
+                        personalCarData.m_Probability = probability;
+                        EntityManager.SetComponentData(entity, carData);
+                    }
+                    else
+                    {
+                        Logger.Error("CarData component not found on entity " + prefabName);
+                    }
+                    EntityManager.SetComponentData(entity, personalCarData);
+                    EntityManager.AddComponent<BatchesUpdated>(entity);
+                    count++;
+                }
+            }
+            
+            if (count == 0)
+            {
+                Logger.Debug("Failed to update probabilities. No PersonalCarData found.");
+                return false;
+            }
+            
+            Logger.Info($"Updated properties for {count}/{entities.Length} car entities.");
             return true;
         }
 
@@ -252,6 +295,15 @@ namespace VehicleController.Systems
             }
 
             Logger.Info($"Deleted {motorcyclesDeleted} motorcycles and {scootersDeleted} scooters");
+        }
+
+        public void LoadProbabilityPack(ProbabilityPack pack)
+        {
+            if (!Enabled)
+                return;
+            _currentProbabilityPack = pack;
+            UpdateProbabilities();
+
         }
     }
 

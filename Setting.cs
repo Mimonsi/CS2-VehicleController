@@ -83,6 +83,39 @@ namespace VehicleController
         
         #region Probabilities
         
+        private ProbabilityPack _currentProbabilityPack = ProbabilityPack.Default();
+        private static int CurrentProbabilityPackVersion { get; set; }
+
+        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        [SettingsUIValueVersion(typeof(Setting), nameof(CurrentProbabilityPackVersion))]
+        [SettingsUIDropdown(typeof(Setting), nameof(GetProbabilityPacksDropdownItems))]
+        public string CurrentProbabilityPack
+        {
+            get => _currentProbabilityPack.Name;
+            set
+            {
+                _currentProbabilityPack = ProbabilityPack.Load(value);
+                VehicleControllerSystem.Instance.LoadProbabilityPack(_currentProbabilityPack);   
+            }
+        }
+        
+        public DropdownItem<string>[] GetProbabilityPacksDropdownItems()
+        {
+            var names =  ProbabilityPack.GetPackNames();
+
+            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
+            foreach(string s in names)
+            {
+                items.Add(new DropdownItem<string>()
+                {
+                    value = s,
+                    displayName = s,
+                });
+            }
+            
+            return items.ToArray();
+        }
+        
         [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int MotorbikeProbability { get; set; } = 25;
@@ -127,9 +160,9 @@ namespace VehicleController
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
         public int VanProbability { get; set; } = 100;
         
-        [SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
+        /*[SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
         [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int TrailerProbability { get; set; } = 100; // TODO: Implement this
+        public int TrailerProbability { get; set; } = 100; // TODO: Implement this*/
         
         #endregion
         
