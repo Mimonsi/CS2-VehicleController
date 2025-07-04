@@ -68,9 +68,8 @@ namespace VehicleController.Data
 
         public static PropertyPack Default()
         {
-            return new PropertyPack
+            return new PropertyPack("Default")
             {
-                Name = "Default",
                 _entries = new Dictionary<string, PropertyPackEntry>
                 {
                     { "default", PropertyPackEntry.Default() }

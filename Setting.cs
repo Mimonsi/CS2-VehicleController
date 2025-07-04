@@ -15,7 +15,7 @@ using VehicleController.Systems;
 namespace VehicleController
 {
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
-    [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection)]
+    [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection, DebugSection)]
     [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, InfoGroup)]
     [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup)]
     public class Setting : ModSetting
@@ -36,6 +36,9 @@ namespace VehicleController
         
         public const string AboutSection = "About";
         public const string InfoGroup = "Info";
+        
+        public const string DebugSection = "Debug";
+        public const string DebugGroup = "Debug";
         
         public Setting(IMod mod) : base(mod)
         {
@@ -75,7 +78,7 @@ namespace VehicleController
         #region Probabilities
         
         private ProbabilityPack _currentProbabilityPack = ProbabilityPack.Default();
-        private static int CurrentProbabilityPackVersion { get; set; }
+        public static int CurrentProbabilityPackVersion { get; set; }
 
         [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityPackGroup)]
         [SettingsUIValueVersion(typeof(Setting), nameof(CurrentProbabilityPackVersion))]
@@ -86,7 +89,7 @@ namespace VehicleController
             set
             {
                 _currentProbabilityPack = ProbabilityPack.LoadFromFile(value);
-                VehiclePropertySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);   
+                VehicleProbabilitySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);   
             }
         }
         
@@ -103,7 +106,7 @@ namespace VehicleController
                     displayName = s,
                 });
             }
-            
+            Mod.log.Info("Displaying " + items.Count + " probability packs");
             return items.ToArray();
         }
         
@@ -242,11 +245,7 @@ namespace VehicleController
         [SettingsUIButton]
         public bool SavePropertyChanges
         {
-            set
-            {
-                // TODO: Implement
-                VehicleProbabilitySystem.SaveValueChanges();
-            }
+            set => VehicleProbabilitySystem.SaveValueChanges();
         }
         
         #endregion
@@ -295,6 +294,17 @@ namespace VehicleController
                     Mod.log.Info(e);
                 }
             }
+        }
+        
+        #endregion
+        
+        #region Debug Options
+        
+        [SettingsUISection(DebugSection, DebugGroup)]
+        [SettingsUIAdvanced]
+        public bool CreateExamplePack
+        {
+            set => ProbabilityPack.Example().SaveToFile();
         }
         
         #endregion
@@ -363,6 +373,7 @@ namespace VehicleController
             Dictionary<string, int> indexCounts)
         {
             var values = new Dictionary<string, string>();
+            
             foreach(var (className, classFriendlyName) in VehicleClass.GetSettingClassNames())
             {
                 values.Add(m_Setting.GetOptionLabelLocaleID($"{className}Probability"), $"{classFriendlyName} Probability");
@@ -379,6 +390,12 @@ namespace VehicleController
             values.Add(m_Setting.GetOptionDescLocaleID($"VehicleBraking"), $"Braking for vehicles of this class. Impacts how fast the vehicle can stop.");
 
             // TODO: Values for planes and other vehicle types
+
+
+            values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.CreateExamplePack)), "Create Example Pack");
+            values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CreateExamplePack)), "Create an example probability pack with some default values. This will create a file in the ModsData folder of VehicleController.");
+            values.Add(m_Setting.GetOptionTabLocaleID(nameof(Setting.DebugSection)), "Debug");
+            values.Add(m_Setting.GetOptionGroupLocaleID(nameof(Setting.DebugGroup)), "Debugging Tools");
             
             return values;
         }

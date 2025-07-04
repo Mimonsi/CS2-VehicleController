@@ -23,7 +23,7 @@ namespace VehicleController.Systems
         private EntityQuery instanceQuery;
 
         private PrefabSystem prefabSystem;
-        private ProbabilityPack _currentProbabilityPack;
+        private PropertyPack _currentPropertyPack;
         public static VehiclePropertySystem Instance { get; private set; }
 
         protected override void OnCreate()
@@ -52,15 +52,20 @@ namespace VehicleController.Systems
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             GameManager.instance.RegisterUpdater(SaveVanillaPack);
-            GameManager.instance.RegisterUpdater(UpdateProperties);
+            //GameManager.instance.RegisterUpdater(UpdateProperties);
             Logger.Info("VehiclePropertySystem created and updater registered.");
+        }
+
+        private bool SaveVanillaPack()
+        {
+            return true;
         }
 
         public void LoadPropertyPack(PropertyPack pack)
         {
             if (!Enabled)
                 return;
-            _currentProbabilityPack = pack;
+            _currentPropertyPack = pack;
             UpdateProperties();
         }
 

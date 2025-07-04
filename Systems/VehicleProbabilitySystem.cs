@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.Logging;
+using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
 using Game.Net;
@@ -20,7 +21,6 @@ namespace VehicleController.Systems
         private static ILog Logger;
 
         private EntityQuery carQuery;
-        private EntityQuery trainQuery;
 
         private PrefabSystem prefabSystem;
         private ProbabilityPack _currentProbabilityPack;
@@ -41,18 +41,16 @@ namespace VehicleController.Systems
                 }
             });
             
-            trainQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                new []{
-                    ComponentType.ReadOnly<TrainData>(),
-                }
-            });
-            
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             GameManager.instance.RegisterUpdater(SaveVanillaPack);
-            GameManager.instance.RegisterUpdater(UpdateProbabilities);
+            //GameManager.instance.RegisterUpdater(UpdateProbabilities);
             Logger.Info("VehicleProbabilitySystem created and updater registered.");
+        }
+
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            Setting.CurrentProbabilityPackVersion++;
         }
 
         private bool SaveVanillaPack()
@@ -91,7 +89,7 @@ namespace VehicleController.Systems
             }
             catch (Exception x)
             {
-                Logger.Error($"Error saving vanilla probabilities: {x.Message}", x);
+                Logger.Error($"Error saving vanilla probabilities: {x.Message}");
                 return false;
             }
         }
@@ -107,6 +105,7 @@ namespace VehicleController.Systems
         private bool UpdateProbabilities()
         {
             Logger.Info("Updating Vehicle Probabilities");
+            Logger.Info("Loading probability pack: " + _currentProbabilityPack.Name);
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -151,82 +150,9 @@ namespace VehicleController.Systems
 
         }
 
-        public void ApplySettings()
+        public static void SaveValueChanges()
         {
-            UpdateCarProperties();
-        }
-
-        public void DeleteInstances()
-        {
-            Logger.Info("Deleting instances");
-            double motorcycleDeletionChance = 1 - (Setting.Instance.MotorbikeProbability / 100.0);
-            double scooterDeletionChance = 1 - (Setting.Instance.ScooterProbability / 100.0);
-            Logger.Info($"Motorcycle deletion chance: {motorcycleDeletionChance}, Scooter deletion chance: {scooterDeletionChance}");
-            List<Entity> motorbikes = new List<Entity>();
-            List<Entity> scooters = new List<Entity>();
-
-            var entities = instanceQuery.ToEntityArray(Allocator.Temp);
-
-            /*foreach (var entity in entities)
-            {
-                string prefabName = prefabSystem.GetPrefabName(entity);
-                if (prefabName.Contains("Motorbike"))
-                {
-                    motorbikes.Add(entity);
-                }
-
-                if (prefabName.Contains("Scooter"))
-                {
-                    motorbikes.Add(entity);
-                }
-            }*/
-
-
-
-            foreach (var entity in entities)
-            {
-                if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
-                {
-                    if (prefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefab))
-                    {
-                        if (prefab is VehiclePrefab vehiclePrefab)
-                        {
-                            if (vehiclePrefab.name.Contains("Motorbike"))
-                            {
-                                motorbikes.Add(entity);
-                            }
-                            if (vehiclePrefab.name.Contains("Scooter"))
-                            {
-                                scooters.Add(entity);
-                            }
-                        }
-                    }
-                }
-            }
-
-            Logger.Info($"Found {motorbikes.Count} motorcycles and {scooters.Count} scooters");
-            int motorcyclesDeleted = 0, scootersDeleted = 0;
-
-            // Delete percentage of motorcycles and scooters
-            foreach (var entity in motorbikes)
-            {
-                if (Random.value < motorcycleDeletionChance)
-                {
-                    EntityManager.AddComponent<Deleted>(entity);
-                    motorcyclesDeleted++;
-                }
-            }
-
-            foreach (var entity in scooters)
-            {
-                if (Random.value < scooterDeletionChance)
-                {
-                    EntityManager.AddComponent<Deleted>(entity);
-                    scootersDeleted++;
-                }
-            }
-
-            Logger.Info($"Deleted {motorcyclesDeleted} motorcycles and {scootersDeleted} scooters");
+            Instance.UpdateProbabilities();
         }
     }
 

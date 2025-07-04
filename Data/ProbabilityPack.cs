@@ -1,27 +1,50 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Colossal.PSI.Environment;
 using Newtonsoft.Json;
 
 namespace VehicleController.Data
 {
+    public enum ProbabilityEntryType
+    {
+        Prefab,
+        Class
+    }
+    
+    /// <summary>
+    /// Can either be overriding probabilities for a prefab or a whole vehicle class
+    /// </summary>
     public record ProbabilityPackEntry
     {
-        public string PrefabName;
+        public ProbabilityEntryType Type { get; set; } = ProbabilityEntryType.Prefab;
+        public string? PrefabName;
+        public string? ClassName;
         public int Probability = 100;
 
-        public ProbabilityPackEntry(string prefabName)
+        
+        public ProbabilityPackEntry()
         {
-            PrefabName = prefabName;
+
+        }
+        
+        public ProbabilityPackEntry(ProbabilityEntryType type, string name, int probability)
+        {
+            if (type == ProbabilityEntryType.Prefab)
+            {
+                PrefabName = name;
+            }
+            else
+            {
+                ClassName = name;
+            }
+            Type = type;
+            Probability = probability;
         }
         
         public static ProbabilityPackEntry Default()
         {
-            return new ProbabilityPackEntry("default")
-            {
-                PrefabName = "Default",
-                Probability = 100
-            };
+            return new ProbabilityPackEntry();
         }
     }
     
@@ -29,12 +52,28 @@ namespace VehicleController.Data
     {
         public int Version = 1;
         public string Name;
-        private Dictionary<string, ProbabilityPackEntry>? _entries;
+        public string? Description;
+        public List<ProbabilityPackEntry> Entries;
 
         public ProbabilityPack(string name, int version = 1)
         {
             Name = name;
             Version = version;
+        }
+
+        public static ProbabilityPack Example()
+        {
+            var pack = new ProbabilityPack("Example")
+            {
+                Version = 1,
+                Description = "This is an example probability pack",
+                Entries = new List<ProbabilityPackEntry>
+                {
+                    { new(ProbabilityEntryType.Prefab, "Car01", 200)},
+                    { new(ProbabilityEntryType.Class, "Pickup", 100)},
+                }
+            };
+            return pack;
         }
         
         public static ProbabilityPack LoadFromFile(string name)
@@ -53,31 +92,45 @@ namespace VehicleController.Data
         public void SaveToFile()
         {
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
-                "probability", Name + ".json");
+                "probability");
+            var json = JsonConvert.SerializeObject(this, Formatting.Indented) ?? throw new InvalidDataException($"Failed to serialize probability pack {Name}");
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            try
+            {
+                File.WriteAllText(Path.Combine(path, Name + ".json"), json);
+            }
+            catch (Exception ex)
+            {
+                Mod.log.Error($"Error saving probability pack {Name}: {ex.Message}");
+                throw;
+            }
+
+            Mod.log.Info($"Saved probability pack {Name} to {path}");
+        }
+        
+        public bool Contains(string name)
+        {
+            return Entries.Exists(e => e.PrefabName == name || e.ClassName == name);
         }
         
         public bool AddEntry(string prefabName, int probability)
         {
-            if (_entries == null)
-            {
-                _entries = new Dictionary<string, ProbabilityPackEntry>();
-                return true;
-            }
-            if (_entries.ContainsKey(prefabName))
+            /*if (Contains(prefabName))
             {
                 return false;
             }
 
-            _entries.Add(prefabName, new ProbabilityPackEntry(prefabName) { Probability = probability });
+            Entries.Add(prefabName, new ProbabilityPackEntry(prefabName) { Probability = probability });*/
             return true;
         }
         
         public ProbabilityPackEntry GetEntry(string prefabName)
         {
-            if (_entries == null || !_entries.TryGetValue(prefabName, out var entry))
-            {
-                return ProbabilityPackEntry.Default(); // Default probability
-            }
+            var entry = Entries.Find(e => e.PrefabName == prefabName || e.ClassName == prefabName);
             return entry;
         }
         
@@ -88,19 +141,18 @@ namespace VehicleController.Data
 
         public static ProbabilityPack Default()
         {
-            return new ProbabilityPack
+            return new ProbabilityPack("Default")
             {
-                Name = "Default",
-                _entries = new Dictionary<string, ProbabilityPackEntry>
+                Entries = new List<ProbabilityPackEntry>
                 {
-                    { "default", ProbabilityPackEntry.Default() }
+                    { ProbabilityPackEntry.Default() }
                 }
             };
         }
 
         public static IEnumerable<string> GetPackNames()
         {
-            var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleClass), "packs", "probability");
+            var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs", "probability");
             if (!Directory.Exists(path))
                 return new List<string>();
 

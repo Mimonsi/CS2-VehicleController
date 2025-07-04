@@ -28,7 +28,7 @@ namespace VehicleController
                 path = asset.path;
             
             updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
-            updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
+            //updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
@@ -45,11 +45,7 @@ namespace VehicleController
         public void OnDispose()
         {
             log.Info(nameof(OnDispose));
-            if (m_Setting != null)
-            {
-                m_Setting.UnregisterInOptionsUI();
-                m_Setting = null;
-            }
+            m_Setting.UnregisterInOptionsUI();
         }
     }
 }
