@@ -32,6 +32,8 @@ namespace VehicleController
             CopyEmbeddedPacks("property");
             updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
+            updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
+            updateSystem.UpdateAt<CreatedServiceVehicleModifierSystem>(SystemUpdatePhase.PreCulling);
             //updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
 
             m_Setting = new Setting(this);
