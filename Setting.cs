@@ -77,7 +77,7 @@ namespace VehicleController
         
         #region Probabilities
         
-        private ProbabilityPack _currentProbabilityPack = ProbabilityPack.Default();
+        private ProbabilityPack _currentProbabilityPack = ProbabilityPack.LoadFromFile("Default");
         public static int CurrentProbabilityPackVersion { get; set; }
 
         [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityPackGroup)]
@@ -89,7 +89,8 @@ namespace VehicleController
             set
             {
                 _currentProbabilityPack = ProbabilityPack.LoadFromFile(value);
-                VehicleProbabilitySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);   
+                VehicleProbabilitySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);
+                ApplyProbabilityChanges = true;
             }
         }
         
@@ -116,7 +117,7 @@ namespace VehicleController
         {
             set
             {
-                VehiclePropertySystem.Instance.ApplySettings();
+                VehicleProbabilitySystem.SaveValueChanges();
             }
         }
         
@@ -245,7 +246,7 @@ namespace VehicleController
         [SettingsUIButton]
         public bool SavePropertyChanges
         {
-            set => VehicleProbabilitySystem.SaveValueChanges();
+            set => VehiclePropertySystem.Instance.ApplySettings();
         }
         
         #endregion
@@ -305,6 +306,13 @@ namespace VehicleController
         public bool CreateExamplePack
         {
             set => ProbabilityPack.Example().SaveToFile();
+        }
+        
+        [SettingsUISection(DebugSection, DebugGroup)]
+        [SettingsUIAdvanced]
+        public bool CountPrefabInstances
+        {
+            set => VehicleCounterSystem.Instance.CountPrefabInstances();
         }
         
         #endregion
@@ -394,6 +402,8 @@ namespace VehicleController
 
             values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.CreateExamplePack)), "Create Example Pack");
             values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CreateExamplePack)), "Create an example probability pack with some default values. This will create a file in the ModsData folder of VehicleController.");
+            values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.CountPrefabInstances)), "Count Prefab Instances");
+            values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CountPrefabInstances)), "Counts occurrences of each prefab in the game and logs them to the console. Useful for debugging and understanding how many instances of each prefab are present in the game.");
             values.Add(m_Setting.GetOptionTabLocaleID(nameof(Setting.DebugSection)), "Debug");
             values.Add(m_Setting.GetOptionGroupLocaleID(nameof(Setting.DebugGroup)), "Debugging Tools");
             

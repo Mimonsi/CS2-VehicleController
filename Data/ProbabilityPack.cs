@@ -17,10 +17,18 @@ namespace VehicleController.Data
     /// </summary>
     public record ProbabilityPackEntry
     {
-        public ProbabilityEntryType Type { get; set; } = ProbabilityEntryType.Prefab;
         public string? PrefabName;
         public string? ClassName;
         public int Probability = 100;
+
+        public ProbabilityEntryType Type()
+        {
+            if (!string.IsNullOrEmpty(PrefabName))
+                return ProbabilityEntryType.Prefab;
+            if (!string.IsNullOrEmpty(ClassName))
+                return ProbabilityEntryType.Class;
+            throw new InvalidOperationException("ProbabilityPackEntry must have either PrefabName or ClassName set.");
+        }
 
         
         public ProbabilityPackEntry()
@@ -38,13 +46,7 @@ namespace VehicleController.Data
             {
                 ClassName = name;
             }
-            Type = type;
             Probability = probability;
-        }
-        
-        public static ProbabilityPackEntry Default()
-        {
-            return new ProbabilityPackEntry();
         }
     }
     
@@ -59,6 +61,7 @@ namespace VehicleController.Data
         {
             Name = name;
             Version = version;
+            Entries = new List<ProbabilityPackEntry>();
         }
 
         public static ProbabilityPack Example()
@@ -83,6 +86,7 @@ namespace VehicleController.Data
                 "probability", name + ".json");
             if (!File.Exists(path))
             {
+                return new ProbabilityPack("Missing");
                 throw new FileNotFoundException($"Could not load probability pack {path}, because the file doesn't exist");
             }
             var json = File.ReadAllText(path);
@@ -127,27 +131,55 @@ namespace VehicleController.Data
             Entries.Add(prefabName, new ProbabilityPackEntry(prefabName) { Probability = probability });*/
             return true;
         }
-        
-        public ProbabilityPackEntry GetEntry(string prefabName)
+
+        public bool TryGetEntry(string name, out ProbabilityPackEntry? entry)
         {
-            var entry = Entries.Find(e => e.PrefabName == prefabName || e.ClassName == prefabName);
-            return entry;
-        }
-        
-        public int GetProbability(string prefabName)
-        {
-            return GetEntry(prefabName).Probability;
+            // If prefab override, return it
+            if (TryGetPrefabEntry(name, out entry))
+            {
+                return true;
+            }
+            // Check for class value
+            List<string> classes = VehicleClass.GetClassesForPrefab(name);
+            if (classes.Count > 0)
+            {
+                // If there are multiple classes, return the first one
+                foreach (var className in classes)
+                {
+                    entry = Entries.Find(e => e.ClassName == className);
+                    if (entry != null)
+                        return true;
+                }
+            }
+            return false;
         }
 
-        public static ProbabilityPack Default()
+        public bool TryGetPrefabEntry(string prefabName, out ProbabilityPackEntry? entry)
         {
-            return new ProbabilityPack("Default")
+            entry = Entries.Find(e => e.PrefabName == prefabName);
+            if (entry != null)
+                return true;
+            return false;
+        }
+        
+        public bool TryGetClassEntry(string className, out ProbabilityPackEntry? entry)
+        {
+            entry = Entries.Find(e => e.ClassName == className);
+            if (entry != null)
+                return true;
+            return false;
+        }
+        
+        public bool TryGetProbability(string prefabName, out int probability)
+        {
+            probability = 0;
+            if (TryGetEntry(prefabName, out var entry))
             {
-                Entries = new List<ProbabilityPackEntry>
-                {
-                    { ProbabilityPackEntry.Default() }
-                }
-            };
+                probability = entry.Probability;
+                return true;
+            }
+
+            return false;
         }
 
         public static IEnumerable<string> GetPackNames()

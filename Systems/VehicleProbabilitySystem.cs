@@ -96,10 +96,61 @@ namespace VehicleController.Systems
         
         public void LoadProbabilityPack(ProbabilityPack pack)
         {
+            Logger.Info("Loading Probability Pack: " + pack.Name);
             if (!Enabled)
                 return;
             _currentProbabilityPack = pack;
+            UpdateSliders();
             UpdateProbabilities();
+        }
+
+        private void UpdateSliders()
+        {
+            if (_currentProbabilityPack.TryGetClassEntry("Motorbike", out var motorbikeEntry))
+            {
+                Setting.Instance.MotorbikeProbability = motorbikeEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("Scooter", out var scooterEntry))
+            {
+                Setting.Instance.ScooterProbability = scooterEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("City Car", out var cityCarEntry))
+            {
+                Setting.Instance.CityCarProbability = cityCarEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("Hatchback", out var hatchbackEntry))
+            {
+                Setting.Instance.HatchbackProbability = hatchbackEntry.Probability;
+            }   
+            if (_currentProbabilityPack.TryGetClassEntry("Minivan", out var minivanEntry))
+            {
+                Setting.Instance.MinivanProbability = minivanEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("Sedan", out var sedanEntry))
+            {
+                Setting.Instance.SedanProbability = sedanEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("Sports Car", out var sportsCarEntry))
+            {
+                Setting.Instance.SportsCarProbability = sportsCarEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("Pickup", out var pickupEntry))
+            {
+                Setting.Instance.PickupProbability = pickupEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("SUV", out var suvEntry))
+            {
+                Setting.Instance.SUVProbability = suvEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("Muscle Car", out var muscleCarEntry))
+            {
+                Setting.Instance.MuscleCarProbability = muscleCarEntry.Probability;
+            }
+            if (_currentProbabilityPack.TryGetClassEntry("Van", out var vanEntry))
+            {
+                Setting.Instance.VanProbability = vanEntry.Probability;
+            }
+            Logger.Info("Updated sliders with current probability pack values.");
         }
         
         private bool UpdateProbabilities()
@@ -121,9 +172,11 @@ namespace VehicleController.Systems
                             return false;
                         }
 
-                        var probability = _currentProbabilityPack.GetProbability(prefabName);
-                        personalCarData.m_Probability = probability;
-                        EntityManager.SetComponentData(entity, carData);
+                        if (_currentProbabilityPack.TryGetProbability(prefabName, out var probability))
+                        {
+                            personalCarData.m_Probability = probability;
+                            EntityManager.SetComponentData(entity, carData);
+                        }
                     }
                     else
                     {
@@ -149,11 +202,89 @@ namespace VehicleController.Systems
         {
 
         }
+        
+        public void ApplySettings()
+        {
+            throw new NotImplementedException();
+        }
 
         public static void SaveValueChanges()
         {
             Instance.UpdateProbabilities();
         }
+        
+//         public void DeleteInstances()
+//         {
+//             Logger.Info("Deleting instances");
+//             double motorcycleDeletionChance = 1 - (Setting.Instance.MotorbikeProbability / 100.0);
+//             double scooterDeletionChance = 1 - (Setting.Instance.ScooterProbability / 100.0);
+//             Logger.Info($"Motorcycle deletion chance: {motorcycleDeletionChance}, Scooter deletion chance: {scooterDeletionChance}");
+//             List<Entity> motorbikes = new List<Entity>();
+//             List<Entity> scooters = new List<Entity>();
+//
+//             var entities = instanceQuery.ToEntityArray(Allocator.Temp);
+//
+//             /*foreach (var entity in entities)
+//             {
+//                 string prefabName = prefabSystem.GetPrefabName(entity);
+//                 if (prefabName.Contains("Motorbike"))
+//                 {
+//                     motorbikes.Add(entity);
+//                 }
+//
+//                 if (prefabName.Contains("Scooter"))
+//                 {
+//                     motorbikes.Add(entity);
+//                 }
+//             }*/
+//
+//
+//
+//             foreach (var entity in entities)
+//             {
+//                 if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
+//                 {
+//                     if (prefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefab))
+//                     {
+//                         if (prefab is VehiclePrefab vehiclePrefab)
+//                         {
+//                             if (vehiclePrefab.name.Contains("Motorbike"))
+//                             {
+//                                 motorbikes.Add(entity);
+//                             }
+//                             if (vehiclePrefab.name.Contains("Scooter"))
+//                             {
+//                                 scooters.Add(entity);
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//
+//             Logger.Info($"Found {motorbikes.Count} motorcycles and {scooters.Count} scooters");
+//             int motorcyclesDeleted = 0, scootersDeleted = 0;
+//
+//             // Delete percentage of motorcycles and scooters
+//             foreach (var entity in motorbikes)
+//             {
+//                 if (Random.value < motorcycleDeletionChance)
+//                 {
+//                     EntityManager.AddComponent<Deleted>(entity);
+//                     motorcyclesDeleted++;
+//                 }
+//             }
+//
+//             foreach (var entity in scooters)
+//             {
+//                 if (Random.value < scooterDeletionChance)
+//                 {
+//                     EntityManager.AddComponent<Deleted>(entity);
+//                     scootersDeleted++;
+//                 }
+//             }
+//
+//             Logger.Info($"Deleted {motorcyclesDeleted} motorcycles and {scootersDeleted} scooters");
+//         }
     }
 
 }

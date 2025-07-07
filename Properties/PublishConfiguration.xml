@@ -18,7 +18,8 @@ This mod also offers more realistic values for vehicle behaviour. In the base ga
 - Reduced Acceleration and Braking Power for Trains for more realistic behaviour
 
 ## Planned Features
-- Adjustable settings for Car and Train Behaviour (acceleration, braking, max speed)
+- Adjustable settings for Car and Train Properties (acceleration, braking, max speed)
+- Behaviour Packs for properties (Realistic, Vanilla, Vanilla Rebalance)
 - Options for service buildings to select vehicles that can be spawned by that building
 	</LongDescription>
 	<!--Thumbnail-->

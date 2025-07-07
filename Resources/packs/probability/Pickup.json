@@ -1,51 +1,51 @@
 {
   "Version": 1,
-  "Name": "Vanilla",
-  "Description": "Contains all Vanilla Classes with default values",
+  "Name": "Pickup",
+  "Description": "Only Pickups",
   "Entries": [
     {
       "ClassName": "Motorbike",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Scooter",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "City Car",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Hatchback",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Minivan",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Sedan",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Sports Car",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Pickup",
-      "Probability": 100,
+      "Probability": 200,
     },
     {
       "ClassName": "SUV",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Muscle Car",
-      "Probability": 100,
+      "Probability": 5,
     },
     {
       "ClassName": "Van",
-      "Probability": 100,
+      "Probability": 5,
     }
   ]
 }

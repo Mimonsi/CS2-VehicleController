@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace VehicleController.Data
@@ -207,6 +208,19 @@ namespace VehicleController.Data
         {
             // Replace spaces with empty string
             return VehicleClasses.Keys.Select(name => (name.Replace(" ", ""), name)).ToArray();
+        }
+
+        public static List<string> GetClassesForPrefab(string name)
+        {
+            var classes = new List<string>();
+            foreach (var vehicleClass in VehicleClasses.Values)
+            {
+                if (vehicleClass.Prefabs.Contains(name))
+                {
+                    classes.Add(vehicleClass.Name);
+                }
+            }
+            return classes;
         }
     }
 }

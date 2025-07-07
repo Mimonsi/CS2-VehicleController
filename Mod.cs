@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
@@ -27,6 +28,9 @@ namespace VehicleController
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
             
+            CopyEmbeddedPacks("probability");
+            CopyEmbeddedPacks("property");
+            updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
             //updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
 
@@ -41,11 +45,33 @@ namespace VehicleController
             AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
         }
+        
+        private void CopyEmbeddedPacks(string subPath)
+        {
+            var modPath = Path.GetDirectoryName(path);
+            var srcPath = Path.Combine(modPath, "packs", subPath);
+            var destPath = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs", subPath);
+            if (!Directory.Exists(destPath))
+                Directory.CreateDirectory(destPath);
+            foreach(var file in Directory.GetFiles(srcPath))
+            {
+                var destFile = Path.Combine(destPath, Path.GetFileName(file));
+                if (!File.Exists(destFile))
+                    File.Copy(file, destFile);
+            }
+        }
 
         public void OnDispose()
         {
-            log.Info(nameof(OnDispose));
-            m_Setting.UnregisterInOptionsUI();
+            try
+            {
+                log.Info(nameof(OnDispose));
+                m_Setting.UnregisterInOptionsUI();
+            }
+            catch (Exception e)
+            {
+                log.Error($"Error during {nameof(OnDispose)}: {e.Message}");
+            }
         }
     }
 }

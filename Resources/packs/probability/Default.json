@@ -1,15 +1,15 @@
 {
   "Version": 1,
-  "Name": "Vanilla",
-  "Description": "Contains all Vanilla Classes with default values",
+  "Name": "Default",
+  "Description": "Default values with reduced motorcycles and scooters",
   "Entries": [
     {
       "ClassName": "Motorbike",
-      "Probability": 100,
+      "Probability": 25,
     },
     {
       "ClassName": "Scooter",
-      "Probability": 100,
+      "Probability": 50,
     },
     {
       "ClassName": "City Car",
