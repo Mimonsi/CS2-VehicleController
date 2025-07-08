@@ -1,7 +1,7 @@
 import { useLocalization    } from "cs2/l10n";
 
 import { ModuleResolver     } from "moduleResolver";
-import   styles               from "resourceIconLabel.module.scss";
+import   styles               from "vehicleLabel.module.scss";
 
 // Props for ResourceIconLabel.
 interface VehicleLabelProps

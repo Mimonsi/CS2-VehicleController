@@ -40,13 +40,14 @@ export const VehicleSelectorComponent = (componentList: any): any =>
     interface ChangeVehicleSection extends SelectedInfoSectionBase
         {
             serviceType:          ServiceVehicleType,
-            vehicleTypes:         VehiclePrefab[]
+            availableVehicles:         VehiclePrefab[]
         }
 
     // Add ChangeVehicleSection to the component list.
     // Make sure section name is unique by including the mod id.
-    componentList[mod.id + ".ChangeVehicleSection"] = (props: ChangeVehicleSection) =>
+    componentList["VehicleController.Systems.ChangeVehicleSection"] = (props: ChangeVehicleSection) =>
     {
+        console.log("Registering component with key: ", mod.id + ".Systems.ChangeVehicleSection");
         // Get the mod's translated text for the section heading and button.
         const { translate } = useLocalization();
         const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Change Vehicles";
@@ -56,7 +57,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         let headingSuffixLeft:  string | null = null;
         let headingSuffixRight: string | null = null;
         // Display service vehicle type
-        headingSuffixLeft = props.serviceType.toString();
+        headingSuffixLeft = props.serviceType ? props.serviceType.toString() : "None";
         
         const headingLeft:  string = headingSuffixLeft  ? translate("SelectedInfoPanel.COMPANY_" + headingSuffixLeft ) || headingSuffixLeft  : "";
         const headingRight: string = headingSuffixRight ? translate("SelectedInfoPanel.COMPANY_" + headingSuffixRight) || headingSuffixRight : "";
@@ -96,7 +97,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                 />
                 <ModuleResolver.instance.InfoRow
                     className={styles.dropdownRow}
-                    left={<VehicleSelector vehicleTypes={props.vehicleTypes} />}
+                    left={<VehicleSelector vehicleTypes={props.availableVehicles} />}
                     disableFocus={true}
                     subRow={true}
                 />

@@ -2,7 +2,7 @@
 import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
 
 import { VehiclePrefab                    } from "./vehicleSelectorComponent";
-import   styles                                   from "companySelector.module.scss";
+import   styles                                   from "vehicleSelector.module.scss";
 import   mod                                      from "../mod.json";
 import { ModuleResolver                         } from "moduleResolver";
 import { VehicleLabel                      } from "./vehicleLabel";

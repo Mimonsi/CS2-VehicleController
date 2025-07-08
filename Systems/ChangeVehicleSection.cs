@@ -9,7 +9,7 @@ namespace VehicleController.Systems
     public partial class ChangeVehicleSection : InfoSectionBase
     {
         private List<string> availableVehicles;
-        private ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(CreatedServiceVehicleModifierSystem)}")
+        private ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(ChangeVehicleSection)}")
             .SetShowsErrorsInUI(false);
 
         protected override void OnCreate()
@@ -52,7 +52,9 @@ namespace VehicleController.Systems
         public override void OnWriteProperties(IJsonWriter writer)
         {
             writer.PropertyName("availableVehicles");
-            writer.Write(availableVehicles);
+            writer.Write("NA_PoliceVehicle01");
+            writer.PropertyName("serviceType");
+            writer.Write("Anything");
         }
 
         protected override string group => nameof(ChangeVehicleSection);

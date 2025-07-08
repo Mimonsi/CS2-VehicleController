@@ -96,9 +96,9 @@
         <None Remove="Locale\*.json" />
     </ItemGroup>
 
-    <!--<Target Name="BuildUI" AfterTargets="AfterBuild">
+    <Target Name="BuildUI" AfterTargets="AfterBuild">
         <Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/UI" />
-    </Target>-->
+    </Target>
 
     <Target Name="GetAdditionalFiles" AfterTargets="AfterBuild">
         <ItemGroup>
