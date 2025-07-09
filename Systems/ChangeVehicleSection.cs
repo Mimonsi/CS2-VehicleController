@@ -52,7 +52,12 @@ namespace VehicleController.Systems
         public override void OnWriteProperties(IJsonWriter writer)
         {
             writer.PropertyName("availableVehicles");
-            writer.Write("NA_PoliceVehicle01");
+            writer.ArrayBegin(4);
+            new SelectableVehiclePrefab(){ prefabName = "NA_PoliceVehicle01" }.Write(writer);
+            new SelectableVehiclePrefab(){ prefabName = "NA_PoliceVehicle02" }.Write(writer);
+            new SelectableVehiclePrefab(){ prefabName = "EU_PoliceVehicle01" }.Write(writer);
+            new SelectableVehiclePrefab(){ prefabName = "EU_PoliceVehicle02" }.Write(writer);
+            writer.ArrayEnd();
             writer.PropertyName("serviceType");
             writer.Write("Anything");
         }

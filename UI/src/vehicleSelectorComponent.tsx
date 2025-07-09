@@ -9,7 +9,7 @@ import { ModuleResolver             } from "moduleResolver";
 import   mod                          from "../mod.json";
 
 // Resource data for a company.
-export type VehiclePrefab =
+export type SelectableVehiclePrefab =
     {
         prefabName: string,
     }
@@ -39,8 +39,8 @@ export const VehicleSelectorComponent = (componentList: any): any =>
     // Adapted from bindings.d.ts for the game's sections.
     interface ChangeVehicleSection extends SelectedInfoSectionBase
         {
-            serviceType:          ServiceVehicleType,
-            availableVehicles:         VehiclePrefab[]
+            serviceType: ServiceVehicleType,
+            availableVehicles: SelectableVehiclePrefab[]
         }
 
     // Add ChangeVehicleSection to the component list.
