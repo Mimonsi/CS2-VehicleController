@@ -27,12 +27,10 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         PoliceCar,
         GarbageTruck,
         Hearse,
-        MaintenanceVehicle,
         PostVan,
+        TransportVehicle, // Taxi, Bus
         RoadMaintenanceVehicle,
-        Taxi,
-        ParkMaintenanceVehicle,
-        WorkVehicle
+        ParkMaintenanceVehicle
     }
 
     // Define props for change company section.
@@ -65,7 +63,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         // Get the mod's translated formatted tooltip text based on property type.
         //const tooltipText: string = translate(mod.id + ".SectionTooltip" + PropertyType[props.propertyType]) ||
         //    "Select a company from the dropdown and click Change Now.";
-        const tooltipText = "Hello tooltip text";
+        const tooltipText = "Select all vehicles that this building is allowed to use";
         const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
         const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
 

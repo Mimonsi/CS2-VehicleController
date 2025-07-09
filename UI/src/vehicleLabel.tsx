@@ -6,7 +6,7 @@ import   styles               from "vehicleLabel.module.scss";
 // Props for ResourceIconLabel.
 interface VehicleLabelProps
 {
-    prefabName:               string,
+    prefabName: string,
 }
 
 // Custom component to combine the icon and label for a resource
@@ -21,7 +21,8 @@ export const VehicleLabel = ({ prefabName }: VehicleLabelProps) =>
     // The game uses "+" for the concatenator character for all languages.
     const { translate } = useLocalization();
     //const resourceText: string = (translate("Resources.TITLE[" + resource + "]") || resource);
-    const vehicleText: string = (translate("Assets.NAME[" + prefabName + "]") || prefabName);
+    const vehicleText: string = prefabName;
+    //const vehicleText: string = (translate("Assets.NAME[" + prefabName + "]") || prefabName);
 
     // Return the resource icon and label.
     return (
