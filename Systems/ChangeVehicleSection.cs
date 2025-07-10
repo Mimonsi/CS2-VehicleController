@@ -13,6 +13,7 @@ using Game.UI.InGame;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using VehicleController.Data;
 
 namespace VehicleController.Systems
 {
@@ -39,6 +40,7 @@ namespace VehicleController.Systems
         private EndFrameBarrier m_Barrier;
         private PrefabSystem m_PrefabSystem;
         private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
+        private Dictionary<Entity, VehiclePrefabPool> _vehiclePrefabPools = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
         
         // <inheritdoc/>
@@ -86,14 +88,6 @@ namespace VehicleController.Systems
             });
             
             RequireForUpdate(m_CreatedServiceVehicleQuery);
-            
-            /*availableVehicles = new List<string>()
-            {
-                "NA_PoliceVehicle01",
-                "NA_PoliceVehicle02",
-                "EU_PoliceVehicle01",
-                "EU_PoliceVehicle02",
-            };*/
 
             //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
             Logger.Info("ChangeVehicleSection created.");
@@ -138,73 +132,54 @@ namespace VehicleController.Systems
         /// <summary>
         /// Collect all vehicle prefabs and populate the dictionary. Each service now has a list of all available vehicle prefabs
         /// </summary>
-        private bool PopulateAvailableVehicles()
+        private void PopulateAvailableVehicles()
         {
             _availableVehiclePrefabs.Clear();
+            
             var policeCars = SystemAPI.QueryBuilder().WithAll<PoliceCarData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.PoliceCar, new List<SelectableVehiclePrefab>());
-            if (policeCars.Length == 0)
-                return false;
-            foreach (var policeCar in policeCars)
+            _availableVehiclePrefabs.Add(ServiceVehicleType.PoliceCar, GetPrefabsForType(ServiceVehicleType.PoliceCar, policeCars));
+            //Logger.Info("Available Police Vehicles: " + _availableVehiclePrefabs[ServiceVehicleType.PoliceCar].Count);
+            
+            var ambulances = SystemAPI.QueryBuilder().WithAll<AmbulanceData>().Build().ToEntityArray(Allocator.Temp);
+            _availableVehiclePrefabs.Add(ServiceVehicleType.Ambulance, GetPrefabsForType(ServiceVehicleType.Ambulance, ambulances));
+            
+            var fireEngines = SystemAPI.QueryBuilder().WithAll<FireEngineData>().Build().ToEntityArray(Allocator.Temp);
+            _availableVehiclePrefabs.Add(ServiceVehicleType.FireEngine, GetPrefabsForType(ServiceVehicleType.FireEngine, fireEngines));
+            
+            var garbageTrucks = SystemAPI.QueryBuilder().WithAll<GarbageTruckData>().Build().ToEntityArray(Allocator.Temp);
+            _availableVehiclePrefabs.Add(ServiceVehicleType.GarbageTruck, GetPrefabsForType(ServiceVehicleType.GarbageTruck, garbageTrucks));
+            
+            var hearses = SystemAPI.QueryBuilder().WithAll<HearseData>().Build().ToEntityArray(Allocator.Temp);
+            _availableVehiclePrefabs.Add(ServiceVehicleType.Hearse, GetPrefabsForType(ServiceVehicleType.Hearse, hearses));
+            
+            var postVans = SystemAPI.QueryBuilder().WithAll<PostVanData>().Build().ToEntityArray(Allocator.Temp);
+            _availableVehiclePrefabs.Add(ServiceVehicleType.PostVan, GetPrefabsForType(ServiceVehicleType.PostVan, postVans));
+            
+            // TODO: Add support for road/park maintenance vehicles
+            // TODO: Add support for transport vehicles
+            
+        }
+
+        private List<SelectableVehiclePrefab> GetPrefabsForType(ServiceVehicleType type, NativeArray<Entity> entities)
+        {
+            List<SelectableVehiclePrefab> vehiclePrefabs = new List<SelectableVehiclePrefab>();
+            foreach (var entity in entities)
             {
-                //Logger.Info("Checking Police Car: " + policeCar);
-                if (m_PrefabSystem.TryGetPrefab(policeCar, out PrefabBase prefab))
+                //Logger.Info("Checking Car: " + entity);
+                if (m_PrefabSystem.TryGetPrefab(entity, out PrefabBase prefab))
                 {
                     //Logger.Info("Found Prefab: " + prefab.name);
                     if (prefab is VehiclePrefab vehiclePrefab)
                     {
                         //Logger.Info("Found Police Vehicle Prefab: " + vehiclePrefab.name);
-                        _availableVehiclePrefabs[ServiceVehicleType.PoliceCar].Add(new SelectableVehiclePrefab()
+                        vehiclePrefabs.Add(new SelectableVehiclePrefab()
                         {
                             prefabName = vehiclePrefab.name
                         });
                     }
                 }
             }
-            
-            if (_availableVehiclePrefabs[ServiceVehicleType.PoliceCar].Count == 0)
-            {
-                //Logger.Info("No police vehicles found.");
-                return false;
-            }
-            Logger.Info("Available Police Vehicles: " + _availableVehiclePrefabs[ServiceVehicleType.PoliceCar].Count);
-            return true;
-            
-            //var ambulances = SystemAPI.QueryBuilder().WithAll<AmbulanceData>() .WithNone<Deleted>() .Build().ToEntityArray(Allocator.Temp);
-            
-            /*_availableVehiclePrefabs.Add(ServiceVehicleType.Ambulance, new List<SelectableVehiclePrefab>());
-            foreach (var ambulance in ambulances)
-            {
-                if (EntityManager.TryGetComponent(ambulance, out PrefabRef prefabRef) &&
-                    m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefab))
-                {
-                    if (prefab is VehiclePrefab vehiclePrefab)
-                    {
-                        _availableVehiclePrefabs[ServiceVehicleType.Ambulance].Add(new SelectableVehiclePrefab()
-                        {
-                            prefabName = vehiclePrefab.name
-                        });
-                    }
-                }
-            }
-                
-            
-            var fireEngines = SystemAPI.QueryBuilder().WithAll<FireEngineData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.FireEngine, new List<SelectableVehiclePrefab>());
-            foreach (var fireEngine in fireEngines)
-            {
-                if (EntityManager.TryGetComponent(fireEngine, out PrefabRef prefabRef) &&
-                    m_PrefabSystem.TryGetPrefab(prefabRef.m_Prefab, out PrefabBase prefab))
-                {
-                    if (prefab is VehiclePrefab vehiclePrefab)
-                    {
-                        _availableVehiclePrefabs[ServiceVehicleType.FireEngine].Add(new SelectableVehiclePrefab()
-                        {
-                            prefabName = vehiclePrefab.name
-                        });
-                    }
-                }
-            }*/
+            return vehiclePrefabs;
         }
 
         private void SelectedEntityChanged(Entity entity, Entity prefab, float3 position)
