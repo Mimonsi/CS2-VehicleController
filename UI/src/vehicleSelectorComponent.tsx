@@ -48,14 +48,14 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         console.log("Registering component with key: ", mod.id + ".Systems.ChangeVehicleSection");
         // Get the mod's translated text for the section heading and button.
         const { translate } = useLocalization();
-        const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Change Vehicles";
-        const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Change Now";
+        const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Assigned Vehicles Prefabs";
+        const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Apply Changes";
 
         // Get the game's translated text for left and right headings based on property type.
         let headingSuffixLeft:  string | null = null;
         let headingSuffixRight: string | null = null;
         // Display service vehicle type
-        headingSuffixLeft = props.serviceType ? props.serviceType.toString() : "None";
+        headingSuffixLeft = props.serviceType ? props.serviceType.toString() : "";
         
         const headingLeft:  string = headingSuffixLeft  ? translate("SelectedInfoPanel.COMPANY_" + headingSuffixLeft ) || headingSuffixLeft  : "";
         const headingRight: string = headingSuffixRight ? translate("SelectedInfoPanel.COMPANY_" + headingSuffixRight) || headingSuffixRight : "";
@@ -63,7 +63,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         // Get the mod's translated formatted tooltip text based on property type.
         //const tooltipText: string = translate(mod.id + ".SectionTooltip" + PropertyType[props.propertyType]) ||
         //    "Select a company from the dropdown and click Change Now.";
-        const tooltipText = "Select all vehicles that this building is allowed to use";
+        const tooltipText = "Select all #vehicle #models that this building is allowed to use. When multiple *vehicles* are _selected_, a random vehicle from the selection will be chosen.";
         const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
         const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
 

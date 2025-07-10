@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Colossal.Entities;
 using Colossal.Logging;
 using Colossal.UI.Binding;
@@ -38,6 +39,7 @@ namespace VehicleController.Systems
         private EndFrameBarrier m_Barrier;
         private PrefabSystem m_PrefabSystem;
         private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
+        private SelectedInfoUISystem _selectedInfoUISystem;
         
         // <inheritdoc/>
         protected override void OnCreate()
@@ -45,8 +47,14 @@ namespace VehicleController.Systems
             base.OnCreate();
             m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            _selectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
+            _selectedInfoUISystem.eventSelectionChanged =
+                (Action<Entity, Entity, float3>)Delegate.Combine(
+                    _selectedInfoUISystem.eventSelectionChanged,
+                    (Action<Entity, Entity, float3>)SelectedEntityChanged);
             
-            m_InfoUISystem.AddMiddleSection(this);
+            //m_InfoUISystem.AddMiddleSection(this); //
+            AddMiddleSectionCustom();
             Enabled = true;
             
             m_CreatedServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
@@ -77,12 +85,6 @@ namespace VehicleController.Systems
                 },
             });
             
-            
-            SelectedInfoUISystem selectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
-            selectedInfoUISystem.eventSelectionChanged =
-                (Action<Entity, Entity, float3>)Delegate.Combine(
-                    selectedInfoUISystem.eventSelectionChanged,
-                    (Action<Entity, Entity, float3>)SelectedEntityChanged);
             RequireForUpdate(m_CreatedServiceVehicleQuery);
             
             /*availableVehicles = new List<string>()
@@ -95,6 +97,42 @@ namespace VehicleController.Systems
 
             //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
             Logger.Info("ChangeVehicleSection created.");
+        }
+
+        /// <summary>
+        /// Modified version of AddMiddleSection to customize the exact position
+        /// </summary>
+        private void AddMiddleSectionCustom()
+        {
+            // Use reflection to add this section to the list of middle sections from SelectedInfoUISystem.
+            // By adding right after the game's CompanySection, this section will be displayed right after CompanySection.
+            try
+            {
+                FieldInfo fieldInfoMiddleSections = typeof(SelectedInfoUISystem).GetField("m_MiddleSections",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                List<ISectionSource> middleSections =
+                    (List<ISectionSource>)fieldInfoMiddleSections.GetValue(_selectedInfoUISystem);
+                bool found = false;
+                for (int i = 0; i < middleSections.Count; i++)
+                {
+                    if (middleSections[i] is VehiclesSection)
+                    {
+                        middleSections.Insert(i, this); // Put this section BEFORE the VehicleSection. i + 1 would put it after.
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    Mod.log.Error(
+                        $"Change Company unable to find CompanySection in middle sections of SelectedInfoUISystem.");
+                }
+            }
+            catch (Exception ex)
+            {
+                m_InfoUISystem.AddTopSection(this);
+            }
         }
 
         /// <summary>
@@ -260,8 +298,8 @@ namespace VehicleController.Systems
                 prefab.Write(writer);
             }
             writer.ArrayEnd();
-            writer.PropertyName("serviceType");
-            writer.Write("Anything");
+            //writer.PropertyName("serviceType");
+            //writer.Write("");
         }
 
         protected override string group => nameof(ChangeVehicleSection);
