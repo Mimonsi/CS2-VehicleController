@@ -43,6 +43,8 @@ export class ModuleResolver
 
     // Provide access to SCSS modules.
     public get CompanySectionClasses(): Theme | any                                         { return this._companySectionClasses    ?? (this._companySectionClasses = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/building-sections/company-section/company-section.module.scss", "classes")); }
-    public get DropdownClasses():       Theme | any                                         { return this._dropdownClasses          ?? (this._dropdownClasses       = getModule("game-ui/menu/themes/dropdown.module.scss",                                                                                         "classes")); }
+    // Wrong Dropdown Classes
+    // public get DropdownClasses():       Theme | any                                         { return this._dropdownClasses          ?? (this._dropdownClasses       = getModule("game-ui/menu/themes/dropdown.module.scss",                                                                                         "classes")); }
+    public get DropdownClasses():       Theme | any                                         { return this._dropdownClasses          ?? (this._dropdownClasses       = getModule("game-ui/game/themes/game-dropdown.module.scss",                                                                                         "classes")); }
     public get InfoRowClasses():        Theme | any                                         { return this._infoRowClasses           ?? (this._infoRowClasses        = getModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss",                                      "classes")); }
 }

@@ -4,7 +4,6 @@ import { ModuleResolver     } from "moduleResolver";
 import React from "react";
 import {getModule} from "cs2/modding";
 const styles = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
-
 // Props for ResourceIconLabel.
 interface VehicleLabelProps
 {

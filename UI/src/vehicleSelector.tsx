@@ -6,6 +6,8 @@ import styles from "vehicleSelector.module.scss";
 import mod from "../mod.json";
 import { ModuleResolver } from "moduleResolver";
 import { VehicleLabel } from "./vehicleLabel";
+import {getModule} from "cs2/modding";
+const dropdownStyle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
 
 // Binding für ausgewählten Fahrzeugindex
 const bindingSelectedCompanyIndex = bindValue<number>(mod.id, "SelectedCompanyIndex", 0);
@@ -16,7 +18,7 @@ type VehicleSelectorProps = {
 }
 
 export const VehicleSelector = (props: VehicleSelectorProps) => {
-    // Aktuell ausgewählter Index aus Binding
+
     const selectedCompanyIndex: number = useValue(bindingSelectedCompanyIndex);
 
     // Empty array as fallback if vehicleTypes is not provided
@@ -67,7 +69,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
       content={companyDropdownItems}
       focusKey={ModuleResolver.instance.FOCUS_DISABLED}
     >
-        <DropdownToggle>
+        <DropdownToggle className={styles.zWC}>
             {selectedCompanyDropdownItemContent}
         </DropdownToggle>
       

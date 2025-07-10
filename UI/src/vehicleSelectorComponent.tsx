@@ -75,7 +75,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
             trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
             trigger(mod.id, "ChangeNowClicked");
         }
-
+        
         // Construct the change company section.
         // Info row 1 has section heading and Change Now button.
         // Info row 2 has left and right headings.
@@ -91,15 +91,14 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                 <ModuleResolver.instance.InfoRow
                     className={styles.headingRow}
                     left={headingLeft}
+                    uppercase={true}
                     right={headingRight}
                     disableFocus={true}
                     subRow={true}
                 />
                 <ModuleResolver.instance.InfoRow
-                    className={dropdownToggleStyle.dropdownToggle}
                     left={<VehicleSelector vehicleTypes={props.availableVehicles}/>}
                     disableFocus={true}
-                    subRow={true}
                 />
             </ModuleResolver.instance.InfoSection>
         );
