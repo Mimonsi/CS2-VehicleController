@@ -63,7 +63,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         // Get the mod's translated formatted tooltip text based on property type.
         //const tooltipText: string = translate(mod.id + ".SectionTooltip" + PropertyType[props.propertyType]) ||
         //    "Select a company from the dropdown and click Change Now.";
-        const tooltipText = "Select all #vehicle #models that this building is allowed to use. When multiple *vehicles* are _selected_, a random vehicle from the selection will be chosen.";
+        const tooltipText = "Select all **vehicle models** that this building is allowed to use. When multiple vehicles are selected, a **random** vehicle from the selection will be chosen.";
         const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
         const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
 
