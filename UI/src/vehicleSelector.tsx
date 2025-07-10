@@ -36,11 +36,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
 
         // Construct dropdown item content.
         const dropdownItemContent = (
-          <div className={styles.companyDropdownRow}>
-              <div className={joinClasses(ModuleResolver.instance.InfoRowClasses.left, styles.companyDropdownItemLeft)}>
-                  <VehicleLabel prefabName={prefabName} />
-              </div>
-          </div>
+          <VehicleLabel prefabName={prefabName} />
         );
 
         return (
@@ -50,7 +46,6 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
             value=""
             closeOnSelect={true}
             selected={selected}
-            className={styles.companyDropdownItem}
             onChange={() => trigger(mod.id, "SelectedCompanyChanged", index)}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
           >
@@ -63,18 +58,19 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     const selectedCompanyDropdownItemContent = vehicleTypes[selectedCompanyIndex] ? (
       <VehicleLabel prefabName={vehicleTypes[selectedCompanyIndex].prefabName} />
     ) : (
-      <></>
+      <>Nothing here :/</>
     );
 
     return (
-      <Dropdown
-        theme={ModuleResolver.instance.DropdownClasses}
-        content={companyDropdownItems}
-        focusKey={ModuleResolver.instance.FOCUS_DISABLED}
-      >
-          <DropdownToggle>
-              {selectedCompanyDropdownItemContent}
-          </DropdownToggle>
-      </Dropdown>
+    <Dropdown
+      theme={ModuleResolver.instance.DropdownClasses}
+      content={companyDropdownItems}
+      focusKey={ModuleResolver.instance.FOCUS_DISABLED}
+    >
+        <DropdownToggle>
+            {selectedCompanyDropdownItemContent}
+        </DropdownToggle>
+      
+    </Dropdown>
     );
 };

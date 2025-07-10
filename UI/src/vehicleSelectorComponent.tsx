@@ -7,6 +7,9 @@ import   styles                       from "vehicleSelectorComponent.module.scss
 import { VehicleSelector            } from "./vehicleSelector";
 import { ModuleResolver             } from "moduleResolver";
 import   mod                          from "../mod.json";
+import {getModule} from "cs2/modding";
+const styleSelectVehicle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
+const dropdownToggleStyle = getModule("game-ui/game/themes/game-dropdown.module.scss", "classes");
 
 // Resource data for a company.
 export type SelectableVehiclePrefab =
@@ -45,7 +48,6 @@ export const VehicleSelectorComponent = (componentList: any): any =>
     // Make sure section name is unique by including the mod id.
     componentList["VehicleController.Systems.ChangeVehicleSection"] = (props: ChangeVehicleSection) =>
     {
-        console.log("Registering component with key: ", mod.id + ".Systems.ChangeVehicleSection");
         // Get the mod's translated text for the section heading and button.
         const { translate } = useLocalization();
         const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Assigned Vehicles Prefabs";
@@ -94,8 +96,8 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                     subRow={true}
                 />
                 <ModuleResolver.instance.InfoRow
-                    className={styles.dropdownRow}
-                    left={<VehicleSelector vehicleTypes={props.availableVehicles} />}
+                    className={dropdownToggleStyle.dropdownToggle}
+                    left={<VehicleSelector vehicleTypes={props.availableVehicles}/>}
                     disableFocus={true}
                     subRow={true}
                 />

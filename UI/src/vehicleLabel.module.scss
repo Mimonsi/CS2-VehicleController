@@ -8,3 +8,42 @@
 .resourceLabel {
     margin-top:         calc(0rem - 16rem * (var(--fontScale) - 1));
 }
+
+.dropdownRow {
+    display: flex;
+}
+
+.item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 24rem;
+    padding: 6rem;
+}
+
+.label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-left: 10rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.checkmark {
+    width: 100%;
+    height: 100%;
+    mask-image: var(--checkmark-url);
+    mask-size: 100% auto;
+    background-color:  var(--checkmarkColor) ;
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: 0.15s;
+    transition-delay: 0s;
+    transition-timing-function: cubic-bezier(0.32, 0, 0.67, 0);
+}
