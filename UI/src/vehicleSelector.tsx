@@ -30,8 +30,8 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     }
 
     // Create a dropdown item for each company and get content of the selected item.
-    const companyDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefabs, index) => {
-        const prefabName = vehiclePrefabs.prefabName;
+    const companyDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index) => {
+        const prefabName = vehiclePrefab.prefabName;
 
         // Check if this company info is for the selected company.
         const selected = index === selectedCompanyIndex;
@@ -43,12 +43,12 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
 
         return (
           <DropdownItem
-            key={index}
+            key={vehiclePrefab.prefabName}
             theme={ModuleResolver.instance.DropdownClasses}
             value=""
             closeOnSelect={true}
             selected={selected}
-            onChange={() => trigger(mod.id, "SelectedCompanyChanged", index)}
+            onChange={() => trigger(mod.id, "SelectedVehicleChanged", prefabName)}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
           >
               {dropdownItemContent}

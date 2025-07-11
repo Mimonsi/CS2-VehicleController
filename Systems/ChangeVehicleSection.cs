@@ -58,6 +58,10 @@ namespace VehicleController.Systems
             //m_InfoUISystem.AddMiddleSection(this); //
             AddMiddleSectionCustom();
             Enabled = true;
+
+            // UI -> C#
+            AddBinding(new TriggerBinding<string>("VehicleController", "SelectedVehicleChanged", SelectedVehicleChanged));
+            AddBinding(new TriggerBinding("VehicleController", "ChangeNowClicked", ChangeNowClicked));
             
             m_CreatedServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
             {
@@ -125,8 +129,31 @@ namespace VehicleController.Systems
             }
             catch (Exception ex)
             {
-                m_InfoUISystem.AddTopSection(this);
+                m_InfoUISystem.AddMiddleSection(this);
             }
+        }
+        
+        /// <summary>
+        /// Handle change to selected vehicle in the dropdown list.
+        /// </summary>
+        private void SelectedVehicleChanged(string prefabName)
+        {
+            // Save selected company index.
+            //_selectedCompanyIndex = selectedCompanyIndex;
+            Logger.Info("SelectedVehicleChanged: " + prefabName);
+            // Send selected company index back to the UI so the correct dropdown entry is highlighted.
+            //_bindingSelectedCompanyIndex.Update(_selectedCompanyIndex);
+        }
+        
+        /// <summary>
+        /// Handle click on the Change Now button.
+        /// </summary>
+        private void ChangeNowClicked()
+        {
+            Logger.Info("ChangeNow clicked");
+            // Send the change company data to the ChangeCompanySystem.
+            //Entity newCompanyPrefab = _sectionPropertyCompanyInfos[_selectedCompanyIndex].CompanyPrefab;
+            //_changeCompanySystem.ChangeCompany(newCompanyPrefab, selectedEntity, selectedPrefab, _sectionPropertyPropertyType);
         }
 
         /// <summary>

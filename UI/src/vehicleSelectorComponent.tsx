@@ -68,6 +68,12 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         const tooltipText = "Select all **vehicle models** that this building is allowed to use. When multiple vehicles are selected, a **random** vehicle from the selection will be chosen.";
         const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
         const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
+        
+        // Add dummy vehicle on first index
+        const modifiedVehicleList: SelectableVehiclePrefab[] = [
+            { prefabName: "Default Selection" },
+            ...props.availableVehicles.filter(v => v.prefabName !== "Default Selection") // avoid duplicates
+        ];
 
         // Handle click on Change Now button
         function onChangeNowClicked()
@@ -97,7 +103,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                     subRow={true}
                 />
                 <ModuleResolver.instance.InfoRow
-                    left={<VehicleSelector vehicleTypes={props.availableVehicles}/>}
+                    left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
                     disableFocus={true}
                 />
             </ModuleResolver.instance.InfoSection>
