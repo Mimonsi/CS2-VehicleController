@@ -34,7 +34,6 @@ namespace VehicleController
             updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
             updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
-            //updateSystem.UpdateAt<CreatedServiceVehicleModifierSystem>(SystemUpdatePhase.PreCulling);
             updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
             
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ChangeVehicleSection>();
