@@ -15,6 +15,7 @@ const dropdownToggleStyle = getModule("game-ui/game/themes/game-dropdown.module.
 export type SelectableVehiclePrefab =
     {
         prefabName: string,
+        selected?: boolean, // Optional property to indicate if this vehicle is selected
     }
 
 // The component for the change company section.
@@ -41,7 +42,8 @@ export const VehicleSelectorComponent = (componentList: any): any =>
     interface ChangeVehicleSection extends SelectedInfoSectionBase
         {
             serviceType: ServiceVehicleType,
-            availableVehicles: SelectableVehiclePrefab[]
+            availableVehicles: SelectableVehiclePrefab[],
+            vehiclesSelected: number
         }
 
     // Add ChangeVehicleSection to the component list.
@@ -69,10 +71,11 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
         const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
         
+        const dummyVehicle: SelectableVehiclePrefab = { prefabName: props.vehiclesSelected + " Vehicles Selected" };
         // Add dummy vehicle on first index
         const modifiedVehicleList: SelectableVehiclePrefab[] = [
-            { prefabName: "Default Selection" },
-            ...props.availableVehicles.filter(v => v.prefabName !== "Default Selection") // avoid duplicates
+            dummyVehicle,
+            ...props.availableVehicles
         ];
 
         // Handle click on Change Now button

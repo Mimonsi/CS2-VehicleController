@@ -13,11 +13,12 @@ namespace VehicleController.Data
     // ISerializable allows to make the component persistent in save files
     public struct AllowedVehiclePrefab : IBufferElementData, IEquatable<AllowedVehiclePrefab>, ISerializable
     {
-        public Entity Prefab;
+        //public Entity Prefab;
+        public FixedString128Bytes PrefabName;
 
         public bool Equals(AllowedVehiclePrefab other)
         {
-            return Prefab.Equals(other.Prefab);
+            return PrefabName.Equals(other.PrefabName);
         }
 
         public override bool Equals(object? obj)
@@ -27,19 +28,20 @@ namespace VehicleController.Data
 
         public override int GetHashCode()
         {
-            return Prefab.GetHashCode();
+            return PrefabName.GetHashCode();
         }
 
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
-            Mod.log.Info($"Serializing AllowedVehiclePrefab: {Prefab}");
-            writer.Write(Prefab);
+            Mod.log.Info($"Serializing AllowedVehiclePrefab: {PrefabName}");
+            writer.Write(PrefabName.ToString());
         }
 
         public void Deserialize<TReader>(TReader reader) where TReader : IReader
         {
-            reader.Read(out Prefab);
-            Mod.log.Info($"Deserialized AllowedVehiclePrefab: {Prefab}");
+            reader.Read(out string prefabNameStr);
+            PrefabName = new FixedString128Bytes(prefabNameStr);
+            Mod.log.Info($"Deserialized AllowedVehiclePrefab: {PrefabName}");
         }
     }
 }

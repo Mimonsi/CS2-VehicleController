@@ -16,6 +16,7 @@ interface VehicleLabelProps
 // so the game does not split the icon from the label when wrapping in the company selector.
 export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps) =>
 {
+    console.log("vehicleLabel", prefabName, selected);
     // Get game's icon for the vehicle.
     //const resourceIcon: string = "Media/Game/Resources/" + resource + ".svg";
     const vehicleIcon: string = image ? image : "Media/Game/Icons/Taxi.svg";
@@ -35,6 +36,16 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
     else
     {
         vehicleText = `[ ] ${vehicleText}`;
+    }
+    
+    // If prefabName contains "Vehicles selected", change the vehicleText to "Vehicles selected".
+    if (prefabName === "0 Vehicles Selected")
+    {
+        vehicleText = "No custom selection"
+    }
+    else if (prefabName.includes("Vehicles Selected"))
+    {
+        vehicleText = prefabName;
     }
 
 

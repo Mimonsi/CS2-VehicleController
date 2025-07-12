@@ -145,36 +145,20 @@ namespace VehicleController.Systems
             Logger.Info("SelectedVehicleChanged: " + prefabName);
             // Send selected company index back to the UI so the correct dropdown entry is highlighted.
             //_bindingSelectedCompanyIndex.Update(_selectedCompanyIndex);
-            if (m_PrefabSystem.TryGetPrefab(
-                    new PrefabID("CarPrefab", prefabName),
-                    out PrefabBase prefab))
-            {
-                if (m_PrefabSystem.TryGetEntity(prefab, out Entity entity))
-                {
-                    AddAllowedVehicle(entity);
-                }
-                
-            }
-            else
-            {
-                Logger.Error("Could not find prefab for vehicle: " + prefabName);
-            }
-            
-            
-            
+            AddAllowedVehicle(prefabName);
         }
 
-        private void AddAllowedVehicle(Entity entity)
+        private void AddAllowedVehicle(string prefabName)
         {
             if (!EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 EntityManager.AddBuffer<AllowedVehiclePrefab>(selectedEntity);
             }
             var buffer = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
-            var prefab = new AllowedVehiclePrefab() { Prefab = entity };
+            var prefab = new AllowedVehiclePrefab() { PrefabName = prefabName };
             if (CollectionUtils.TryAddUniqueValue(buffer, prefab))
             {
-                Logger.Info("Added allowed vehicle prefab: " + entity);
+                Logger.Info("Added allowed vehicle prefab: " + prefabName);
             }
             else
             { 
@@ -336,28 +320,27 @@ namespace VehicleController.Systems
             return null;
         }
 
-        private void markSelectedVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
+        private int markSelectedVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
         {
-            if (!EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
+            var count = 0;
+            if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 var allowedVehicles = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
                 foreach (var prefab in vehiclePrefabs)
                 {
                     foreach( var allowedVehicle in allowedVehicles)
                     {
-                        if (allowedVehicle.Prefab == GetEntityForName(prefab.prefabName))
+                        if (allowedVehicle.PrefabName == prefab.prefabName)
                         {
                             prefab.selected = true; // Mark the vehicle as selected
+                            count++;
                             Logger.Info("Marked vehicle as selected: " + prefab.prefabName);
-                        }
-                        else
-                        {
-                            prefab.selected = false; // Unmark the vehicle as not selected
                         }
                     }
                 }
             }
 
+            return count;
         }
         
         /// <inheritdoc/>
@@ -366,11 +349,12 @@ namespace VehicleController.Systems
             var types = GetServiceVehicleTypes();
             var prefabs = new List<SelectableVehiclePrefab>(); // Collect all available vehicle prefabs for the selected building
             PopulateAvailableVehicles();
+            int selectedVehicleCount = 0; // Count of selected vehicles
             foreach (var type in types)
             {
                 if (_availableVehiclePrefabs.TryGetValue(type, out var vehiclePrefabs))
                 {
-                    markSelectedVehicles(vehiclePrefabs);
+                    selectedVehicleCount += markSelectedVehicles(vehiclePrefabs);
                     prefabs.AddRange(vehiclePrefabs);
                 }
             }
@@ -383,6 +367,8 @@ namespace VehicleController.Systems
                 prefab.Write(writer);
             }
             writer.ArrayEnd();
+            writer.PropertyName("vehiclesSelected");
+            writer.Write(selectedVehicleCount);
             //writer.PropertyName("serviceType");
             //writer.Write("");
         }

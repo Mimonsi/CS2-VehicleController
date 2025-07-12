@@ -32,13 +32,14 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     // Create a dropdown item for each company and get content of the selected item.
     const companyDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index) => {
         const prefabName = vehiclePrefab.prefabName;
+        const selected = vehiclePrefab.selected;
 
         // Check if this company info is for the selected company.
-        const selected = index === selectedCompanyIndex;
+        //const selected = index === selectedCompanyIndex;
 
         // Construct dropdown item content.
         const dropdownItemContent = (
-          <VehicleLabel prefabName={prefabName} />
+          <VehicleLabel prefabName={prefabName} selected={selected}/>
         );
 
         return (
