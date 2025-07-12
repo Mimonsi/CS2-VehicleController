@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Reflection;
+using Colossal.Collections;
 using Colossal.Entities;
 using Colossal.Logging;
 using Colossal.UI.Binding;
@@ -40,7 +43,6 @@ namespace VehicleController.Systems
         private EndFrameBarrier m_Barrier;
         private PrefabSystem m_PrefabSystem;
         private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
-        private Dictionary<Entity, VehiclePrefabPool> _vehiclePrefabPools = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
         
         // <inheritdoc/>
@@ -143,6 +145,41 @@ namespace VehicleController.Systems
             Logger.Info("SelectedVehicleChanged: " + prefabName);
             // Send selected company index back to the UI so the correct dropdown entry is highlighted.
             //_bindingSelectedCompanyIndex.Update(_selectedCompanyIndex);
+            if (m_PrefabSystem.TryGetPrefab(
+                    new PrefabID("CarPrefab", prefabName),
+                    out PrefabBase prefab))
+            {
+                if (m_PrefabSystem.TryGetEntity(prefab, out Entity entity))
+                {
+                    AddAllowedVehicle(entity);
+                }
+                
+            }
+            else
+            {
+                Logger.Error("Could not find prefab for vehicle: " + prefabName);
+            }
+            
+            
+            
+        }
+
+        private void AddAllowedVehicle(Entity entity)
+        {
+            if (!EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
+            {
+                EntityManager.AddBuffer<AllowedVehiclePrefab>(selectedEntity);
+            }
+            var buffer = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
+            var prefab = new AllowedVehiclePrefab() { Prefab = entity };
+            if (CollectionUtils.TryAddUniqueValue(buffer, prefab))
+            {
+                Logger.Info("Added allowed vehicle prefab: " + entity);
+            }
+            else
+            { 
+                CollectionUtils.RemoveValue(buffer, prefab);
+            }
         }
         
         /// <summary>
@@ -277,7 +314,52 @@ namespace VehicleController.Systems
         {
             
         }
+        
+        private PrefabBase? GetPrefabBaseForName(string prefabName)
+        {
+            if (m_PrefabSystem.TryGetPrefab(
+                    new PrefabID("CarPrefab", prefabName),
+                    out PrefabBase prefab))
+            {
+                return prefab;
+            }
+            return null;
+        }
 
+        private Entity? GetEntityForName(string prefabName)
+        {
+            var prefab = GetPrefabBaseForName(prefabName);
+            if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity entity))
+            {
+                return entity;
+            }
+            return null;
+        }
+
+        private void markSelectedVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
+        {
+            if (!EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
+            {
+                var allowedVehicles = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
+                foreach (var prefab in vehiclePrefabs)
+                {
+                    foreach( var allowedVehicle in allowedVehicles)
+                    {
+                        if (allowedVehicle.Prefab == GetEntityForName(prefab.prefabName))
+                        {
+                            prefab.selected = true; // Mark the vehicle as selected
+                            Logger.Info("Marked vehicle as selected: " + prefab.prefabName);
+                        }
+                        else
+                        {
+                            prefab.selected = false; // Unmark the vehicle as not selected
+                        }
+                    }
+                }
+            }
+
+        }
+        
         /// <inheritdoc/>
         public override void OnWriteProperties(IJsonWriter writer)
         {
@@ -288,6 +370,7 @@ namespace VehicleController.Systems
             {
                 if (_availableVehiclePrefabs.TryGetValue(type, out var vehiclePrefabs))
                 {
+                    markSelectedVehicles(vehiclePrefabs);
                     prefabs.AddRange(vehiclePrefabs);
                 }
             }

@@ -20,14 +20,22 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
     //const resourceIcon: string = "Media/Game/Resources/" + resource + ".svg";
     const vehicleIcon: string = image ? image : "Media/Game/Icons/Taxi.svg";
     const checkmarkIcon: string = "Media/Glyphs/Checkmark.svg";
-    selected = true;
+    //selected = true;
 
     // Get the game's translated text for the resource.
     // The game uses "+" for the concatenator character for all languages.
     const { translate } = useLocalization();
     //const resourceText: string = (translate("Resources.TITLE[" + resource + "]") || resource);
     const translated = translate("Assets.NAME[" + prefabName + "]");
-    const vehicleText: string = (translated && translated !== "null") ? `${translated} (${prefabName})` : prefabName;
+    let vehicleText: string = (translated && translated !== "null") ? `${translated} (${prefabName})` : prefabName;
+    if (selected)
+    {
+        vehicleText = `[✓] ${vehicleText}`;
+    }
+    else
+    {
+        vehicleText = `[ ] ${vehicleText}`;
+    }
 
 
     //{/*<div style={{ "--checkmark-url": `url(${checkmarkIcon})` } as React.CSSProperties} className={styles.checkmark}></div>*/} 
