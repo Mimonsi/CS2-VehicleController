@@ -38,8 +38,9 @@ namespace VehicleController.Systems
     {
         private ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(ChangeVehicleSection)}")
             .SetShowsErrorsInUI(false);
-        
-                private EntityQuery m_CreatedServiceVehicleQuery;
+    
+        private EntityQuery m_ExistingServiceVehicleQuery;
+        private EntityQuery m_CreatedServiceVehicleQuery;
         private EndFrameBarrier m_Barrier;
         private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
@@ -70,6 +71,33 @@ namespace VehicleController.Systems
                 {
                     ComponentType.ReadOnly<Game.Common.Owner>(),
                     ComponentType.ReadOnly<Created>(),
+                },
+                Any = new[]
+                {
+                    ComponentType.ReadOnly<Game.Vehicles.Ambulance>(),
+                    ComponentType.ReadOnly<Game.Vehicles.FireEngine>(),
+                    ComponentType.ReadOnly<Game.Vehicles.PoliceCar>(),
+                    ComponentType.ReadOnly<Game.Vehicles.GarbageTruck>(),
+                    ComponentType.ReadOnly<Game.Vehicles.Hearse>(),
+                    ComponentType.ReadOnly<Game.Vehicles.MaintenanceVehicle>(),
+                    ComponentType.ReadOnly<Game.Vehicles.PostVan>(),
+                    ComponentType.ReadOnly<Game.Vehicles.RoadMaintenanceVehicle>(),
+                    ComponentType.ReadOnly<Game.Vehicles.Taxi>(),
+                    ComponentType.ReadOnly<Game.Vehicles.ParkMaintenanceVehicle>(),
+                    ComponentType.ReadOnly<Game.Vehicles.WorkVehicle>(),
+                },
+                None = new[]
+                {
+                    ComponentType.ReadOnly<Deleted>(),
+                    ComponentType.ReadOnly<Game.Tools.Temp>(),
+                },
+            });
+            
+            m_ExistingServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[]
+                {
+                    ComponentType.ReadOnly<Game.Common.Owner>(),
                 },
                 Any = new[]
                 {
@@ -152,13 +180,17 @@ namespace VehicleController.Systems
 
         private void AddAllowedVehicle(string prefabName)
         {
+            Logger.Debug("AddAllowedVehicle: " + prefabName);
             if (!EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 EntityManager.AddBuffer<AllowedVehiclePrefab>(selectedEntity);
             }
             var buffer = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
             var prefab = new AllowedVehiclePrefab() { PrefabName = prefabName };
-            if (CollectionUtils.TryAddUniqueValue(buffer, prefab))
+            Logger.Debug("Before adding");
+            var successfulAdd = CollectionUtils.TryAddUniqueValue(buffer, prefab);
+            Logger.Debug("Successful add?: " + successfulAdd);
+            if (successfulAdd)
             {
                 Logger.Info("Added allowed vehicle prefab: " + prefabName);
             }
@@ -166,18 +198,58 @@ namespace VehicleController.Systems
             { 
                 Logger.Info($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
                 CollectionUtils.RemoveValue(buffer, prefab);
+                Logger.Info("Buffer after removal: " + string.Join(", ", buffer.Select(x => x.PrefabName.ToString())));
             }
         }
         
         /// <summary>
-        /// Handle click on the Change Now button.
+        /// Handle click on the Change Now button. Applied changes to all existing vehicles, not just new ones
         /// </summary>
         private void ChangeNowClicked()
         {
-            Logger.Info("ChangeNow clicked");
+            Logger.Debug("ChangeNow clicked");
             // Send the change company data to the ChangeCompanySystem.
             //Entity newCompanyPrefab = _sectionPropertyCompanyInfos[_selectedCompanyIndex].CompanyPrefab;
             //_changeCompanySystem.ChangeCompany(newCompanyPrefab, selectedEntity, selectedPrefab, _sectionPropertyPropertyType);
+            
+            NativeArray<Entity> entities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+
+            foreach (Entity entity in entities)
+            {
+                // Has Owner
+                if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner != Entity.Null)
+                {
+                    // Owner has custom buffer DISABLED FOR NOW, ALWAYS TRUE
+                    if (EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<AllowedVehiclePrefab> allowedVehicles))
+                    {
+                        if (EntityManager.TryGetComponent<PrefabRef>(entity, out PrefabRef prefabRef))
+                        {
+                            Logger.Info("Detected prefab ref: " + prefabRef.m_Prefab);
+                            var newPrefab = ChangePrefab(prefabRef, allowedVehicles);
+                            if (newPrefab != null)
+                            {
+                                prefabRef.m_Prefab = newPrefab.Value;
+                                EntityManager.SetComponentData(entity, prefabRef);
+                                EntityManager.AddComponent<Updated>(entity);
+                                Logger.Info("SUCCESS: Changed prefab ref for entity: " + entity);
+                            }
+                            // Change the prefab reference to the one in the service vehicle buffer
+                            //ChangePrefabRef(serviceVehicleBuffer[0].m_PrefabRef, ref buffer, entity);
+                        }
+                        /*if (serviceVehicleBuffer.Length != 0)
+                        {
+                            if (EntityManager.HasBuffer<OwnedVehicle>(owner.m_Owner))
+                            {
+                                ChangePrefabRef(serviceVehicleBuffer[0].m_PrefabRef, ref buffer, entity);
+                            }
+                        }*/
+                    }
+                }
+            }
+            
+            
+            
         }
 
         /// <summary>
@@ -309,7 +381,7 @@ namespace VehicleController.Systems
             // TODO: Add code to handle behaviour after vehicle has been created
             NativeArray<Entity> entities = m_CreatedServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
-
+            Logger.Debug("New vehicle created");
             foreach (Entity entity in entities)
             {
                 // Has Owner
@@ -428,7 +500,7 @@ namespace VehicleController.Systems
                         {
                             prefab.selected = true; // Mark the vehicle as selected
                             count++;
-                            Logger.Info("Marked vehicle as selected: " + prefab.prefabName);
+                            //Logger.Info("Marked vehicle as selected: " + prefab.prefabName);
                         }
                     }
                 }

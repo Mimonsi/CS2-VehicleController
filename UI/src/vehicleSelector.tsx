@@ -47,7 +47,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
             key={vehiclePrefab.prefabName}
             theme={ModuleResolver.instance.DropdownClasses}
             value=""
-            closeOnSelect={true}
+            closeOnSelect={false}
             selected={selected}
             onChange={() => trigger(mod.id, "SelectedVehicleChanged", prefabName)}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
