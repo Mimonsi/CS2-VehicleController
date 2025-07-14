@@ -1,6 +1,12 @@
 ## [Vehicle Controller](https://mods.paradoxplaza.com/mods/104781/Windows) 
 
-### Features
+### Upcoming Features
+
+## Service Vehicle Selection
+- Select which service building can spawn which vehicles
+- Allows to select one prefab (multi select will be added later) per individual building, that will always be used
+- Copy and Paste your values to other buildings of the same name, all other buildings in the district, or even the whole map
+- Suggestions welcome
 
 ## Vehicle Probability Packs
 - Tune vehicle probabilities using packs or the integrated sliders to your liking
@@ -14,14 +20,3 @@
 - Vanilla Rebalance (Every vehicle has optimized values, electric cars have high acceleration, lower top speed, vans and trucks are slow, etc.)
 - True Realism (like Vanilla Rebalance, but all speeds are halved, because the game uses double speed for vehicles)
 - Double Time (like Vanilla Rebalance, but all speeds are doubled. Suitable for big maps!)
-
-### Planned Features
-- Add Vehicle Selection to service buildings
-
-### Suggested Features
-- Add Packs like in Vehicle Variation Packs
-
-### TODO:
-- Add Dropdown to choose class to edit
-    - Selected class will be edited by the values below (Acceleration, Speed, Braking)
-    - Changed settings can be saved under a name to a file
