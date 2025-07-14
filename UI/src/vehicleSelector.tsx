@@ -7,6 +7,7 @@ import mod from "../mod.json";
 import { ModuleResolver } from "moduleResolver";
 import { VehicleLabel } from "./vehicleLabel";
 import {getModule} from "cs2/modding";
+import {prefab} from "cs2/bindings";
 const dropdownStyle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
 
 // Binding für ausgewählten Fahrzeugindex
@@ -33,6 +34,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     const companyDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index) => {
         const prefabName = vehiclePrefab.prefabName;
         const selected = vehiclePrefab.selected;
+        const isDummyItem = prefabName.includes("Vehicles Selected");
 
         // Check if this company info is for the selected company.
         //const selected = index === selectedCompanyIndex;
@@ -48,7 +50,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
             theme={ModuleResolver.instance.DropdownClasses}
             value=""
             closeOnSelect={false}
-            selected={selected}
+            selected={isDummyItem}
             onChange={() => trigger(mod.id, "SelectedVehicleChanged", prefabName)}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
           >

@@ -54,6 +54,8 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         const { translate } = useLocalization();
         const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Assigned Vehicles Prefabs";
         const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Apply Changes";
+        const clearBufferLabel: string = translate(mod.id + ".ClearBuffer"    ) || "Clear Buffer";
+        const debug2Label: string = translate(mod.id + ".Debug2"    ) || "Debug 2";
 
         // Get the game's translated text for left and right headings based on property type.
         let headingSuffixLeft:  string | null = null;
@@ -84,6 +86,20 @@ export const VehicleSelectorComponent = (componentList: any): any =>
             trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
             trigger(mod.id, "ChangeNowClicked");
         }
+
+        // Handle click
+        function onClearBufferClicked()
+        {
+            trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
+            trigger(mod.id, "ClearBufferClicked");
+        }
+
+        // Handle click
+        function onDebug2Clicked()
+        {
+            trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
+            trigger(mod.id, "Debug2Clicked");
+        }
         
         // Construct the change company section.
         // Info row 1 has section heading and Change Now button.
@@ -108,6 +124,12 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                 <ModuleResolver.instance.InfoRow
                     left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
                     disableFocus={true}
+                />
+                <ModuleResolver.instance.InfoRow
+                  left={<button className={styles.changeNowButton} onClick={() => onClearBufferClicked()}>{clearBufferLabel}</button>}
+                  uppercase={true}
+                  right={<button className={styles.changeNowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
+                  disableFocus={true}
                 />
             </ModuleResolver.instance.InfoSection>
         );

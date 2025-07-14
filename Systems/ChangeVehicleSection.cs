@@ -64,6 +64,8 @@ namespace VehicleController.Systems
             // UI -> C#
             AddBinding(new TriggerBinding<string>("VehicleController", "SelectedVehicleChanged", SelectedVehicleChanged));
             AddBinding(new TriggerBinding("VehicleController", "ChangeNowClicked", ChangeNowClicked));
+            AddBinding(new TriggerBinding("VehicleController", "ClearBufferClicked", ClearBufferClicked));
+            AddBinding(new TriggerBinding("VehicleController", "Debug2Clicked", Debug2Clicked));
             
             m_CreatedServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
             {
@@ -126,6 +128,20 @@ namespace VehicleController.Systems
             Logger.Info("ChangeVehicleSection created.");
         }
 
+        private void Debug2Clicked()
+        {
+            
+        }
+
+        private void ClearBufferClicked()
+        {
+            if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
+            {
+                EntityManager.RemoveComponent<AllowedVehiclePrefab>(selectedEntity);
+                Logger.Info("Buffer has been cleared for entity: " + selectedEntity);
+            }
+        }
+
         /// <summary>
         /// Modified version of AddMiddleSection to customize the exact position
         /// </summary>
@@ -180,16 +196,15 @@ namespace VehicleController.Systems
 
         private void AddAllowedVehicle(string prefabName)
         {
-            Logger.Debug("AddAllowedVehicle: " + prefabName);
             if (!EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 EntityManager.AddBuffer<AllowedVehiclePrefab>(selectedEntity);
             }
             var buffer = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
             var prefab = new AllowedVehiclePrefab() { PrefabName = prefabName };
-            Logger.Debug("Before adding");
+            int length = buffer.Length;
             var successfulAdd = CollectionUtils.TryAddUniqueValue(buffer, prefab);
-            Logger.Debug("Successful add?: " + successfulAdd);
+            int length2 = buffer.Length;
             if (successfulAdd)
             {
                 Logger.Info("Added allowed vehicle prefab: " + prefabName);
@@ -197,9 +212,11 @@ namespace VehicleController.Systems
             else
             { 
                 Logger.Info($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
+
                 CollectionUtils.RemoveValue(buffer, prefab);
-                Logger.Info("Buffer after removal: " + string.Join(", ", buffer.Select(x => x.PrefabName.ToString())));
             }
+            int length3 = buffer.Length;
+            Logger.Debug("Buffer lengths: " + length + " -> " + length2 + " -> " + length3);
         }
         
         /// <summary>
@@ -381,7 +398,7 @@ namespace VehicleController.Systems
             // TODO: Add code to handle behaviour after vehicle has been created
             NativeArray<Entity> entities = m_CreatedServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
-            Logger.Debug("New vehicle created");
+            //Logger.Debug("New vehicle created");
             foreach (Entity entity in entities)
             {
                 // Has Owner
