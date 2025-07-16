@@ -13,6 +13,7 @@ using Game.Prefabs;
 using Game.Rendering;
 using Game.SceneFlow;
 using Game.UI.InGame;
+using Game.Vehicles;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -72,6 +73,7 @@ namespace VehicleController.Systems
                 All = new[]
                 {
                     ComponentType.ReadOnly<Game.Common.Owner>(),
+                    ComponentType.ReadOnly<Car>(), // Don't affect aircraft
                     ComponentType.ReadOnly<Created>(),
                 },
                 Any = new[]
@@ -100,6 +102,7 @@ namespace VehicleController.Systems
                 All = new[]
                 {
                     ComponentType.ReadOnly<Game.Common.Owner>(),
+                    ComponentType.ReadOnly<Car>()  // Don't affect aircraft
                 },
                 Any = new[]
                 {
