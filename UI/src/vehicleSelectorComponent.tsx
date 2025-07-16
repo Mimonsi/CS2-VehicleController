@@ -110,7 +110,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                 <ModuleResolver.instance.InfoRow
                     left={sectionHeading}
                     uppercase={true}
-                    right={<button className={styles.changeNowButton} onClick={() => onChangeNowClicked()}>{changeNowLabel}</button>}
+                    right={<button className={styles.infoRowButton} onClick={() => onChangeNowClicked()}>{changeNowLabel}</button>}
                     disableFocus={true}
                 />
                 <ModuleResolver.instance.InfoRow
@@ -126,9 +126,9 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                     disableFocus={true}
                 />
                 <ModuleResolver.instance.InfoRow
-                  left={<button className={styles.changeNowButton} onClick={() => onClearBufferClicked()}>{clearBufferLabel}</button>}
+                  left={<button className={styles.infoRowButton} onClick={() => onClearBufferClicked()}>{clearBufferLabel}</button>}
                   uppercase={true}
-                  right={<button className={styles.changeNowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
+                  right={<button className={styles.infoRowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
                   disableFocus={true}
                 />
             </ModuleResolver.instance.InfoSection>

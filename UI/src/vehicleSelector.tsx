@@ -25,11 +25,6 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     // Empty array as fallback if vehicleTypes is not provided
     const vehicleTypes = props.vehicleTypes ?? [];
 
-    // Function to join classes
-    function joinClasses(...classes: any[]) {
-        return classes.filter(Boolean).join(" ");
-    }
-
     // Create a dropdown item for each company and get content of the selected item.
     const companyDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index) => {
         const prefabName = vehiclePrefab.prefabName;
@@ -59,9 +54,9 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
         );
     });
 
-    // Inhalt des aktuell ausgewählten Dropdown-Toggles
-    const selectedCompanyDropdownItemContent = vehicleTypes[selectedCompanyIndex] ? (
-      <VehicleLabel prefabName={vehicleTypes[selectedCompanyIndex].prefabName} />
+    
+    const selectedCompanyDropdownItemContent = vehicleTypes[0] ? (
+      <VehicleLabel prefabName={vehicleTypes[0].prefabName} />
     ) : (
       <>Nothing here :/</>
     );
