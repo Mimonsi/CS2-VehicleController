@@ -256,7 +256,7 @@ namespace VehicleController
         
         #region VehicleSelection
 
-        [SettingsUISection(SpawnBehaviorSection, VehicleSelectionGroup)]
+        [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
         public bool DeleteVehicleInstances { get; set; } = false;
         
         #endregion
