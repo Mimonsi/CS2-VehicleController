@@ -11,7 +11,7 @@ import {prefab} from "cs2/bindings";
 const dropdownStyle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
 
 // Binding für ausgewählten Fahrzeugindex
-const bindingSelectedCompanyIndex = bindValue<number>(mod.id, "SelectedCompanyIndex", 0);
+//const bindingSelectedCompanyIndex = bindValue<number>(mod.id, "SelectedCompanyIndex", 0);
 
 // Define props for company selector dropdown.
 type VehicleSelectorProps = {
@@ -20,7 +20,7 @@ type VehicleSelectorProps = {
 
 export const VehicleSelector = (props: VehicleSelectorProps) => {
 
-    const selectedCompanyIndex: number = useValue(bindingSelectedCompanyIndex);
+    //const selectedCompanyIndex: number = useValue(bindingSelectedCompanyIndex);
 
     // Empty array as fallback if vehicleTypes is not provided
     const vehicleTypes = props.vehicleTypes ?? [];
@@ -28,9 +28,8 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     // Create a dropdown item for each company and get content of the selected item.
     const companyDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index) => {
         const prefabName = vehiclePrefab.prefabName;
-        const selected = vehiclePrefab.selected;
+        const selected = vehiclePrefab.selected ?? false;
         const isDummyItem = prefabName.includes("Vehicles Selected");
-
         // Check if this company info is for the selected company.
         //const selected = index === selectedCompanyIndex;
 

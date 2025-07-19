@@ -15,6 +15,7 @@ const dropdownToggleStyle = getModule("game-ui/game/themes/game-dropdown.module.
 export type SelectableVehiclePrefab =
     {
         prefabName: string,
+        imageUrl?: string, // Optional property for image URL
         selected?: boolean, // Optional property to indicate if this vehicle is selected
     }
 
@@ -52,19 +53,10 @@ export const VehicleSelectorComponent = (componentList: any): any =>
     {
         // Get the mod's translated text for the section heading and button.
         const { translate } = useLocalization();
-        const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Assigned Vehicles Prefabs";
-        const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Apply Changes";
-        const clearBufferLabel: string = translate(mod.id + ".ClearBuffer"    ) || "Clear Buffer";
-        const debug2Label: string = translate(mod.id + ".Debug2"    ) || "Debug 2";
-
-        // Get the game's translated text for left and right headings based on property type.
-        let headingSuffixLeft:  string | null = null;
-        let headingSuffixRight: string | null = null;
-        // Display service vehicle type
-        headingSuffixLeft = props.serviceType ? props.serviceType.toString() : "";
-        
-        const headingLeft:  string = headingSuffixLeft  ? translate("SelectedInfoPanel.COMPANY_" + headingSuffixLeft ) || headingSuffixLeft  : "";
-        const headingRight: string = headingSuffixRight ? translate("SelectedInfoPanel.COMPANY_" + headingSuffixRight) || headingSuffixRight : "";
+        const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Assigned Vehicle Prefabs";
+        const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Apply to existing vehicles";
+        const clearBufferLabel: string = translate(mod.id + ".ClearBuffer"    ) || "Clear allowed Vehicles";
+        const debug2Label: string = translate(mod.id + ".Debug2"    ) || "Delete owned vehicles";
 
         // Get the mod's translated formatted tooltip text based on property type.
         //const tooltipText: string = translate(mod.id + ".SectionTooltip" + PropertyType[props.propertyType]) ||
@@ -112,14 +104,6 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                     uppercase={true}
                     right={<button className={styles.infoRowButton} onClick={() => onChangeNowClicked()}>{changeNowLabel}</button>}
                     disableFocus={true}
-                />
-                <ModuleResolver.instance.InfoRow
-                    className={styles.headingRow}
-                    left={headingLeft}
-                    uppercase={true}
-                    right={headingRight}
-                    disableFocus={true}
-                    subRow={true}
                 />
                 <ModuleResolver.instance.InfoRow
                     left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}

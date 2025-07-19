@@ -133,7 +133,20 @@ namespace VehicleController.Systems
 
         private void Debug2Clicked()
         {
+            Logger.Debug("DeleteVehicles clicked");
+            NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             
+            // Filter by owner = selectedEntity
+            var entities = existingServiceVehicleEntities
+                .Where(e => EntityManager.HasComponent<Game.Common.Owner>(e) &&
+                            EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity)
+                .ToArray();
+
+            foreach (Entity entity in entities)
+            {
+                EntityManager.AddComponent<Deleted>(entity);
+            }
+            Logger.Info("Deleted " + entities.Length + " vehicles for entity: " + selectedEntity);
         }
 
         private void ClearBufferClicked()
@@ -488,6 +501,7 @@ namespace VehicleController.Systems
         /// <inheritdoc/>
         public override void OnWriteProperties(IJsonWriter writer)
         {
+            //Logger.Debug("Writing ChangeVehicleSection properties");
             // TODO: Use ImageSystem.GetThumbnail(PrefabBase) to get UI
             var types = GetServiceVehicleTypes();
             var prefabs = new List<SelectableVehiclePrefab>(); // Collect all available vehicle prefabs for the selected building
@@ -497,7 +511,7 @@ namespace VehicleController.Systems
             {
                 if (_availableVehiclePrefabs.TryGetValue(type, out var vehiclePrefabs))
                 {
-                    selectedVehicleCount += markSelectedVehicles(vehiclePrefabs);
+                    selectedVehicleCount += markSelectedVehicles(vehiclePrefabs); // Add selected = true to all allowed vehicles
                     prefabs.AddRange(vehiclePrefabs);
                 }
             }
@@ -514,6 +528,7 @@ namespace VehicleController.Systems
             writer.Write(selectedVehicleCount);
             //writer.PropertyName("serviceType");
             //writer.Write("");
+            //Logger.Debug("ChangeVehicleSection properties written");
         }
 
         protected override string group => nameof(ChangeVehicleSection);
