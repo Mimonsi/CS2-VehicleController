@@ -19,7 +19,8 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
     console.log("vehicleLabel", prefabName, selected);
     // Get game's icon for the vehicle.
     //const resourceIcon: string = "Media/Game/Resources/" + resource + ".svg";
-    const vehicleIcon: string = image ? image : "Media/Game/Icons/Taxi.svg";
+    const vehicleIcon: string = image ? image : "Media/Game/Icons/GenericVehicle.svg";
+    //const vehicleIcon: string = image ? image : "assetdb://Global/292d20d2f0c5403c5d3bc3452649fde9";
     const checkmarkIcon: string = "Media/Glyphs/Checkmark.svg";
     //selected = true;
 

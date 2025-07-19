@@ -15,9 +15,9 @@ using VehicleController.Systems;
 namespace VehicleController
 {
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
-    [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection, DebugSection)]
-    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, InfoGroup)]
-    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup)]
+    [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
+    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup)]
+    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -32,6 +32,9 @@ namespace VehicleController
         public const string VehiclePropertiesSection = "Vehicle Properties";
         public const string VehiclePropertiesGroup = "Vehicle Properties";
         public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
+        
+        public const string VehicleSelectionSection = "Vehicle Selection";
+        public const string VehicleSelectionGroup = "Vehicle Selection";
         
         
         public const string AboutSection = "About";
@@ -248,6 +251,13 @@ namespace VehicleController
         {
             set => VehiclePropertySystem.Instance.ApplySettings();
         }
+        
+        #endregion
+        
+        #region VehicleSelection
+
+        [SettingsUISection(SpawnBehaviorSection, VehicleSelectionGroup)]
+        public bool DeleteVehicleInstances { get; set; } = false;
         
         #endregion
         

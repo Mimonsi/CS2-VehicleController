@@ -246,7 +246,7 @@ namespace VehicleController.Systems
                         if (EntityManager.TryGetComponent<PrefabRef>(entity, out PrefabRef prefabRef))
                         {
                             Logger.Info("Detected prefab ref: " + prefabRef.m_Prefab);
-                            var newPrefab = ChangePrefab(prefabRef, allowedVehicles);
+                            var newPrefab = ChangePrefab(entity, prefabRef, allowedVehicles);
                             if (newPrefab != null)
                             {
                                 prefabRef.m_Prefab = newPrefab.Value;
@@ -279,23 +279,23 @@ namespace VehicleController.Systems
         {
             _availableVehiclePrefabs.Clear();
             
-            var policeCars = SystemAPI.QueryBuilder().WithAll<PoliceCarData>().Build().ToEntityArray(Allocator.Temp);
+            var policeCars = SystemAPI.QueryBuilder().WithAll<PoliceCarData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
             _availableVehiclePrefabs.Add(ServiceVehicleType.PoliceCar, GetPrefabsForType(ServiceVehicleType.PoliceCar, policeCars));
             //Logger.Info("Available Police Vehicles: " + _availableVehiclePrefabs[ServiceVehicleType.PoliceCar].Count);
             
-            var ambulances = SystemAPI.QueryBuilder().WithAll<AmbulanceData>().Build().ToEntityArray(Allocator.Temp);
+            var ambulances = SystemAPI.QueryBuilder().WithAll<AmbulanceData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
             _availableVehiclePrefabs.Add(ServiceVehicleType.Ambulance, GetPrefabsForType(ServiceVehicleType.Ambulance, ambulances));
             
-            var fireEngines = SystemAPI.QueryBuilder().WithAll<FireEngineData>().Build().ToEntityArray(Allocator.Temp);
+            var fireEngines = SystemAPI.QueryBuilder().WithAll<FireEngineData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
             _availableVehiclePrefabs.Add(ServiceVehicleType.FireEngine, GetPrefabsForType(ServiceVehicleType.FireEngine, fireEngines));
             
-            var garbageTrucks = SystemAPI.QueryBuilder().WithAll<GarbageTruckData>().Build().ToEntityArray(Allocator.Temp);
+            var garbageTrucks = SystemAPI.QueryBuilder().WithAll<GarbageTruckData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
             _availableVehiclePrefabs.Add(ServiceVehicleType.GarbageTruck, GetPrefabsForType(ServiceVehicleType.GarbageTruck, garbageTrucks));
             
-            var hearses = SystemAPI.QueryBuilder().WithAll<HearseData>().Build().ToEntityArray(Allocator.Temp);
+            var hearses = SystemAPI.QueryBuilder().WithAll<HearseData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
             _availableVehiclePrefabs.Add(ServiceVehicleType.Hearse, GetPrefabsForType(ServiceVehicleType.Hearse, hearses));
             
-            var postVans = SystemAPI.QueryBuilder().WithAll<PostVanData>().Build().ToEntityArray(Allocator.Temp);
+            var postVans = SystemAPI.QueryBuilder().WithAll<PostVanData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
             _availableVehiclePrefabs.Add(ServiceVehicleType.PostVan, GetPrefabsForType(ServiceVehicleType.PostVan, postVans));
             
             // TODO: Add support for road/park maintenance vehicles
@@ -341,7 +341,7 @@ namespace VehicleController.Systems
             VehicleCreated();
         }
         
-        private Entity? ChangePrefab(PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
+        private Entity? ChangePrefab(Entity entity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
         {
             List<string> allowedVehicleNames = new List<string>();
             
@@ -357,41 +357,57 @@ namespace VehicleController.Systems
             {
                 allowedVehicleNames.Remove("");
             }
-            
-            var currentPrefabName = m_PrefabSystem.GetPrefab<VehiclePrefab>(prefabRef);
-            if (allowedVehicleNames.Count == 0 || allowedVehicleNames.Contains(currentPrefabName.name))
-            {
-                Logger.Debug($"Not changing prefab {currentPrefabName}, as it's allowed.");
-                return null; // No change needed, prefab is already allowed
-            }
-            
-            // If the prefab is not allowed, we need to change it
-            // Select random allowed prefab
-            int index = UnityEngine.Random.Range(0, allowedVehicleNames.Count);
-            var newPrefabName = allowedVehicleNames[index];
-            
-            Logger.Info($"Changing Prefab to {newPrefabName}");
-            if (m_PrefabSystem.TryGetPrefab(
-                    new PrefabID("CarPrefab", newPrefabName),
-                    out PrefabBase newPrefab))
-            {
-                Logger.Info("New Prefab: " + newPrefab?.name);
-                // Change to Police2
 
-                if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity))
+            if (m_PrefabSystem.TryGetPrefab(prefabRef, out VehiclePrefab prefab))
+            {
+                var currentPrefabName = m_PrefabSystem.GetPrefab<VehiclePrefab>(prefabRef);
+                if (Setting.Instance.DeleteVehicleInstances)
                 {
-                    return prefabEntity;
+                    if (!allowedVehicleNames.Contains(currentPrefabName.name))
+                    {
+                        EntityManager.AddComponent<Deleted>(entity);
+                        return null;
+                    }
+                }
+                /*if (allowedVehicleNames.Count == 0 || allowedVehicleNames.Contains(currentPrefabName.name))
+                {
+                    Logger.Debug($"Not changing prefab {currentPrefabName}, as it's allowed.");
+                    return null; // No change needed, prefab is already allowed
+                }*/
+            
+                // If the prefab is not allowed, we need to change it
+                // Select random allowed prefab
+                int index = UnityEngine.Random.Range(0, allowedVehicleNames.Count);
+                var newPrefabName = allowedVehicleNames[index];
+            
+                Logger.Info($"Changing Prefab to {newPrefabName}");
+                if (m_PrefabSystem.TryGetPrefab(
+                        new PrefabID("CarPrefab", newPrefabName),
+                        out PrefabBase newPrefab))
+                {
+                    Logger.Info("New Prefab: " + newPrefab?.name);
+                    // Change to Police2
+
+                    if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity))
+                    {
+                        return prefabEntity;
+                    }
+                    else
+                    {
+                        Logger.Warn("Could not find entity for new prefab: " + newPrefab.name);
+                    }
+                
                 }
                 else
                 {
-                    Logger.Warn("Could not find entity for new prefab: " + newPrefab.name);
+                    Logger.Warn("Could not get prefab for name: " + newPrefabName);
                 }
-                
             }
             else
             {
-                Logger.Warn("Could not get prefab for name: " + newPrefabName);
+                Logger.Error("Could not get prefab for prefabRef: " + prefabRef.m_Prefab);
             }
+            
 
             return null;
         }
@@ -413,7 +429,7 @@ namespace VehicleController.Systems
                         if (EntityManager.TryGetComponent<PrefabRef>(entity, out PrefabRef prefabRef))
                         {
                             Logger.Info("Detected prefab ref: " + prefabRef.m_Prefab);
-                            var newPrefab = ChangePrefab(prefabRef, allowedVehicles);
+                            var newPrefab = ChangePrefab(entity, prefabRef, allowedVehicles);
                             if (newPrefab != null)
                             {
                                 prefabRef.m_Prefab = newPrefab.Value;
@@ -532,6 +548,7 @@ namespace VehicleController.Systems
         /// <inheritdoc/>
         public override void OnWriteProperties(IJsonWriter writer)
         {
+            // TODO: Use ImageSystem.GetThumbnail(PrefabBase) to get UI
             var types = GetServiceVehicleTypes();
             var prefabs = new List<SelectableVehiclePrefab>(); // Collect all available vehicle prefabs for the selected building
             PopulateAvailableVehicles();

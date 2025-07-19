@@ -53,7 +53,6 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
           </DropdownItem>
         );
     });
-
     
     const selectedCompanyDropdownItemContent = vehicleTypes[0] ? (
       <VehicleLabel prefabName={vehicleTypes[0].prefabName} />
