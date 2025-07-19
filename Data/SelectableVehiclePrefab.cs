@@ -1,10 +1,11 @@
 ﻿using Colossal.UI.Binding;
 
-namespace VehicleController
+namespace VehicleController.Data
 {
     public class SelectableVehiclePrefab : IJsonWritable
     {
         public string prefabName;
+        public string? imageUrl;
         public bool selected;
         public void Write(IJsonWriter writer)
         {
@@ -12,6 +13,11 @@ namespace VehicleController
             writer.TypeBegin("VehicleController." + nameof(SelectableVehiclePrefab));
             writer.PropertyName("prefabName");
             writer.Write(prefabName);
+            if (imageUrl != null)
+            {
+                writer.PropertyName("imageUrl");
+                writer.Write(imageUrl);
+            }
             writer.PropertyName("selected");
             writer.Write(selected);
             writer.TypeEnd();
