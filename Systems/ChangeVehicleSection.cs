@@ -12,6 +12,7 @@ using Game.Common;
 using Game.Prefabs;
 using Game.Rendering;
 using Game.SceneFlow;
+using Game.UI;
 using Game.UI.InGame;
 using Game.Vehicles;
 using Unity.Collections;
@@ -475,7 +476,7 @@ namespace VehicleController.Systems
             return null;
         }
 
-        private int markSelectedVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
+        private int MarkSelectedVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
         {
             var count = 0;
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
@@ -488,6 +489,13 @@ namespace VehicleController.Systems
                         if (allowedVehicle.PrefabName == prefab.prefabName)
                         {
                             prefab.selected = true; // Mark the vehicle as selected
+                            
+                            // Try getting the thumbnail
+                            var prefabBase = GetPrefabBaseForName(prefab.prefabName);
+                            var thumbnail = ImageSystem.GetThumbnail(prefabBase);
+                            Logger.Debug("Thumbnail for " + prefab.prefabName + ": " + thumbnail);
+                            prefab.imageUrl = thumbnail;
+                            
                             count++;
                             //Logger.Info("Marked vehicle as selected: " + prefab.prefabName);
                         }
@@ -501,6 +509,12 @@ namespace VehicleController.Systems
         /// <inheritdoc/>
         public override void OnWriteProperties(IJsonWriter writer)
         {
+            if (selectedEntity == Entity.Null)
+            {
+                Logger.Error("Selected entity is null, THIS SHOULD NEVER HAPPEN!");
+                return;
+            }
+                
             //Logger.Debug("Writing ChangeVehicleSection properties");
             // TODO: Use ImageSystem.GetThumbnail(PrefabBase) to get UI
             var types = GetServiceVehicleTypes();
@@ -511,7 +525,7 @@ namespace VehicleController.Systems
             {
                 if (_availableVehiclePrefabs.TryGetValue(type, out var vehiclePrefabs))
                 {
-                    selectedVehicleCount += markSelectedVehicles(vehiclePrefabs); // Add selected = true to all allowed vehicles
+                    selectedVehicleCount += MarkSelectedVehicles(vehiclePrefabs); // Add selected = true to all allowed vehicles
                     prefabs.AddRange(vehiclePrefabs);
                 }
             }
