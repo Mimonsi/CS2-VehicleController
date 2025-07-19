@@ -1,0 +1,584 @@
+<html class="keyboard locale-en-US game"
+    style="--panelOpacityDark: 0.599921875; --fontScale: 1; --panelOpacityNormal: 0.4375; --fontScaleChange: 0; --infoLayoutBottom: 144px; ">
+
+<head>
+    <meta charset="utf-8">
+    <title>index</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="index.css" rel="stylesheet">
+    <link id="ChangeCompany" rel="stylesheet" href="coui://ui-mods/ChangeCompany.css">
+    <link id="VehicleController" rel="stylesheet" href="coui://ui-mods/VehicleController.css">
+</head>
+
+<body class="style--dark-grey-orange">
+    <script src="index.js"></script>
+    <div class="app-container_Y5l">
+        <div class="game-main-screen_TRK child-opacity-transition_nkS">
+            <div class="main-container__E2">
+                <div class="info-layout_BVk"></div>
+                <div class="info-layout_BVk">
+                    <div class="wrapper_SgH">
+                        <div class="row_OqM container_Ty2 selected-info-panel_iIe">
+                            <div class="panel_YqS line-visualizer-section_MKT sidebar_fgt">
+                                <div class="header_H_U header_Bpo child-opacity-transition_nkS">
+                                    <div class="title-bar_PF4">
+                                        <div class="title_SVH title_zQN">Line</div>
+                                    </div>
+                                </div>
+                                <div class="content_XD5 content_AD7 child-opacity-transition_nkS">
+                                    <div class="track-container_c4L">
+                                        <div class="wrapper_dcw"><canvas width="187" height="981"></canvas></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel_YqS selected-info-panel_gG8">
+                                <div class="header_SUX header_H_U header_Bpo child-opacity-transition_nkS">
+                                    <div class="title-bar_PF4"><img class="icon_OVK" src="Media/Game/Icons/BusLine.svg">
+                                        <div class="title_tEn title_SVH title_zQN">
+                                            <div class="wrapper_onO wrapper_dff wrapper_onO">
+                                                <div class="container_kOI container_Q9t"><input
+                                                        class="input_MMV input_lbJ" maxlength="64" type="text"
+                                                        vk-title="Give your Transport Line a name" vk-description=""
+                                                        vk-type="text" rows="5">
+                                                    <div class="label_qsp label_GFm">Bus line 1</div>
+                                                </div>
+                                            </div>
+                                        </div><button class="button_bvQ button_bvQ close-button_wKK">
+                                            <div class="tinted-icon_iKo icon_PhD"
+                                                style="mask-image: url(Media/Glyphs/Close.svg); "></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="content_KYp content_XD5 content_AD7 child-opacity-transition_nkS">
+                                    <div class="scrollable_DXr y_SMM scrollable_gsV">
+                                        <div class="content_gqa">
+                                            <div class="info-section_I7V">
+                                                <div class="content_Cdk item-focused_FuT disable-focus-highlight_ik3">
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT disable-focus-highlight_I85">
+                                                        <div class="left_RyE uppercase_f0y">Select vehicle model</div>
+                                                    </div>
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT disable-focus-highlight_I85 dropdown-gamepad_HFi">
+                                                        <div class="left_RyE"><button
+                                                                class="dropdown-toggle_ODx dropdown-toggle_prl dropdown_zWC active">
+                                                                <div class="label_l_4">
+                                                                    <div class="item_Bmu"><img class="thumb_eC2"
+                                                                            src="Media/Game/Icons/Bus.svg">
+                                                                        <div class="label_jXx">Electric Bus </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="tinted-icon_iKo indicator_JII"
+                                                                    style="mask-image: url(Media/Glyphs/StrokeArrowUp.svg); ">
+                                                                </div>
+                                                            </button></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="info-section_I7V">
+                                                <div class="content_Cdk item-focused_FuT disable-focus-highlight_ik3">
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT disable-focus-highlight_I85">
+                                                        <div class="left_RyE uppercase_f0y">Public Transport Line</div>
+                                                    </div>
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT subRow_NJI disable-focus-highlight_I85">
+                                                        <div class="left_RyE">Length</div>
+                                                        <div class="right_ZUb">3.7 km</div>
+                                                    </div>
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT subRow_NJI disable-focus-highlight_I85">
+                                                        <div class="left_RyE">Stops</div>
+                                                        <div class="right_ZUb">11</div>
+                                                    </div>
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT subRow_NJI disable-focus-highlight_I85">
+                                                        <div class="left_RyE">Passengers</div>
+                                                        <div class="right_ZUb">223</div>
+                                                    </div>
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT subRow_NJI disable-focus-highlight_I85">
+                                                        <div class="left_RyE">Line Usage</div>
+                                                        <div class="right_ZUb">56 %</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="info-section_I7V">
+                                                <div class="content_Cdk item-focused_FuT">
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT disable-focus-highlight_I85">
+                                                        <div class="left_RyE uppercase_f0y">Ticket Price</div>
+                                                        <div class="right_ZUb">¢8</div>
+                                                    </div>
+                                                    <div class="route-slider__kp">
+                                                        <div class="wrapper_TUT">
+                                                            <div class="slider_g0V slider_pUS horizontal">
+                                                                <div class="track-bounds_H8_">
+                                                                    <div class="range-bounds_lNt" style="width: 16%; ">
+                                                                        <div class="range_K3G range_iUN"></div>
+                                                                        <div class="thumb-container_aso">
+                                                                            <div class="thumb_WZt"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="info-section_I7V">
+                                                <div class="content_Cdk item-focused_FuT">
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT disable-focus-highlight_I85">
+                                                        <div class="left_RyE uppercase_f0y">Assigned Vehicles</div>
+                                                        <div class="right_ZUb">5 / 10</div>
+                                                    </div>
+                                                    <div class="route-slider__kp">
+                                                        <div class="wrapper_TUT">
+                                                            <div class="slider_g0V slider_pUS horizontal">
+                                                                <div class="track-bounds_H8_">
+                                                                    <div class="range-bounds_lNt"
+                                                                        style="width: 28.5714%; ">
+                                                                        <div class="range_K3G range_iUN"></div>
+                                                                        <div class="thumb-container_aso">
+                                                                            <div class="thumb_WZt"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT subRow_NJI disable-focus-highlight_I85">
+                                                        <div class="left_RyE">Active Vehicles</div>
+                                                        <div class="right_ZUb">5</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="info-section_I7V">
+                                                <div class="content_Cdk item-focused_FuT">
+                                                    <div
+                                                        class="info-row_QQ9 item-focused_FuT disable-focus-highlight_I85">
+                                                        <div class="left_RyE uppercase_f0y">Schedule</div>
+                                                        <div class="right_ZUb">
+                                                            <div class="buttons_XOL"><button
+                                                                    class="button_YEx item-states_QjV button_kxx left_X6Y"><img
+                                                                        class="icon_Sz0"
+                                                                        src="Media/Game/Misc/ScheduleDay.svg"></button><button
+                                                                    class="button_YEx item-states_QjV button_kxx"><img
+                                                                        class="icon_Sz0"
+                                                                        src="Media/Game/Misc/ScheduleNight.svg"></button><button
+                                                                    class="button_YEx item-states_QjV selected button_kxx right_IAC"><img
+                                                                        class="icon_Sz0"
+                                                                        src="Media/Game/Misc/ScheduleDayNight.svg"></button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="info-section_I7V">
+                                                <div class="content_Cdk item-focused_FuT disable-focus-highlight_ik3">
+                                                    <div class="info-row_QQ9 item-focused_FuT">
+                                                        <div class="left_RyE uppercase_f0y">Color</div>
+                                                        <div class="right_ZUb">
+                                                            <div class="color-field_jwA wrapper_ZiM"><button
+                                                                    class="color-field_due">
+                                                                    <div
+                                                                        style="background-color: rgba(32, 164, 255, 1); ">
+                                                                    </div>
+                                                                </button></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="bottom-padding_JS3"></div>
+                                        </div>
+                                        <div class="track_e3O y_SMM">
+                                            <div class="thumb_Cib y_SMM"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="footer_IlY footer_Pa9 footer_pD5 child-opacity-transition_nkS">
+                                    <div class="actions-section_X1x"><button
+                                            class="button_Z9O button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_Z9O button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_xGY"><img
+                                                class="icon_Tdt icon_soN icon_Iwk"
+                                                src="Media/Game/Icons/MapMarker.svg"></button><button
+                                            class="button_Z9O button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_Z9O button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_xGY">
+                                            <div class="tinted-icon_iKo icon_Tdt icon_soN icon_Iwk"
+                                                style="mask-image: url(Media/Glyphs/Trash.svg); "></div>
+                                        </button>
+                                        <div class="out-of-service_Kfh"><button
+                                                class="button_Z9O button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_Z9O button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_xGY toggle_LKL">
+                                                <div class="tinted-icon_iKo icon_Tdt icon_soN icon_Iwk"
+                                                    style="mask-image: url(Media/Glyphs/OnOff.svg); "></div>
+                                            </button></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hints_HGp"></div>
+                    </div>
+                </div>
+                <div class="info-menu-layout_E8i">
+                    <div class="infoview-menu-toggle_bYF mini-panel-visible_mDg">
+                        <div class="active-infoview_J2h">
+                            <div class="label_UhV">Transportation</div><button
+                                class="button_bvQ button_bvQ close-button_TMO">
+                                <div class="tinted-icon_iKo icon_PhD" style="mask-image: url(Media/Glyphs/Close.svg); ">
+                                </div>
+                            </button>
+                        </div><button class="button_ke4 button_ke4 button_H9N">
+                            <div class="tinted-icon_iKo icon_be5" style="mask-image: url(Media/Glyphs/Info.svg); ">
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <div class="tool-layout_SqM">
+                    <div class="tool-side-column_l9i"></div>
+                    <div class="tool-main-column_PaC"></div>
+                    <div class="tool-side-column_l9i"></div>
+                </div>
+                <div class="pause-menu-layout_eGE horizontal_xPW">
+                    <div class="pause-menu-toggle_ewR"><button class="button_ke4 button_ke4 pause-menu-toggle_ewR">
+                            <div class="tinted-icon_iKo icon_be5" style="mask-image: url(Media/Glyphs/Advisor.svg); ">
+                            </div>
+                        </button></div>
+                    <div class="pause-menu-toggle_ewR"><button class="button_ke4 button_ke4">
+                            <div class="tinted-icon_iKo icon_be5" style="mask-image: url(Media/Glyphs/Gear.svg); ">
+                            </div>
+                        </button></div>
+                </div>
+            </div>
+            <div class="toolbar_QYu">
+                <div class="social-menu-anchor_oJe">
+                    <div class="left-menu_L1D left-side-menu_DLV"></div>
+                    <div class="right-menu_u58 social-menu_nHI">
+                        <div class="item_sWO base_GQv"><button
+                                class="button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_Yz9 toggle-states_DTm"><img
+                                    class="icon_qLJ icon_soN icon_Iwk" src="Media/Game/Icons/Notifications.svg">
+                                <div class="number-badge__VH">1</div>
+                            </button></div>
+                        <div class="item_sWO chirper-popup-anchor_p7b">
+                            <div class="chirper-popup_pEX chirper-popup_H95"></div>
+                            <div class="item_sWO"><button
+                                    class="button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_Yz9 toggle-states_DTm"><img
+                                        class="icon_qLJ icon_soN icon_Iwk" src="Media/Game/Icons/Chirper.svg"></button>
+                            </div>
+                        </div>
+                        <div class="item_sWO"><button
+                                class="button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_Yz9 toggle-states_DTm"><img
+                                    class="icon_qLJ icon_soN icon_Iwk" src="Media/Game/Icons/Lifepath.svg"></button>
+                        </div>
+                        <div class="item_sWO"><button
+                                class="button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_iKo button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_Yz9 toggle-states_DTm"><img
+                                    class="icon_qLJ icon_soN icon_Iwk" src="Media/Game/Icons/Journal.svg"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bulldoze-bar_D37"></div>
+                <div class="top_ZSs">
+                    <div class="top-inner_v2o container_yy5">
+                        <div class="start_hR7"><button
+                                class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_X82 toggle-states_DTm"><img
+                                    class="icon_KJZ icon_soN icon_Iwk" src="Media/Game/Icons/MapTile.svg">
+                                <div class="number-badge__VH animated_mNr map-tile-badge_wN7">399</div>
+                            </button>
+                            <div class="divider_GaZ"></div>
+                            <div class="progression-field_Lho"><button
+                                    class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle_bAE toggle-states_X82 toggle-states_DTm"><img
+                                        class="icon_KJZ icon_soN icon_Iwk" src="Media/Game/Icons/Trophy.svg"></button>
+                                <div class="field_p2F max-milestone-reached___5">Megalopolis</div>
+                            </div>
+                            <div class="divider_GaZ"></div>
+                            <div class="city-info-field_kp7"><button
+                                    class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle_kzL toggle-states_X82 toggle-states_DTm"><img
+                                        class="icon_KJZ icon_soN icon_Iwk" src="Media/Game/Icons/City.svg"></button>
+                                <div class="field_OvX"><svg class="image_E3g" viewbox="0 0 116 36">
+                                        <lineargradient id="shadow" gradientunits="objectBoundingBox" x1="0" x2="0"
+                                            y1="1" y2="0">
+                                            <stop offset="0" stop-color="rgba(0, 0, 0, 0.2)"></stop>
+                                            <stop offset="0.25" stop-color="rgba(0, 0, 0, 0.2)"></stop>
+                                            <stop offset="0.25" stop-color="rgba(0, 0, 0, 0)"></stop>
+                                            <stop offset="1" stop-color="rgba(0, 0, 0, 0)"></stop>
+                                        </lineargradient>
+                                        <clippath id="ResidentialLow">
+                                            <rect x="0" y="0" width="116" height="6" rx="3" ry="3"></rect>
+                                        </clippath>
+                                        <rect x="0" y="0" width="116" height="6" rx="3" ry="3"
+                                            fill="rgba(255, 255, 255, 0.08)"></rect>
+                                        <rect id="ResidentialLow-bar" x="0" y="0" width="0%" height="6" rx="3" ry="3"
+                                            clip-path="url(#ResidentialLow)" fill="#8BDB46"></rect>
+                                        <rect x="0" y="0" width="116" height="6" rx="3" ry="3" fill="url(#shadow)">
+                                        </rect>
+                                        <clippath id="ResidentialMedium">
+                                            <rect x="0" y="6" width="116" height="6" rx="3" ry="3"></rect>
+                                        </clippath>
+                                        <rect x="0" y="6" width="116" height="6" rx="3" ry="3"
+                                            fill="rgba(255, 255, 255, 0.08)"></rect>
+                                        <rect id="ResidentialMedium-bar" x="0" y="6" width="0%" height="6" rx="3" ry="3"
+                                            clip-path="url(#ResidentialMedium)" fill="#00AE1A"></rect>
+                                        <rect x="0" y="6" width="116" height="6" rx="3" ry="3" fill="url(#shadow)">
+                                        </rect>
+                                        <clippath id="ResidentialHigh">
+                                            <rect x="0" y="12" width="116" height="6" rx="3" ry="3"></rect>
+                                        </clippath>
+                                        <rect x="0" y="12" width="116" height="6" rx="3" ry="3"
+                                            fill="rgba(255, 255, 255, 0.08)"></rect>
+                                        <rect id="ResidentialHigh-bar" x="0" y="12" width="0%" height="6" rx="3" ry="3"
+                                            clip-path="url(#ResidentialHigh)" fill="#2B7600"></rect>
+                                        <rect x="0" y="12" width="116" height="6" rx="3" ry="3" fill="url(#shadow)">
+                                        </rect>
+                                        <clippath id="Commercial">
+                                            <rect x="0" y="18" width="116" height="6" rx="3" ry="3"></rect>
+                                        </clippath>
+                                        <rect x="0" y="18" width="116" height="6" rx="3" ry="3"
+                                            fill="rgba(255, 255, 255, 0.08)"></rect>
+                                        <rect id="Commercial-bar" x="0" y="18" width="0%" height="6" rx="3" ry="3"
+                                            clip-path="url(#Commercial)" fill="#46B2DB"></rect>
+                                        <rect x="0" y="18" width="116" height="6" rx="3" ry="3" fill="url(#shadow)">
+                                        </rect>
+                                        <clippath id="Industrial">
+                                            <rect x="0" y="24" width="116" height="6" rx="3" ry="3"></rect>
+                                        </clippath>
+                                        <rect x="0" y="24" width="116" height="6" rx="3" ry="3"
+                                            fill="rgba(255, 255, 255, 0.08)"></rect>
+                                        <rect id="Industrial-bar" x="0" y="24" width="100%" height="6" rx="3" ry="3"
+                                            clip-path="url(#Industrial)" fill="#DBC246"></rect>
+                                        <rect x="0" y="24" width="116" height="6" rx="3" ry="3" fill="url(#shadow)">
+                                        </rect>
+                                        <clippath id="Office">
+                                            <rect x="0" y="30" width="116" height="6" rx="3" ry="3"></rect>
+                                        </clippath>
+                                        <rect x="0" y="30" width="116" height="6" rx="3" ry="3"
+                                            fill="rgba(255, 255, 255, 0.08)"></rect>
+                                        <rect id="Office-bar" style="width: 35px; " x="0" y="30"
+                                            width="30.000001192092896%" height="6" rx="3" ry="3"
+                                            clip-path="url(#Office)" fill="#8D44AD"></rect>
+                                        <rect x="0" y="30" width="116" height="6" rx="3" ry="3" fill="url(#shadow)">
+                                        </rect>
+                                    </svg></div>
+                            </div>
+                        </div>
+                        <div class="toolbar-button-strip_CoK">
+                            <div class="group_i85"><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Zones.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/LotTool.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/ZoneSignature.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button></div>
+                            <div class="group_i85"><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Roads.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Electricity.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Water.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Healthcare.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Garbage.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Education.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/FireSafety.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Police.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Transportation.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/ParksAndRecreation.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Communications.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Landscaping.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button></div>
+                            <div class="group_i85"><button
+                                    class="button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_cBV toggle-states_DTm"><img
+                                        class="icon_soN icon_Iwk" src="Media/Game/Icons/Bulldozer.svg">
+                                    <div class="item-inner_R9q"></div>
+                                </button></div>
+                        </div>
+                        <div class="end_G0e">
+                            <div class="spacer_oEi"></div>
+                            <div class="clickable-wrapper" style="cursor: pointer; " aria-disabled="false"><button
+                                    class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_X82 toggle-states_DTm"><img
+                                        class="icon_KJZ icon_soN icon_Iwk" src="Media/Game/Icons/Economy.svg"></button>
+                            </div>
+                            <div class="divider_GaZ"></div>
+                            <div class="clickable-wrapper" style="cursor: pointer; " aria-disabled="false"><button
+                                    class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_X82 toggle-states_DTm"><img
+                                        class="icon_KJZ icon_soN icon_Iwk"
+                                        src="Media/Game/Icons/TransportationOverview.svg"></button></div>
+                            <div class="divider_GaZ"></div>
+                            <div class="clickable-wrapper" style="cursor: pointer; " aria-disabled="false"><button
+                                    class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_X82 toggle-states_DTm"><img
+                                        class="icon_KJZ icon_soN icon_Iwk"
+                                        src="Media/Game/Icons/CityStatistics.svg"></button></div>
+                            <div class="divider_GaZ"></div><button
+                                class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_X82 toggle-states_DTm">
+                                <div class="icon_rqi icon_KJZ icon_soN icon_Iwk"></div>
+                            </button>
+                            <div class="spacer_oEi"></div><button
+                                class="button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT button_s2g button_ECf item_It6 item-mouse-states_Fmi item-selected_tAM item-focused_FuT toggle-states_X82 toggle-states_DTm"><img
+                                    class="icon_KJZ icon_soN icon_Iwk" src="Media/Game/Icons/PhotoMode.svg"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom_vae">
+                    <div class="bottom-inner_ZYV container_yy5">
+                        <div class="time-controls_TVa field_eKJ"><button
+                                class="button_M6C button_M6C button_w1a play-pause_Z_u">
+                                <div class="tinted-icon_iKo icon_PhD"
+                                    style="mask-image: url(Media/Glyphs/SimulationPlay.svg); "></div>
+                            </button>
+                            <div class="divider_GbU"></div>
+                            <div class="date-time-container_UTv">
+                                <div class="date-time_mlZ">
+                                    <div class="time-hours_w20">18</div>
+                                    <div class="time-colon_t_C">:</div>
+                                    <div class="time-minutes_QOr">25</div>
+                                    <div class="date_fBv">Apr 2025</div>
+                                </div>
+                            </div>
+                            <div class="divider_GbU"></div><button class="button_M6C button_M6C button_w1a speed_O0e">
+                                <div class="tinted-icon_iKo icon_PhD"
+                                    style="mask-image: url(Media/Glyphs/SimulationSpeed1.svg); "></div>
+                            </button>
+                        </div>
+                        <div class="climate-field_dIy field_eKJ">
+                            <div class="weather_dXo">
+                                <div class="weather-container_L1D"><img class="sun_XMt celestial-object_su7 active_k1G"
+                                        src="Media/Game/Climate/Sun.svg"><img class="moon_TlF celestial-object_su7"
+                                        src="Media/Game/Climate/Moon.svg"><img class="weather-icon_BeV active_k1G"
+                                        src="Media/Game/Climate/Few.svg"><img class="weather-icon_BeV"
+                                        src="Media/Game/Climate/Scattered.svg"><img class="weather-icon_BeV"
+                                        src="Media/Game/Climate/Broken.svg"><img class="weather-icon_BeV"
+                                        src="Media/Game/Climate/Overcast.svg"><img class="weather-icon_BeV"
+                                        src="Media/Game/Climate/Rain.svg"><img class="weather-icon_BeV"
+                                        src="Media/Game/Climate/Snow.svg"><img class="weather-icon_BeV"
+                                        src="Media/Game/Climate/Hail.svg"><img class="weather-icon_BeV"
+                                        src="Media/Game/Climate/Storm.svg">
+                                    <div class="temperature_CiN">14°C</div>
+                                </div>
+                            </div>
+                            <div class="divider_GbU"></div>
+                            <div class="season_js3">Spring</div>
+                        </div>
+                        <div class="city-name-field_XDy field_eKJ selectable_otQ">
+                            <div class="wrapper_onO wrapper_dff wrapper_onO">
+                                <div class="container_kOI container_MC3"><input class="input_MMV input_JJ_ content_syM"
+                                        maxlength="64" type="text" vk-title="Give your City a name" vk-description=""
+                                        vk-type="text" rows="5">
+                                    <div class="label_qsp label_mWz content_syM">Mechanics Test</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container_Kmm"><button class="field_eKJ selectable_otQ">
+                                <div class="content_syM content_QTZ"><img class="icon_bCS"
+                                        src="Media/Game/Icons/Citizen.svg">
+                                    <div class="value_ruP">11,083</div>
+                                    <div class="trend_IAr">
+                                        <div class="tinted-icon_iKo trend-icon_AgE positive_PUr"
+                                            style="mask-image: url(Media/Glyphs/TrendUp.svg); "></div>
+                                    </div>
+                                </div>
+                            </button></div>
+                        <div class="container_DC2"><button class="field_eKJ selectable_otQ">
+                                <div class="content_syM content_QTZ"><img class="icon_bCS"
+                                        src="Media/Game/Icons/Money.svg">
+                                    <div class="unlimited_Dsm">∞</div>
+                                </div>
+                            </button></div><button class="field_eKJ selectable_otQ">
+                            <div class="content_syM content_B0O"><img class="trend_NRr"
+                                    src="Media/Game/Misc/HappinessMinus.svg">
+                                <div class="indicators_ZC7"><img class="icon_Tkh"
+                                        src="Media/Game/Icons/Depressed.svg"><img class="icon_Tkh"
+                                        src="Media/Game/Icons/Sad.svg"><img class="icon_Tkh active_nrD"
+                                        src="Media/Game/Icons/Neutral.svg"><img class="icon_Tkh"
+                                        src="Media/Game/Icons/Content.svg"><img class="icon_Tkh"
+                                        src="Media/Game/Icons/Happy.svg"></div><img class="trend_NRr"
+                                    src="Media/Game/Misc/HappinessPlus.svg">
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="pause-overlay_rOw"></div>
+            <div class="tutorial-renderer_wve tutorials-renderer_BtC">
+                <div class="top-right-layout_sSC"></div>
+                <div class="center-layout_Uqg"></div>
+            </div>
+            <div class="pointer-barrier_etG"></div>
+            <div class="dropdown-popup_mMv"
+                style="position: absolute; visibility: initial; left: 256px; top: 241px; max-height: 1199px; min-width: 490.665px; ">
+                <div class="dropdown-menu_xq2 dropdown-menu_Swd">
+                    <div class="scrollable_DXr y_SMM">
+                        <div class="content_gqa">
+                            <button class="dropdown-item_R_l undefined">
+                                <div class="item_Bmu"><img class="thumb_eC2" src="Media/Game/Icons/Bus.svg">
+                                    <div class="label_jXx">CO Bus </div>
+                                </div>
+                            </button>
+                            <button class="dropdown-item_R_l undefined">
+                                <div class="item_Bmu"><img class="thumb_eC2" src="Media/Game/Icons/Bus.svg">
+                                    <div class="label_jXx">CO Electric Bus </div>
+                                </div>
+                            </button>
+                            <button class="dropdown-item_R_l undefined">
+                                <div class="item_Bmu"><img class="thumb_eC2" src="Media/Game/Icons/Bus.svg">
+                                    <div class="label_jXx">Bus </div>
+                                </div>
+                            </button>
+                            <button class="dropdown-item_R_l undefined">
+                                <div class="item_Bmu"><img class="thumb_eC2" src="Media/Game/Icons/Bus.svg">
+                                    <div class="label_jXx">Electric Bus </div>
+                                </div>
+                            </button>
+                            <div class="bottom-padding_JS3"></div>
+                        </div>
+                        <div class="track_e3O y_SMM">
+                            <div class="thumb_Cib y_SMM"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="debugging_dvz">
+            <div class="fps-display_t30">
+                <div class="value_vNu"> 56 FPS</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

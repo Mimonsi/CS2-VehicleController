@@ -7,6 +7,7 @@ using Colossal.PSI.Environment;
 using Game;
 using Game.Modding;
 using Game.SceneFlow;
+using Unity.Entities;
 using VehicleController.Systems;
 
 namespace VehicleController
@@ -33,7 +34,9 @@ namespace VehicleController
             updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
             updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
-            updateSystem.UpdateAt<CreatedServiceVehicleModifierSystem>(SystemUpdatePhase.PreCulling);
+            updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
+            
+            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ChangeVehicleSection>();
             //updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
 
             m_Setting = new Setting(this);

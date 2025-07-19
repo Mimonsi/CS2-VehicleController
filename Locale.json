@@ -20,6 +20,11 @@
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Pack Name",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Enter a name for your pack.",
 
+    "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "Delete Vehicle Instances",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstance]": "When activate, delete incorrectly spawned vehicles. The default behavior is changing the vehicle on spawn to the correct one.",
+
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export Pack",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export your current properties to a json property pack file.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavePropertyChanges]": "Save Property Changes",
