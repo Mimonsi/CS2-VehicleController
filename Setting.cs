@@ -110,7 +110,7 @@ namespace VehicleController
                     displayName = s,
                 });
             }
-            Mod.log.Info("Displaying " + items.Count + " probability packs");
+            Mod.Logger.Info("Displaying " + items.Count + " probability packs");
             return items.ToArray();
         }
         
@@ -191,7 +191,7 @@ namespace VehicleController
             set
             {
                 _currentVehicleClass = value;
-                Mod.log.Info("Current vehicle class set to: " + value);
+                Mod.Logger.Info("Current vehicle class set to: " + value);
             }
         }
 
@@ -205,12 +205,12 @@ namespace VehicleController
                     displayName = vehicleClass,
                     value = vehicleClass,
                 });
-                Mod.log.Info("Added vehicle class: " + vehicleClass);
+                Mod.Logger.Info("Added vehicle class: " + vehicleClass);
             }
 
             if (items.Count == 0)
             {
-                Mod.log.Info("No vehicle classes found, adding dummy classes");
+                Mod.Logger.Info("No vehicle classes found, adding dummy classes");
                 items.Add(new DropdownItem<string>()
                 {
                     displayName = "Dummy Sedan",
@@ -285,7 +285,7 @@ namespace VehicleController
                 }
                 catch (Exception e)
                 {
-                    Mod.log.Info(e);
+                    Mod.Logger.Info(e);
                 }
             }
         }
@@ -302,7 +302,7 @@ namespace VehicleController
                 }
                 catch (Exception e)
                 {
-                    Mod.log.Info(e);
+                    Mod.Logger.Info(e);
                 }
             }
         }

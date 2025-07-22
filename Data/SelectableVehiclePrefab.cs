@@ -13,11 +13,8 @@ namespace VehicleController.Data
             writer.TypeBegin("VehicleController." + nameof(SelectableVehiclePrefab));
             writer.PropertyName("prefabName");
             writer.Write(prefabName);
-            if (imageUrl != null)
-            {
-                writer.PropertyName("imageUrl");
-                writer.Write(imageUrl);
-            }
+            writer.PropertyName("imageUrl");
+            writer.Write(imageUrl);
             writer.PropertyName("selected");
             writer.Write(selected);
             writer.TypeEnd();

@@ -31,7 +31,7 @@ namespace VehicleController.Systems
             base.OnCreate();
             Instance = this;
             Enabled = true;
-            Logger = Mod.log;
+            Logger = Mod.Logger;
             
             carQuery = GetEntityQuery(new EntityQueryDesc
             {

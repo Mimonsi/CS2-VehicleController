@@ -81,7 +81,7 @@ namespace VehicleController.Data
         
         public static ProbabilityPack LoadFromFile(string name)
         {
-            Mod.log.Info("Loading probability pack " + name);
+            Mod.Logger.Info("Loading probability pack " + name);
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
                 "probability", name + ".json");
             if (!File.Exists(path))
@@ -109,11 +109,11 @@ namespace VehicleController.Data
             }
             catch (Exception ex)
             {
-                Mod.log.Error($"Error saving probability pack {Name}: {ex.Message}");
+                Mod.Logger.Error($"Error saving probability pack {Name}: {ex.Message}");
                 throw;
             }
 
-            Mod.log.Info($"Saved probability pack {Name} to {path}");
+            Mod.Logger.Info($"Saved probability pack {Name} to {path}");
         }
         
         public bool Contains(string name)

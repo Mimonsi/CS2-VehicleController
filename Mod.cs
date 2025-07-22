@@ -14,7 +14,7 @@ namespace VehicleController
 {
     public class Mod : IMod
     {
-        public static ILog log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(Mod)}")
+        public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(Mod)}")
             .SetShowsErrorsInUI(false);
 
         private Setting m_Setting;
@@ -24,16 +24,21 @@ namespace VehicleController
 
         public void OnLoad(UpdateSystem updateSystem)
         {
-            log.Info(nameof(OnLoad));
+            Logger.Info(nameof(OnLoad));
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
             
-            CopyEmbeddedPacks("probability");
-            CopyEmbeddedPacks("property");
+            if (CopyEmbeddedPacks("probability"))
+                updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
+            else
+                Logger.Info("Disabled VehicleProbabilitySystem due to error when copying embedded packs");
+            if (CopyEmbeddedPacks("property"))
+                updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
+            else
+                Logger.Info("Disabled VehiclePropertySystem due to error when copying embedded packs");
+            
             updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
-            updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
-            updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
             updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
             
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ChangeVehicleSection>();
@@ -51,18 +56,29 @@ namespace VehicleController
             Setting.Instance = m_Setting;
         }
         
-        private void CopyEmbeddedPacks(string subPath)
+        private bool CopyEmbeddedPacks(string subPath)
         {
-            var modPath = Path.GetDirectoryName(path);
-            var srcPath = Path.Combine(modPath, "packs", subPath);
-            var destPath = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs", subPath);
-            if (!Directory.Exists(destPath))
-                Directory.CreateDirectory(destPath);
-            foreach(var file in Directory.GetFiles(srcPath))
+            try
             {
-                var destFile = Path.Combine(destPath, Path.GetFileName(file));
-                if (!File.Exists(destFile))
-                    File.Copy(file, destFile);
+                var modPath = Path.GetDirectoryName(path);
+                var srcPath = Path.Combine(modPath, "packs", subPath);
+                var destPath = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
+                    subPath);
+                if (!Directory.Exists(destPath))
+                    Directory.CreateDirectory(destPath);
+                foreach (var file in Directory.GetFiles(srcPath))
+                {
+                    var destFile = Path.Combine(destPath, Path.GetFileName(file));
+                    if (!File.Exists(destFile))
+                        File.Copy(file, destFile);
+                }
+
+                return true;
+            }
+            catch (Exception x)
+            {
+                Logger.Error("Error copying embedded packs: " + x.Message);
+                return false;
             }
         }
 
@@ -70,12 +86,12 @@ namespace VehicleController
         {
             try
             {
-                log.Info(nameof(OnDispose));
+                Logger.Info(nameof(OnDispose));
                 m_Setting.UnregisterInOptionsUI();
             }
             catch (Exception e)
             {
-                log.Error($"Error during {nameof(OnDispose)}: {e.Message}");
+                Logger.Error($"Error during {nameof(OnDispose)}: {e.Message}");
             }
         }
     }

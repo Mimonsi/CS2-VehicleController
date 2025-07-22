@@ -185,7 +185,7 @@ namespace VehicleController.Systems
 
                 if (!found)
                 {
-                    Mod.log.Error(
+                    Mod.Logger.Error(
                         $"Change Company unable to find CompanySection in middle sections of SelectedInfoUISystem.");
                 }
             }
