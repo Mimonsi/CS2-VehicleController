@@ -22,6 +22,11 @@ namespace VehicleController
         public const string Name = "Vehicle Controller";
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
+        public static bool EnableProbabilitySystem = false;
+        public static bool EnablePropertySystem = false;
+        public static bool EnableVehicleCounterSystem = true;
+        public static bool EnableChangeVehicleSection = true;
+
         public void OnLoad(UpdateSystem updateSystem)
         {
             Logger.Info(nameof(OnLoad));
@@ -29,17 +34,26 @@ namespace VehicleController
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
             
-            if (CopyEmbeddedPacks("probability"))
-                updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
-            else
-                Logger.Info("Disabled VehicleProbabilitySystem due to error when copying embedded packs");
-            if (CopyEmbeddedPacks("property"))
-                updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
-            else
-                Logger.Info("Disabled VehiclePropertySystem due to error when copying embedded packs");
+            if (EnableProbabilitySystem)
+            {
+                if (CopyEmbeddedPacks("probability"))
+                    updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
+                else
+                    Logger.Info("Disabled VehicleProbabilitySystem due to error when copying embedded packs");
+            }
+
+            if (EnablePropertySystem)
+            {
+                if (CopyEmbeddedPacks("property"))
+                    updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
+                else
+                    Logger.Info("Disabled VehiclePropertySystem due to error when copying embedded packs");
+            }
             
-            updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
-            updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
+            if (EnableVehicleCounterSystem)
+                updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
+            if (EnableChangeVehicleSection)
+                updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
             
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ChangeVehicleSection>();
             //updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);

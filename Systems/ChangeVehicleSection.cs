@@ -58,6 +58,8 @@ namespace VehicleController.Systems
                 (Action<Entity, Entity, float3>)Delegate.Combine(
                     _selectedInfoUISystem.eventSelectionChanged,
                     (Action<Entity, Entity, float3>)SelectedEntityChanged);
+
+            Logger.effectivenessLevel = Level.All; // For debugging //TODO: Remove in production
             
             //m_InfoUISystem.AddMiddleSection(this); //
             AddMiddleSectionCustom();
@@ -440,12 +442,14 @@ namespace VehicleController.Systems
                 return false;
             }
             var types = GetServiceVehicleTypes();
+            string entityType = EntityManager.GetName(selectedEntity);
             if (types.Count == 0)
             {
-                Logger.Info("No service vehicle types available for selected entity.");
+
+                Logger.Info($"No service vehicle types available for selected entity of type: {entityType}");
                 return false;
             }
-            Logger.Info("Types: " + string.Join(", ", types));
+            Logger.Info($"Service vehicle types for entity type ${entityType}: " + string.Join(", ", types));
             // TODO: Add toggle to disable in settings
             return true;
         }
