@@ -445,11 +445,10 @@ namespace VehicleController.Systems
             string entityType = EntityManager.GetName(selectedEntity);
             if (types.Count == 0)
             {
-
                 Logger.Info($"No service vehicle types available for selected entity of type: {entityType}");
                 return false;
             }
-            Logger.Info($"Service vehicle types for entity type ${entityType}: " + string.Join(", ", types));
+            Logger.Info($"Service vehicle types for entity type {entityType}: " + string.Join(", ", types));
             // TODO: Add toggle to disable in settings
             return true;
         }
@@ -490,16 +489,14 @@ namespace VehicleController.Systems
                 {
                     foreach( var allowedVehicle in allowedVehicles)
                     {
+                        // Try getting the thumbnail
+                        var prefabBase = GetPrefabBaseForName(prefab.prefabName);
+                        var thumbnail = ImageSystem.GetThumbnail(prefabBase);
+                        //Logger.Debug("Thumbnail for " + prefab.prefabName + ": " + thumbnail);
+                        prefab.imageUrl = thumbnail;
                         if (allowedVehicle.PrefabName == prefab.prefabName)
                         {
                             prefab.selected = true; // Mark the vehicle as selected
-                            
-                            // Try getting the thumbnail
-                            var prefabBase = GetPrefabBaseForName(prefab.prefabName);
-                            var thumbnail = ImageSystem.GetThumbnail(prefabBase);
-                            Logger.Debug("Thumbnail for " + prefab.prefabName + ": " + thumbnail);
-                            prefab.imageUrl = thumbnail;
-                            
                             count++;
                             //Logger.Info("Marked vehicle as selected: " + prefab.prefabName);
                         }

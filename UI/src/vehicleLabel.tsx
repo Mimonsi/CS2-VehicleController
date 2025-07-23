@@ -3,6 +3,7 @@ import { useLocalization    } from "cs2/l10n";
 import { ModuleResolver     } from "moduleResolver";
 import React from "react";
 import {getModule} from "cs2/modding";
+import {Icon} from "cs2/ui";
 const styles = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
 // Props for ResourceIconLabel.
 interface VehicleLabelProps
@@ -16,7 +17,7 @@ interface VehicleLabelProps
 // so the game does not split the icon from the label when wrapping in the company selector.
 export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps) =>
 {
-    console.log("vehicleLabel", prefabName, selected);
+    //console.log("vehicleLabel", prefabName, selected, image);
     // Get game's icon for the vehicle.
     //const resourceIcon: string = "Media/Game/Resources/" + resource + ".svg";
     const vehicleIcon: string = image ? image : "Media/Game/Icons/GenericVehicle.svg";
@@ -49,7 +50,8 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
         vehicleText = prefabName;
     }
 
-
+    //        <img className={styles.thumb} src={vehicleIcon} />
+    
     //{/*<div style={{ "--checkmark-url": `url(${checkmarkIcon})` } as React.CSSProperties} className={styles.checkmark}></div>*/} 
   /*
 <div>}
@@ -68,7 +70,7 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
   //
     return (
       <div className={styles.item}>
-        <img className={styles.thumb} src={vehicleIcon} />
+          <Icon className={styles.icon} src={vehicleIcon}></Icon>
         <div className={styles.label}>{vehicleText}</div>
       </div>
     );
