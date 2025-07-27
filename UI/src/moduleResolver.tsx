@@ -14,6 +14,15 @@ export interface InfoSectionProps extends ClassProps
     children:       any;
 }
 
+export interface InfoButtonProps extends ClassProps
+{
+    focusKey?:      FocusKey;
+    tooltip?:       ReactNode;
+    disableFocus?:  boolean;
+    label?:         string;
+    icon?:          ReactNode;
+}
+
 // Provide access to modules from index.js.
 export class ModuleResolver
 {
@@ -27,6 +36,7 @@ export class ModuleResolver
     private _formattedParagraphs:   any;
     private _infoRow:               any;
     private _infoSection:           any;
+    private _infoButton:            any;
     private _uiSound:               any;
 
     // Define SCSS modules.
@@ -39,6 +49,7 @@ export class ModuleResolver
     public get FormattedParagraphs():   (props: FormattedParagraphsProps) => JSX.Element    { return this._formattedParagraphs      ?? (this._formattedParagraphs   = getModule("game-ui/common/text/formatted-paragraphs.tsx",                                                                                     "FormattedParagraphs"   )); }
     public get InfoRow():               (props: InfoRowProps            ) => JSX.Element    { return this._infoRow                  ?? (this._infoRow               = getModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.tsx",                                              "InfoRow"               )); }
     public get InfoSection():           (props: InfoSectionProps        ) => JSX.Element    { return this._infoSection              ?? (this._infoSection           = getModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.tsx",                                      "InfoSection"           )); }
+    public get InfoButton():           (props: InfoButtonProps        ) => JSX.Element    { return this._infoButton              ?? (this._infoButton           = getModule("game-ui/game/components/selected-info-panel/shared-components/info-button/info-button.tsx",                                      "InfoButton"           )); }
     public get UISound()                                                                    { return this._uiSound                  ?? (this._uiSound               = getModule("game-ui/common/data-binding/audio-bindings.ts",                                                                                    "UISound"               )); }
 
     // Provide access to SCSS modules.

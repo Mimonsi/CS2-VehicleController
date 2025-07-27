@@ -5,6 +5,7 @@ import { FormattedParagraphsProps   } from "cs2/ui";
 
 import   styles                       from "vehicleSelectorComponent.module.scss";
 import { VehicleSelector            } from "./vehicleSelector";
+import { ActionButtons } from "./actionButtons";
 import { ModuleResolver             } from "moduleResolver";
 import   mod                          from "../mod.json";
 import {getModule} from "cs2/modding";
@@ -18,7 +19,7 @@ export type SelectableVehiclePrefab =
         imageUrl?: string, // Optional property for image URL
         selected?: boolean, // Optional property to indicate if this vehicle is selected
     }
-
+    
 // The component for the change company section.
 export const VehicleSelectorComponent = (componentList: any): any =>
 {
@@ -115,6 +116,8 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                   right={<button className={styles.infoRowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
                   disableFocus={true}
                 />
+
+                <ActionButtons text={"Export"}/>
             </ModuleResolver.instance.InfoSection>
         );
     }
