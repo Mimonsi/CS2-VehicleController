@@ -116,11 +116,8 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                   right={<button className={styles.infoRowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
                   disableFocus={true}
                 />
-
-                <ModuleResolver.instance.InfoRow
-                  left={<ActionButtons />}
-                  disableFocus={true}
-                />
+                
+                <ActionButtons/>
             </ModuleResolver.instance.InfoSection>
         );
     }

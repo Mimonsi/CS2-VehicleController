@@ -23,17 +23,22 @@ export const ActionButtons = () => {
     { label: "Export", event: "ExportClipboardClicked" },
     { label: "Import", event: "ImportClipboardClicked" },
   ];
-
+  
   return (
     <>
       {InfoButton ? (
         buttons.map((b) => (
-          <InfoButton
-            key={b.event}
-            label={b.label}
-            icon={"Media/Game/Icons/GenericVehicle.svg"}
-            selected={false}
-            onSelect={() => trigger(mod.id, b.event)}
+          <ModuleResolver.instance.InfoRow
+            left={
+              <InfoButton
+                key={b.event}
+                label={b.label}
+                icon={"Media/Game/Icons/GenericVehicle.svg"}
+                selected={false}
+                onSelect={() => trigger(mod.id, b.event)}
+              />
+            }
+            disableFocus={true}
           />
         ))
       ) : (
