@@ -13,6 +13,9 @@ interface ActionButtonProps {
   text: string;
 }
 
+// This components create buttons allowing the player to copy and paste the vehicle selection
+// Options include copying to other buildings of the exact same prefab, copying to all buildings of the same type, copying to clipboard. Also differentiate between district-wide copying and
+// city-wide copying (global)
 export const ActionButtons = ({ text }: ActionButtonProps) => {
   return (
     <>
