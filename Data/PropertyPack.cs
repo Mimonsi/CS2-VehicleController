@@ -79,7 +79,7 @@ namespace VehicleController.Data
 
         public static IEnumerable<string> GetPackNames()
         {
-            var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleClass), "packs", "property");
+            var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs", "property");
             if (!Directory.Exists(path))
                 return new List<string>();
 
