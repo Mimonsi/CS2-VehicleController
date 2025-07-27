@@ -117,7 +117,10 @@ export const VehicleSelectorComponent = (componentList: any): any =>
                   disableFocus={true}
                 />
 
-                <ActionButtons text={"Export"}/>
+                <ModuleResolver.instance.InfoRow
+                  left={<ActionButtons />}
+                  disableFocus={true}
+                />
             </ModuleResolver.instance.InfoSection>
         );
     }

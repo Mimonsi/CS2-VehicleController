@@ -43,6 +43,8 @@ namespace VehicleController.Systems
     
         private EntityQuery m_ExistingServiceVehicleQuery;
         private EntityQuery m_CreatedServiceVehicleQuery;
+        private EntityQuery m_ServiceBuildingQuery;
+        private static List<string> m_Clipboard = new();
         private EndFrameBarrier m_Barrier;
         private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
@@ -70,6 +72,13 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding("VehicleController", "ChangeNowClicked", ChangeNowClicked));
             AddBinding(new TriggerBinding("VehicleController", "ClearBufferClicked", ClearBufferClicked));
             AddBinding(new TriggerBinding("VehicleController", "Debug2Clicked", Debug2Clicked));
+            AddBinding(new TriggerBinding("VehicleController", "CopySelectionClicked", CopySelectionClicked));
+            AddBinding(new TriggerBinding("VehicleController", "PasteSamePrefabClicked", PasteSamePrefabClicked));
+            AddBinding(new TriggerBinding("VehicleController", "PasteServiceTypeClicked", PasteServiceTypeClicked));
+            AddBinding(new TriggerBinding("VehicleController", "PasteDistrictClicked", PasteDistrictClicked));
+            AddBinding(new TriggerBinding("VehicleController", "PasteCityClicked", PasteCityClicked));
+            AddBinding(new TriggerBinding("VehicleController", "ExportClipboardClicked", ExportClipboardClicked));
+            AddBinding(new TriggerBinding("VehicleController", "ImportClipboardClicked", ImportClipboardClicked));
             
             m_CreatedServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
             {
@@ -127,6 +136,25 @@ namespace VehicleController.Systems
                     ComponentType.ReadOnly<Game.Tools.Temp>(),
                 },
             });
+
+            m_ServiceBuildingQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[]
+                {
+                    ComponentType.ReadOnly<PrefabRef>()
+                },
+                Any = new[]
+                {
+                    ComponentType.ReadOnly<Game.Buildings.Hospital>(),
+                    ComponentType.ReadOnly<Game.Buildings.FireStation>(),
+                    ComponentType.ReadOnly<Game.Buildings.PoliceStation>(),
+                    ComponentType.ReadOnly<Game.Buildings.GarbageFacility>(),
+                    ComponentType.ReadOnly<Game.Buildings.DeathcareFacility>(),
+                    ComponentType.ReadOnly<Game.Buildings.PostFacility>(),
+                    ComponentType.ReadOnly<Game.Buildings.MaintenanceDepot>(),
+                    ComponentType.ReadOnly<Game.Buildings.TransportDepot>()
+                }
+            });
             
             RequireForUpdate(m_CreatedServiceVehicleQuery);
 
@@ -159,6 +187,130 @@ namespace VehicleController.Systems
                 EntityManager.RemoveComponent<AllowedVehiclePrefab>(selectedEntity);
                 Logger.Info("Buffer has been cleared for entity: " + selectedEntity);
             }
+        }
+
+        private void CopySelectionClicked()
+        {
+            m_Clipboard.Clear();
+            if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
+            {
+                foreach (var allowed in EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity))
+                {
+                    m_Clipboard.Add(allowed.PrefabName.ToString());
+                }
+            }
+            Logger.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
+        }
+
+        private void ApplyClipboardToEntity(Entity entity)
+        {
+            if (EntityManager.HasBuffer<AllowedVehiclePrefab>(entity))
+            {
+                EntityManager.RemoveComponent<AllowedVehiclePrefab>(entity);
+            }
+            if (m_Clipboard.Count == 0)
+                return;
+            var buffer = EntityManager.AddBuffer<AllowedVehiclePrefab>(entity);
+            foreach (var name in m_Clipboard)
+            {
+                buffer.Add(new AllowedVehiclePrefab { PrefabName = name });
+            }
+        }
+
+        private void PasteSamePrefabClicked()
+        {
+            if (m_Clipboard.Count == 0)
+                return;
+            if (!EntityManager.TryGetComponent(selectedEntity, out PrefabRef selectedPrefab))
+                return;
+            var entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && prefabRef.m_Prefab == selectedPrefab.m_Prefab)
+                {
+                    ApplyClipboardToEntity(entity);
+                }
+            }
+        }
+
+        private void PasteServiceTypeClicked()
+        {
+            if (m_Clipboard.Count == 0)
+                return;
+            var selectedTypes = GetServiceVehicleTypes();
+            var entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                foreach (var type in selectedTypes)
+                {
+                    if (type == ServiceVehicleType.Ambulance && EntityManager.HasComponent<Game.Buildings.Hospital>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                    if (type == ServiceVehicleType.FireEngine && EntityManager.HasComponent<Game.Buildings.FireStation>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                    if (type == ServiceVehicleType.PoliceCar && EntityManager.HasComponent<Game.Buildings.PoliceStation>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                    if (type == ServiceVehicleType.GarbageTruck && EntityManager.HasComponent<Game.Buildings.GarbageFacility>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                    if (type == ServiceVehicleType.Hearse && EntityManager.HasComponent<Game.Buildings.DeathcareFacility>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                    if (type == ServiceVehicleType.PostVan && EntityManager.HasComponent<Game.Buildings.PostFacility>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                    if (type == ServiceVehicleType.RoadMaintenanceVehicle && EntityManager.HasComponent<Game.Buildings.MaintenanceDepot>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                    if (type == ServiceVehicleType.TransportVehicle && EntityManager.HasComponent<Game.Buildings.TransportDepot>(entity))
+                    {
+                        ApplyClipboardToEntity(entity);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void PasteDistrictClicked()
+        {
+            Logger.Info("PasteDistrictClicked not implemented");
+        }
+
+        private void PasteCityClicked()
+        {
+            if (m_Clipboard.Count == 0)
+                return;
+            var entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                ApplyClipboardToEntity(entity);
+            }
+        }
+
+        private void ExportClipboardClicked()
+        {
+            Logger.Info($"Export clipboard with {m_Clipboard.Count} entries");
+        }
+
+        private void ImportClipboardClicked()
+        {
+            Logger.Info("Import clipboard not implemented");
         }
 
         /// <summary>
