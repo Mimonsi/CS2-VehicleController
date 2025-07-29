@@ -19,18 +19,18 @@ export const ActionButtons = () => {
     {
       title: "Copy & Paste",
       buttons: [
-        { label: "Copy Selection", event: "CopySelectionClicked" },
-        { label: "Paste Same Prefab", event: "PasteSamePrefabClicked" },
-        { label: "Paste Service Type", event: "PasteServiceTypeClicked" },
-        { label: "Paste District", event: "PasteDistrictClicked" },
-        { label: "Paste City", event: "PasteCityClicked" },
+        { label: "Copy Selection", icon: "coui://uil/Standard/RectangleCopy.svg", event: "CopySelectionClicked" },
+        { label: "Paste Same Prefab", icon: "coui://uil/Standard/RectanglePaste.svg", event: "PasteSamePrefabClicked" },
+        { label: "Paste Service Type", icon: "coui://uil/Standard/RectanglePaste.svg", event: "PasteServiceTypeClicked" },
+        { label: "Paste District", icon: "coui://uil/Standard/RectanglePaste.svg", event: "PasteDistrictClicked" },
+        { label: "Paste City", icon: "coui://uil/Standard/RectanglePaste.svg", event: "PasteCityClicked" },
       ],
     },
     {
       title: "Import / Export",
       buttons: [
-        { label: "Export", event: "ExportClipboardClicked" },
-        { label: "Import", event: "ImportClipboardClicked" },
+        { label: "Export", icon: "coui://uil/Standard/DiskSave.svg", event: "ExportClipboardClicked" },
+        { label: "Import", icon: "coui://uil/Standard/DiskLoad.svg", event: "ImportClipboardClicked" },
       ],
     },
   ];
@@ -49,7 +49,7 @@ export const ActionButtons = () => {
                   <InfoButton
                     key={b.event}
                     label={b.label}
-                    icon={"Media/Game/Icons/GenericVehicle.svg"}
+                    icon={b.icon}
                     selected={false}
                     onSelect={() => trigger(mod.id, b.event)}
                   />
