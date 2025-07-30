@@ -3,7 +3,7 @@ import { SelectedInfoSectionBase    } from "cs2/bindings";
 import { useLocalization            } from "cs2/l10n";
 import { FormattedParagraphsProps   } from "cs2/ui";
 
-import   styles                       from "vehicleSelectorComponent.module.scss";
+import   styles                       from "SIPVehicleSelectorComponent.module.scss";
 import { VehicleSelector            } from "./vehicleSelector";
 import { ActionButtons } from "./actionButtons";
 import { ModuleResolver             } from "moduleResolver";
@@ -21,7 +21,7 @@ export type SelectableVehiclePrefab =
     }
     
 // The component for the change company section.
-export const VehicleSelectorComponent = (componentList: any): any =>
+export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
     // Define service vehicle types
     // Matches Query in CreatedServiceVehicleModifierSystem.cs
@@ -96,8 +96,9 @@ export const VehicleSelectorComponent = (componentList: any): any =>
         
         // Construct the change company section.
         // Info row 1 has section heading and Change Now button.
-        // Info row 2 has left and right headings.
-        // Info row 3 has dropdown list of companies to choose from.
+        // Info row 2 has the actual dropdown
+        // Info row 3 has two additional buttons
+        // All further rows are for actions buttons, e.g. copy, paste, export, etc.
         return (
             <ModuleResolver.instance.InfoSection tooltip={formattedTooltip}>
                 <ModuleResolver.instance.InfoRow
