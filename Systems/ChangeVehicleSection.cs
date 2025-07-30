@@ -211,16 +211,24 @@ namespace VehicleController.Systems
 
         private void CopySelectionClicked()
         {
-            m_Clipboard.Clear();
-            if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
+            try
             {
-                foreach (var allowed in EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity))
+                m_Clipboard.Clear();
+                if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
                 {
-                    m_Clipboard.Add(allowed.PrefabName.ToString());
+                    foreach (var allowed in EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity))
+                    {
+                        m_Clipboard.Add(allowed.PrefabName.ToString());
+                    }
                 }
+
+                m_ClipboardData.Update(string.Join(",", m_Clipboard));
+                Logger.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
             }
-            m_ClipboardData.Update(string.Join(",", m_Clipboard));
-            Logger.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
+            catch(Exception x)
+            {
+                Logger.Error($"Error copying vehicles: {x.Message}");
+            }
         }
         
         private void PasteSelectionClicked()

@@ -1,7 +1,7 @@
 ﻿import {bindValue, trigger, useValue} from "cs2/api";
 import { SelectedInfoSectionBase    } from "cs2/bindings";
 import { useLocalization            } from "cs2/l10n";
-import { FormattedParagraphsProps   } from "cs2/ui";
+import {FormattedParagraphs, FormattedParagraphsProps} from "cs2/ui";
 
 import   styles                       from "SIPVehicleSelectorComponent.module.scss";
 import { VehicleSelector            } from "./vehicleSelector";
@@ -71,8 +71,8 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     //const tooltipText: string = translate(mod.id + ".SectionTooltip" + PropertyType[props.propertyType]) ||
     //    "Select a company from the dropdown and click Change Now.";
     const tooltipText = "Select all **vehicle models** that this building is allowed to use. When multiple vehicles are selected, a **random** vehicle from the selection will be chosen.";
-    const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
-    const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
+    //const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
+    //const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
 
     const dummyVehicle: SelectableVehiclePrefab = { prefabName: props.vehiclesSelected + " Vehicles Selected" };
     // Add dummy vehicle on first index
@@ -133,7 +133,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
           <>
             <ModuleResolver.instance.InfoRow
               left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
-              tooltip={formattedTooltip}
+              tooltip={<FormattedParagraphs>{tooltipText}</FormattedParagraphs>}
               disableFocus={true}
             />
 
