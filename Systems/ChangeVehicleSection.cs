@@ -76,7 +76,6 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding("VehicleController", "PasteSamePrefabClicked", PasteSamePrefabClicked));
             AddBinding(new TriggerBinding("VehicleController", "PasteServiceTypeClicked", PasteServiceTypeClicked));
             AddBinding(new TriggerBinding("VehicleController", "PasteDistrictClicked", PasteDistrictClicked));
-            AddBinding(new TriggerBinding("VehicleController", "PasteCityClicked", PasteCityClicked));
             AddBinding(new TriggerBinding("VehicleController", "ExportClipboardClicked", ExportClipboardClicked));
             AddBinding(new TriggerBinding("VehicleController", "ImportClipboardClicked", ImportClipboardClicked));
             
@@ -202,6 +201,10 @@ namespace VehicleController.Systems
             Logger.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
         }
 
+        /// <summary>
+        /// Load allowed vehicles from the clipboard into the entity
+        /// </summary>
+        /// <param name="entity"></param>
         private void ApplyClipboardToEntity(Entity entity)
         {
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(entity))
@@ -217,6 +220,9 @@ namespace VehicleController.Systems
             }
         }
 
+        /// <summary>
+        /// Paste clipboard to all service buildings with the same prefab as the selected entity
+        /// </summary>
         private void PasteSamePrefabClicked()
         {
             if (m_Clipboard.Count == 0)
@@ -290,17 +296,6 @@ namespace VehicleController.Systems
         private void PasteDistrictClicked()
         {
             Logger.Info("PasteDistrictClicked not implemented");
-        }
-
-        private void PasteCityClicked()
-        {
-            if (m_Clipboard.Count == 0)
-                return;
-            var entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
-            {
-                ApplyClipboardToEntity(entity);
-            }
         }
 
         private void ExportClipboardClicked()

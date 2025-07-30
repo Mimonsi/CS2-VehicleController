@@ -1,12 +1,12 @@
-﻿import { trigger                    } from "cs2/api";
+﻿import {bindValue, trigger, useValue} from "cs2/api";
 import { SelectedInfoSectionBase    } from "cs2/bindings";
 import { useLocalization            } from "cs2/l10n";
 import { FormattedParagraphsProps   } from "cs2/ui";
 
-import   styles                       from "vehicleSelectorComponent.module.scss";
+import   styles                       from "SIPVehicleSelectorComponent.module.scss";
 import { VehicleSelector            } from "./vehicleSelector";
-import { ActionButtons } from "./actionButtons";
-import { ModuleResolver             } from "moduleResolver";
+import { ActionButtons } from "./ActionButtons";
+import { ModuleResolver             } from "./ModuleResolver";
 import   mod                          from "../mod.json";
 import {getModule} from "cs2/modding";
 const styleSelectVehicle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
@@ -19,10 +19,17 @@ export type SelectableVehiclePrefab =
         imageUrl?: string, // Optional property for image URL
         selected?: boolean, // Optional property to indicate if this vehicle is selected
     }
-    
+
+const uilStandard =                          "coui://uil/Standard/";
+const uilColored =                           "coui://uil/Colored/";
+const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
+const expandSrc =                       uilStandard + "ArrowsExpand.svg";
+
+const Minimized$ = bindValue<boolean>(mod.id, "Minimized");    
 // The component for the change company section.
-export const VehicleSelectorComponent = (componentList: any): any =>
+export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
+    const Minimized = useValue(Minimized$);
     // Define service vehicle types
     // Matches Query in CreatedServiceVehicleModifierSystem.cs
     enum ServiceVehicleType
@@ -54,7 +61,7 @@ export const VehicleSelectorComponent = (componentList: any): any =>
     {
         // Get the mod's translated text for the section heading and button.
         const { translate } = useLocalization();
-        const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Assigned Vehicle Prefabs";
+        const sectionHeading: string = translate(mod.id + ".VehicleController") || "Vehicle Controller";
         const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Apply to existing vehicles";
         const clearBufferLabel: string = translate(mod.id + ".ClearBuffer"    ) || "Clear allowed Vehicles";
         const debug2Label: string = translate(mod.id + ".Debug2"    ) || "Delete owned vehicles";
@@ -94,30 +101,54 @@ export const VehicleSelectorComponent = (componentList: any): any =>
             trigger(mod.id, "Debug2Clicked");
         }
         
+        function minimizeClick()
+        {
+            trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
+            trigger(mod.id, "Debug2Clicked");
+        }
+        
         // Construct the change company section.
         // Info row 1 has section heading and Change Now button.
-        // Info row 2 has left and right headings.
-        // Info row 3 has dropdown list of companies to choose from.
+        // Info row 2 has the actual dropdown
+        // Info row 3 has two additional buttons
+        // All further rows are for actions buttons, e.g. copy, paste, export, etc.
         return (
             <ModuleResolver.instance.InfoSection tooltip={formattedTooltip}>
                 <ModuleResolver.instance.InfoRow
                     left={sectionHeading}
                     uppercase={true}
-                    right={<button className={styles.infoRowButton} onClick={() => onChangeNowClicked()}>{changeNowLabel}</button>}
+                    right={
+                        <ModuleResolver.instance.ToolButton
+                          src={Minimized? expandSrc : minimizeSrc}
+                          focusKey={ModuleResolver.instance.FOCUS_DISABLED}
+                          tooltip = {Minimized? "Expand" : "Minimize"}
+                          className = {ModuleResolver.instance.toolButtonTheme.button}
+                          onSelect={() => minimizeClick()}
+                        />
+                    }
                     disableFocus={true}
                 />
-                <ModuleResolver.instance.InfoRow
-                    left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
-                    disableFocus={true}
-                />
-                <ModuleResolver.instance.InfoRow
-                  left={<button className={styles.infoRowButton} onClick={() => onClearBufferClicked()}>{clearBufferLabel}</button>}
-                  uppercase={true}
-                  right={<button className={styles.infoRowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
-                  disableFocus={true}
-                />
-                
-                <ActionButtons/>
+                {!Minimized && (
+                  <>
+                    <ModuleResolver.instance.InfoRow
+                      uppercase={true}
+                      right={<button className={styles.infoRowButton} onClick={() => onChangeNowClicked()}>{changeNowLabel}</button>}
+                      disableFocus={true}
+                    />
+                    <ModuleResolver.instance.InfoRow
+                        left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
+                        disableFocus={true}
+                    />
+                    <ModuleResolver.instance.InfoRow
+                      left={<button className={styles.infoRowButton} onClick={() => onClearBufferClicked()}>{clearBufferLabel}</button>}
+                      uppercase={true}
+                      right={<button className={styles.infoRowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
+                      disableFocus={true}
+                    />
+
+                    <ActionButtons/>
+                </>
+                )}
             </ModuleResolver.instance.InfoSection>
         );
     }
