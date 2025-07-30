@@ -1,4 +1,4 @@
-﻿import { trigger                    } from "cs2/api";
+﻿import {bindValue, trigger, useValue} from "cs2/api";
 import { SelectedInfoSectionBase    } from "cs2/bindings";
 import { useLocalization            } from "cs2/l10n";
 import { FormattedParagraphsProps   } from "cs2/ui";
@@ -19,10 +19,17 @@ export type SelectableVehiclePrefab =
         imageUrl?: string, // Optional property for image URL
         selected?: boolean, // Optional property to indicate if this vehicle is selected
     }
-    
+
+const uilStandard =                          "coui://uil/Standard/";
+const uilColored =                           "coui://uil/Colored/";
+const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
+const expandSrc =                       uilStandard + "ArrowsExpand.svg";
+
+const Minimized$ = bindValue<boolean>(mod.id, "Minimized");    
 // The component for the change company section.
 export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
+    const Minimized = useValue(Minimized$);
     // Define service vehicle types
     // Matches Query in CreatedServiceVehicleModifierSystem.cs
     enum ServiceVehicleType
@@ -94,6 +101,12 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
             trigger(mod.id, "Debug2Clicked");
         }
         
+        function minimizeClick()
+        {
+            trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
+            trigger(mod.id, "Debug2Clicked");
+        }
+        
         // Construct the change company section.
         // Info row 1 has section heading and Change Now button.
         // Info row 2 has the actual dropdown
@@ -104,21 +117,38 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
                 <ModuleResolver.instance.InfoRow
                     left={sectionHeading}
                     uppercase={true}
-                    right={<button className={styles.infoRowButton} onClick={() => onChangeNowClicked()}>{changeNowLabel}</button>}
+                    right={
+                        <ModuleResolver.instance.ToolButton
+                          src={Minimized? expandSrc : minimizeSrc}
+                          focusKey={ModuleResolver.instance.FOCUS_DISABLED}
+                          tooltip = {Minimized? "Expand" : "Minimize"}
+                          className = {ModuleResolver.instance.toolButtonTheme.button}
+                          onSelect={() => minimizeClick()}
+                        />
+                    }
                     disableFocus={true}
                 />
-                <ModuleResolver.instance.InfoRow
-                    left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
-                    disableFocus={true}
-                />
-                <ModuleResolver.instance.InfoRow
-                  left={<button className={styles.infoRowButton} onClick={() => onClearBufferClicked()}>{clearBufferLabel}</button>}
-                  uppercase={true}
-                  right={<button className={styles.infoRowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
-                  disableFocus={true}
-                />
-                
-                <ActionButtons/>
+                {!Minimized && (
+                  <>
+                    <ModuleResolver.instance.InfoRow
+                      uppercase={true}
+                      right={<button className={styles.infoRowButton} onClick={() => onChangeNowClicked()}>{changeNowLabel}</button>}
+                      disableFocus={true}
+                    />
+                    <ModuleResolver.instance.InfoRow
+                        left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
+                        disableFocus={true}
+                    />
+                    <ModuleResolver.instance.InfoRow
+                      left={<button className={styles.infoRowButton} onClick={() => onClearBufferClicked()}>{clearBufferLabel}</button>}
+                      uppercase={true}
+                      right={<button className={styles.infoRowButton} onClick={() => onDebug2Clicked()}>{debug2Label}</button>}
+                      disableFocus={true}
+                    />
+
+                    <ActionButtons/>
+                </>
+                )}
             </ModuleResolver.instance.InfoSection>
         );
     }
