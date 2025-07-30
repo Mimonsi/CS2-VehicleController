@@ -349,6 +349,7 @@ namespace VehicleController.Systems
         private void ExportClipboardClicked()
         {
             Logger.Info($"Export clipboard with {m_Clipboard.Count} entries");
+            // Set windows clipboard data
             // TODO: Implement
         }
 

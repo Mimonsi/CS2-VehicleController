@@ -39,34 +39,18 @@ export const ClipboardActions = () => {
   const clipboardData$ = bindValue<string>(mod.id, "ClipboardData", "");
   const clipboardData = useValue(clipboardData$);
 
-  function parseClipboard(text: string): string[] | null {
-    if (!text.trim()) {
-      return [];
-    }
-    try {
-      const maybeJson = JSON.parse(text);
-      if (Array.isArray(maybeJson) && maybeJson.every(e => typeof e === "string" && e.trim().length > 0)) {
-        return maybeJson.map(e => e.trim());
-      }
-    } catch {
-      // Not JSON - fall back to delimiter-separated list
-    }
-
-    const tokens = text
-      .split(/[,;\n\r]+/)
-      .map(t => t.trim())
-      .filter(t => t.length > 0);
-
-    const valid = tokens.every(t => /^[A-Za-z0-9_.-]+$/.test(t));
-    return valid ? tokens : null;
+  function getClipboardEntryLength(text: string): number {
+    // See how many comma seperated entries are in the clipboard text
+    if (!text) return 0;
+    // Split the text by commas and filter out empty entries
+    const entries = text.split(",").map(entry => entry.trim()).filter(entry => entry.length > 0);
+    return entries.length;
   }
 
-  const parsedClipboard = useMemo(() => parseClipboard(clipboardData), [clipboardData]);
-  const clipboardEmpty = !parsedClipboard || parsedClipboard.length === 0;
-
-  if (parsedClipboard === null) {
-    console.error("Invalid clipboard format", clipboardData);
-  }
+  console.log("Clipboard data: ", clipboardData);
+  //const clipboardLength = useMemo(() => getClipboardEntryLength(clipboardData), [clipboardData]);
+  const clipboardLength = getClipboardEntryLength(clipboardData);
+  console.log("Clipboard length: ", clipboardLength);
   
   // TODO: Find other icon for Importing from file
   return (
@@ -90,7 +74,7 @@ export const ClipboardActions = () => {
             src = {"coui://uil/Standard/DiskSave.svg"}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
             selected={false}
-            tooltip = {"Export Clipboard to File"}
+            tooltip = {"Export Clipboard to Windows-Clipboard (Click this button, then paste with Ctrl+V)"}
             className = {ModuleResolver.instance.toolButtonTheme.button}
             onSelect={() => handleClick("ExportClipboardClicked")}
           />
@@ -98,7 +82,7 @@ export const ClipboardActions = () => {
             src = {"coui://uil/Standard/Folder.svg"}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
             selected={false}
-            tooltip = {"Import Clipboard from File"}
+            tooltip = {"Import Clipboard from Windows-Clipboard (Copy with Ctrl+C, then click this button)"}
             className = {ModuleResolver.instance.toolButtonTheme.button}
             onSelect={() => handleClick("ImportClipboardClicked")}
           />
@@ -108,7 +92,7 @@ export const ClipboardActions = () => {
       />
 
       { /* Paste buttons */ }
-      { !clipboardEmpty && (
+      { clipboardLength>0 && (
       <ModuleResolver.instance.InfoRow
         left={"Import Config"}
         uppercase={false}
@@ -145,7 +129,7 @@ export const ClipboardActions = () => {
                 tooltip = {formatTooltipText("Paste selection to all " + serviceName + " buildings")}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSameServiceTypeClicked")}
-                disabled = {clipboardEmpty}
+                disabled = {clipboardLength==0 }
               />
               <ModuleResolver.instance.ToolButton
                 src = {"coui://uil/Standard/RectanglePaste.svg"}
@@ -154,7 +138,7 @@ export const ClipboardActions = () => {
                 tooltip = {formatTooltipText("Paste selection to all " + serviceName + " buildings in district " + districtName)}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSameServiceTypeDistrictClicked")}
-                disabled = {clipboardEmpty}
+                disabled = {clipboardLength==0 }
               />
             </>
         }
