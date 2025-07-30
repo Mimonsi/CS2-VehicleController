@@ -72,12 +72,19 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding<string>(Mod.Id, "SelectedVehicleChanged", SelectedVehicleChanged));
             AddBinding(new TriggerBinding(Mod.Id, "ChangeNowClicked", ChangeNowClicked));
             AddBinding(new TriggerBinding(Mod.Id, "ClearBufferClicked", ClearBufferClicked));
-            AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));
-            AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabClicked", PasteSamePrefabClicked));
-            AddBinding(new TriggerBinding(Mod.Id, "PasteServiceTypeClicked", PasteServiceTypeClicked));
-            AddBinding(new TriggerBinding(Mod.Id, "PasteDistrictClicked", PasteDistrictClicked));
+            
+            AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));            
             AddBinding(new TriggerBinding(Mod.Id, "ExportClipboardClicked", ExportClipboardClicked));
             AddBinding(new TriggerBinding(Mod.Id, "ImportClipboardClicked", ImportClipboardClicked));
+            
+            AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteSelectionClicked", PasteSelectionClicked));
+            
+            AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabClicked", PasteSamePrefabClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabDistrictClicked", PasteSamePrefabDistrictClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteSameServiceTypeClicked", PasteSameServiceTypeClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteSameServiceTypeDistrictClicked", PasteSameServiceTypeClicked));
+
             AddBinding(new TriggerBinding(Mod.Id, "Debug2Clicked", Debug2Clicked));
             
             // C# -> UI
@@ -210,6 +217,22 @@ namespace VehicleController.Systems
             }
             Logger.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
         }
+        
+        private void PasteSelectionClicked()
+        {
+            if (selectedEntity == Entity.Null)
+            {
+                Logger.Error("Selected entity is null, cannot paste vehicles");
+                return;
+            }
+            if (m_Clipboard.Count == 0)
+            {
+                Logger.Warn("Clipboard is empty, nothing to paste");
+                return;
+            }
+            ApplyClipboardToEntity(selectedEntity);
+            Logger.Info($"Pasted {m_Clipboard.Count} vehicles to entity: {selectedEntity}");
+        }
 
         /// <summary>
         /// Load allowed vehicles from the clipboard into the entity
@@ -248,8 +271,16 @@ namespace VehicleController.Systems
                 }
             }
         }
+        
+        /// <summary>
+        /// Paste clipboard to all service buildings with the same prefab as the selected entity
+        /// </summary>
+        private void PasteSamePrefabDistrictClicked()
+        {
+            // TODO: Implement
+        }
 
-        private void PasteServiceTypeClicked()
+        private void PasteSameServiceTypeClicked()
         {
             if (m_Clipboard.Count == 0)
                 return;
@@ -303,19 +334,22 @@ namespace VehicleController.Systems
             }
         }
 
-        private void PasteDistrictClicked()
+        private void PasteSameServiceTypeDistrict()
         {
             Logger.Info("PasteDistrictClicked not implemented");
+            // TODO: Implement
         }
 
         private void ExportClipboardClicked()
         {
             Logger.Info($"Export clipboard with {m_Clipboard.Count} entries");
+            // TODO: Implement
         }
 
         private void ImportClipboardClicked()
         {
             Logger.Info("Import clipboard not implemented");
+            // TODO: Implement
         }
 
         /// <summary>
