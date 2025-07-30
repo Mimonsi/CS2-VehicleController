@@ -17,6 +17,7 @@ namespace VehicleController
         public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(Mod)}")
             .SetShowsErrorsInUI(false);
 
+        public static string Id = "VehicleController";
         private Setting m_Setting;
         private string path;
         public const string Name = "Vehicle Controller";

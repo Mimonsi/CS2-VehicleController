@@ -48,6 +48,7 @@ namespace VehicleController.Systems
         private EndFrameBarrier m_Barrier;
         private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
+        private ValueBinding<bool> m_Minimized;
         
         // <inheritdoc/>
         protected override void OnCreate()
@@ -68,16 +69,23 @@ namespace VehicleController.Systems
             Enabled = true;
 
             // UI -> C#
-            AddBinding(new TriggerBinding<string>("VehicleController", "SelectedVehicleChanged", SelectedVehicleChanged));
-            AddBinding(new TriggerBinding("VehicleController", "ChangeNowClicked", ChangeNowClicked));
-            AddBinding(new TriggerBinding("VehicleController", "ClearBufferClicked", ClearBufferClicked));
-            AddBinding(new TriggerBinding("VehicleController", "Debug2Clicked", Debug2Clicked));
-            AddBinding(new TriggerBinding("VehicleController", "CopySelectionClicked", CopySelectionClicked));
-            AddBinding(new TriggerBinding("VehicleController", "PasteSamePrefabClicked", PasteSamePrefabClicked));
-            AddBinding(new TriggerBinding("VehicleController", "PasteServiceTypeClicked", PasteServiceTypeClicked));
-            AddBinding(new TriggerBinding("VehicleController", "PasteDistrictClicked", PasteDistrictClicked));
-            AddBinding(new TriggerBinding("VehicleController", "ExportClipboardClicked", ExportClipboardClicked));
-            AddBinding(new TriggerBinding("VehicleController", "ImportClipboardClicked", ImportClipboardClicked));
+            AddBinding(new TriggerBinding<string>(Mod.Id, "SelectedVehicleChanged", SelectedVehicleChanged));
+            AddBinding(new TriggerBinding(Mod.Id, "ChangeNowClicked", ChangeNowClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "ClearBufferClicked", ClearBufferClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabClicked", PasteSamePrefabClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteServiceTypeClicked", PasteServiceTypeClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteDistrictClicked", PasteDistrictClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "ExportClipboardClicked", ExportClipboardClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "ImportClipboardClicked", ImportClipboardClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "Debug2Clicked", Debug2Clicked));
+            
+            // C# -> UI
+            m_Minimized = new ValueBinding<bool>(Mod.Id, "Minimized", false);
+            AddBinding(new TriggerBinding(Mod.Id, "Minimize", () =>
+            {
+                m_Minimized.Update(!m_Minimized.value);
+            }));
             
             m_CreatedServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
             {

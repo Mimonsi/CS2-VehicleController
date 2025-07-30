@@ -29,7 +29,6 @@ const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
 // The component for the change company section.
 export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
-    const Minimized = useValue(Minimized$);
     // Define service vehicle types
     // Matches Query in CreatedServiceVehicleModifierSystem.cs
     enum ServiceVehicleType
@@ -59,6 +58,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     // Make sure section name is unique by including the mod id.
     componentList["VehicleController.Systems.ChangeVehicleSection"] = (props: ChangeVehicleSection) =>
     {
+        const Minimized = useValue(Minimized$);
         // Get the mod's translated text for the section heading and button.
         const { translate } = useLocalization();
         const sectionHeading: string = translate(mod.id + ".VehicleController") || "Vehicle Controller";
