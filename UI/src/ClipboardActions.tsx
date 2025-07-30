@@ -3,7 +3,6 @@ import { bindValue, useValue, trigger } from "cs2/api";
 import { ModuleResolver } from "./ModuleResolver";
 import mod from "../mod.json";
 import { getModule } from "cs2/modding";
-import styles from "./actionButtons.module.scss";
 import {FormattedParagraphsProps} from "cs2/ui";
 
 const InfoButton = getModule(
@@ -154,7 +153,7 @@ export const ClipboardActions = () => {
                 selected={false}
                 tooltip = {formatTooltipText("Paste selection to all " + serviceName + " buildings in district " + districtName)}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
-                onSelect={() => handleClick("PasteSameServiceTypeDisstrictClicked")}
+                onSelect={() => handleClick("PasteSameServiceTypeDistrictClicked")}
                 disabled = {clipboardEmpty}
               />
             </>

@@ -84,7 +84,7 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabClicked", PasteSamePrefabClicked));
             AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabDistrictClicked", PasteSamePrefabDistrictClicked));
             AddBinding(new TriggerBinding(Mod.Id, "PasteSameServiceTypeClicked", PasteSameServiceTypeClicked));
-            AddBinding(new TriggerBinding(Mod.Id, "PasteSameServiceTypeDistrictClicked", PasteSameServiceTypeClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "PasteSameServiceTypeDistrictClicked", PasteSameServiceTypeDistrictClicked));
 
             AddBinding(new TriggerBinding(Mod.Id, "Debug2Clicked", Debug2Clicked));
             
@@ -340,7 +340,7 @@ namespace VehicleController.Systems
             }
         }
 
-        private void PasteSameServiceTypeDistrict()
+        private void PasteSameServiceTypeDistrictClicked()
         {
             Logger.Info("PasteDistrictClicked not implemented");
             // TODO: Implement
