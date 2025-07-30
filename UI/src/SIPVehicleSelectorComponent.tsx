@@ -5,8 +5,8 @@ import { FormattedParagraphsProps   } from "cs2/ui";
 
 import   styles                       from "SIPVehicleSelectorComponent.module.scss";
 import { VehicleSelector            } from "./vehicleSelector";
-import { ActionButtons } from "./actionButtons";
-import { ModuleResolver             } from "moduleResolver";
+import { ActionButtons } from "./ActionButtons";
+import { ModuleResolver             } from "./ModuleResolver";
 import   mod                          from "../mod.json";
 import {getModule} from "cs2/modding";
 const styleSelectVehicle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
@@ -54,7 +54,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     {
         // Get the mod's translated text for the section heading and button.
         const { translate } = useLocalization();
-        const sectionHeading: string = translate(mod.id + ".ChangeVehicles") || "Assigned Vehicle Prefabs";
+        const sectionHeading: string = translate(mod.id + ".VehicleController") || "Vehicle Controller";
         const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Apply to existing vehicles";
         const clearBufferLabel: string = translate(mod.id + ".ClearBuffer"    ) || "Clear allowed Vehicles";
         const debug2Label: string = translate(mod.id + ".Debug2"    ) || "Delete owned vehicles";

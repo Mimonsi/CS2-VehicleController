@@ -4,7 +4,7 @@ import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
 import { SelectableVehiclePrefab } from "./SIPVehicleSelectorComponent";
 import styles from "vehicleSelector.module.scss";
 import mod from "../mod.json";
-import { ModuleResolver } from "moduleResolver";
+import { ModuleResolver } from "./ModuleResolver";
 import { VehicleLabel } from "./vehicleLabel";
 import {getModule} from "cs2/modding";
 import {prefab} from "cs2/bindings";

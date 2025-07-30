@@ -1,6 +1,6 @@
 import { useLocalization    } from "cs2/l10n";
 
-import { ModuleResolver     } from "moduleResolver";
+import { ModuleResolver     } from "./ModuleResolver";
 import React from "react";
 import {getModule} from "cs2/modding";
 import {Icon} from "cs2/ui";
