@@ -77,8 +77,7 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));            
             AddBinding(new TriggerBinding(Mod.Id, "ExportClipboardClicked", ExportClipboardClicked));
             AddBinding(new TriggerBinding(Mod.Id, "ImportClipboardClicked", ImportClipboardClicked));
-
-            AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));
+            
             AddBinding(new TriggerBinding(Mod.Id, "PasteSelectionClicked", PasteSelectionClicked));
             
             AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabClicked", PasteSamePrefabClicked));

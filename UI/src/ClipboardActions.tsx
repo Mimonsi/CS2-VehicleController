@@ -40,17 +40,25 @@ export const ClipboardActions = () => {
   const clipboardData = useValue(clipboardData$);
 
   function getClipboardEntryLength(text: string): number {
-    // See how many comma seperated entries are in the clipboard text
-    if (!text) return 0;
-    // Split the text by commas and filter out empty entries
-    const entries = text.split(",").map(entry => entry.trim()).filter(entry => entry.length > 0);
-    return entries.length;
+    try {
+      // See how many comma seperated entries are in the clipboard text
+      if (!text) return 0;
+      // Split the text by commas and filter out empty entries
+      const entries = text.split(",").map(entry => entry.trim()).filter(entry => entry.length > 0);
+      return entries.length;
+    }
+    catch(error) {
+      console.error("Error getting clipboard entry length: ", error);
+      return 0;
+    }
   }
 
   console.log("Clipboard data: ", clipboardData);
   //const clipboardLength = useMemo(() => getClipboardEntryLength(clipboardData), [clipboardData]);
   const clipboardLength = getClipboardEntryLength(clipboardData);
   console.log("Clipboard length: ", clipboardLength);
+  const showPasteButtons = clipboardLength > 0;
+  console.log("Show paste buttons: ", showPasteButtons);
   
   // TODO: Find other icon for Importing from file
   return (
@@ -92,7 +100,7 @@ export const ClipboardActions = () => {
       />
 
       { /* Paste buttons */ }
-      { clipboardLength>0 && (
+      { (showPasteButtons) && (
       <ModuleResolver.instance.InfoRow
         left={"Import Config"}
         uppercase={false}
@@ -107,7 +115,7 @@ export const ClipboardActions = () => {
                 onSelect={() => handleClick("PasteSelectionClicked")}
               />
               <ModuleResolver.instance.ToolButton
-                src = {"coui://uil/Standard/RectanglePaste.svg"}
+                src = {"coui://uil/Standard/SingleRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
                 tooltip = {formatTooltipText("Paste selection to all " + prefabName + "")}
@@ -115,7 +123,7 @@ export const ClipboardActions = () => {
                 onSelect={() => handleClick("PasteSamePrefabClicked")}
               />
               <ModuleResolver.instance.ToolButton
-                src = {"coui://uil/Standard/RectanglePaste.svg"}
+                src = {"coui://uil/Colored/SingleRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
                 tooltip = {formatTooltipText("Paste selection to all " + prefabName + " in district " + districtName)}
@@ -123,22 +131,20 @@ export const ClipboardActions = () => {
                 onSelect={() => handleClick("PasteSamePrefabDistrictClicked")}
               />
               <ModuleResolver.instance.ToolButton
-                src = {"coui://uil/Standard/RectanglePaste.svg"}
+                src = {"coui://uil/Standard/SameRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
                 tooltip = {formatTooltipText("Paste selection to all " + serviceName + " buildings")}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSameServiceTypeClicked")}
-                disabled = {clipboardLength==0 }
               />
               <ModuleResolver.instance.ToolButton
-                src = {"coui://uil/Standard/RectanglePaste.svg"}
+                src = {"coui://uil/Colored/SameRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
                 tooltip = {formatTooltipText("Paste selection to all " + serviceName + " buildings in district " + districtName)}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSameServiceTypeDistrictClicked")}
-                disabled = {clipboardLength==0 }
               />
             </>
         }
