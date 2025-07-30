@@ -49,6 +49,7 @@ namespace VehicleController.Systems
         private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
         private ValueBinding<bool> m_Minimized;
+        private ValueBinding<string> m_ClipboardData;
         
         // <inheritdoc/>
         protected override void OnCreate()
@@ -76,7 +77,7 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));            
             AddBinding(new TriggerBinding(Mod.Id, "ExportClipboardClicked", ExportClipboardClicked));
             AddBinding(new TriggerBinding(Mod.Id, "ImportClipboardClicked", ImportClipboardClicked));
-            
+
             AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));
             AddBinding(new TriggerBinding(Mod.Id, "PasteSelectionClicked", PasteSelectionClicked));
             
@@ -95,6 +96,10 @@ namespace VehicleController.Systems
             {
                 m_Minimized.Update(!m_Minimized.value);
             }));
+
+            m_ClipboardData = new ValueBinding<string>(Mod.Id, "ClipboardData", string.Empty);
+            AddBinding(m_ClipboardData);
+            m_ClipboardData.Update(string.Empty);
             
             m_CreatedServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
             {
@@ -215,6 +220,7 @@ namespace VehicleController.Systems
                     m_Clipboard.Add(allowed.PrefabName.ToString());
                 }
             }
+            m_ClipboardData.Update(string.Join(",", m_Clipboard));
             Logger.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
         }
         
@@ -351,6 +357,8 @@ namespace VehicleController.Systems
             Logger.Info("Import clipboard not implemented");
             // TODO: Implement
         }
+
+
 
         /// <summary>
         /// Modified version of AddMiddleSection to customize the exact position

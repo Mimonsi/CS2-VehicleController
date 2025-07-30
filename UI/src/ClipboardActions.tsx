@@ -1,5 +1,5 @@
-import React from "react";
-import { trigger } from "cs2/api";
+import React, { useMemo } from "react";
+import { bindValue, useValue, trigger } from "cs2/api";
 import { ModuleResolver } from "./ModuleResolver";
 import mod from "../mod.json";
 import { getModule } from "cs2/modding";
@@ -36,7 +36,38 @@ export const ClipboardActions = () => {
   const prefabName = "**prefabName**"
   const serviceName = "**serviceName**";
   const districtName = "**districtName**";
-  const clipboardEmpty = false;
+
+  const clipboardData$ = bindValue<string>(mod.id, "ClipboardData", "");
+  const clipboardData = useValue(clipboardData$);
+
+  function parseClipboard(text: string): string[] | null {
+    if (!text.trim()) {
+      return [];
+    }
+    try {
+      const maybeJson = JSON.parse(text);
+      if (Array.isArray(maybeJson) && maybeJson.every(e => typeof e === "string" && e.trim().length > 0)) {
+        return maybeJson.map(e => e.trim());
+      }
+    } catch {
+      // Not JSON - fall back to delimiter-separated list
+    }
+
+    const tokens = text
+      .split(/[,;\n\r]+/)
+      .map(t => t.trim())
+      .filter(t => t.length > 0);
+
+    const valid = tokens.every(t => /^[A-Za-z0-9_.-]+$/.test(t));
+    return valid ? tokens : null;
+  }
+
+  const parsedClipboard = useMemo(() => parseClipboard(clipboardData), [clipboardData]);
+  const clipboardEmpty = !parsedClipboard || parsedClipboard.length === 0;
+
+  if (parsedClipboard === null) {
+    console.error("Invalid clipboard format", clipboardData);
+  }
   
   // TODO: Find other icon for Importing from file
   return (
