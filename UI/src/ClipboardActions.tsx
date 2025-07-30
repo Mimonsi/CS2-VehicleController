@@ -49,8 +49,7 @@ export const ClipboardActions = () => {
   }
 
   console.log("Clipboard data: ", clipboardData);
-  //const clipboardLength = useMemo(() => getClipboardEntryLength(clipboardData), [clipboardData]);
-  const clipboardLength = getClipboardEntryLength(clipboardData);
+  const clipboardLength = useMemo(() => getClipboardEntryLength(clipboardData), [clipboardData]);
   console.log("Clipboard length: ", clipboardLength);
   const showPasteButtons = clipboardLength > 0;
   console.log("Show paste buttons: ", showPasteButtons);
