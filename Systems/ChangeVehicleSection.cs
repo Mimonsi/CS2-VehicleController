@@ -82,6 +82,8 @@ namespace VehicleController.Systems
             
             // C# -> UI
             m_Minimized = new ValueBinding<bool>(Mod.Id, "Minimized", false);
+            AddBinding(m_Minimized);
+            m_Minimized.Update(false);
             AddBinding(new TriggerBinding(Mod.Id, "Minimize", () =>
             {
                 m_Minimized.Update(!m_Minimized.value);

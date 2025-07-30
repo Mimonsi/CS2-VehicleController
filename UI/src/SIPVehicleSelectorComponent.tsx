@@ -104,7 +104,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
         function minimizeClick()
         {
             trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
-            trigger(mod.id, "Debug2Clicked");
+            trigger(mod.id, "Minimize");
         }
         
         // Construct the change company section.
