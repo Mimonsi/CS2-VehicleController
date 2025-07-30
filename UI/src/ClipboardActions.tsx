@@ -27,11 +27,6 @@ export const ClipboardActions = () => {
     trigger(mod.id, eventName);
   }
   
-  function formatTooltipText(text: string) {
-    const formattedParagraphsProps: FormattedParagraphsProps = { children: text };
-    return ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps)
-  }
-  
   const prefabName = "**prefabName**"
   const serviceName = "**serviceName**";
   const districtName = "**districtName**";
@@ -118,7 +113,7 @@ export const ClipboardActions = () => {
                 src = {"coui://uil/Standard/SingleRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
-                tooltip = {<FormattedParagraphs>{"Paste selection to all " + prefabName + ""}</FormattedParagraphs>}
+                tooltip = {<FormattedParagraphs>{`Paste selection to all ${prefabName} in district ${districtName}`}</FormattedParagraphs>}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSamePrefabClicked")}
               />
@@ -126,7 +121,7 @@ export const ClipboardActions = () => {
                 src = {"coui://uil/Colored/SingleRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
-                tooltip = {<FormattedParagraphs>{"Paste selection to all " + prefabName + " in district " + districtName}</FormattedParagraphs>}
+                tooltip = {<FormattedParagraphs>{`Paste selection to all ${prefabName} in district ${districtName}`}</FormattedParagraphs>}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSamePrefabDistrictClicked")}
               />
@@ -134,7 +129,7 @@ export const ClipboardActions = () => {
                 src = {"coui://uil/Standard/SameRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
-                tooltip = {<FormattedParagraphs>{"Paste selection to all " + serviceName + " buildings"}</FormattedParagraphs>}
+                tooltip = {<FormattedParagraphs>{`Paste selection to all ${serviceName} buildings`}</FormattedParagraphs>}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSameServiceTypeClicked")}
               />
@@ -142,7 +137,7 @@ export const ClipboardActions = () => {
                 src = {"coui://uil/Colored/SameRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
-                tooltip = {<FormattedParagraphs>{"Paste selection to all " + serviceName + " buildings in district " + districtName}</FormattedParagraphs>}
+                tooltip = {<FormattedParagraphs>{`Paste selection to all ${serviceName} in district ${districtName}`}</FormattedParagraphs>}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSameServiceTypeDistrictClicked")}
               />
