@@ -38,6 +38,9 @@ namespace VehicleController.Systems
         ParkMaintenanceVehicle
     }
     
+    /// <summary>
+    /// Info UI section that allows service vehicle prefabs to be swapped at runtime.
+    /// </summary>
     public partial class ChangeVehicleSection : InfoSectionBase
     {
         private ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(ChangeVehicleSection)}")
@@ -54,6 +57,9 @@ namespace VehicleController.Systems
         private ValueBinding<string> m_ClipboardData;
         
         // <inheritdoc/>
+        /// <summary>
+        /// Initializes UI bindings and entity queries for the info section.
+        /// </summary>
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -446,6 +452,9 @@ namespace VehicleController.Systems
             AddAllowedVehicle(prefabName);
         }
 
+        /// <summary>
+        /// Toggles the presence of a prefab in the allowed vehicle list for the selected building.
+        /// </summary>
         private void AddAllowedVehicle(string prefabName)
         {
             if (!EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
@@ -467,7 +476,7 @@ namespace VehicleController.Systems
         }
         
         /// <summary>
-        /// Handle click on the Change Now button. Applied changes to all existing vehicles, not just new ones
+        /// Applies prefab changes immediately to all existing service vehicles owned by the selected building.
         /// </summary>
         private void ChangeNowClicked()
         {
@@ -486,7 +495,7 @@ namespace VehicleController.Systems
         }
 
         /// <summary>
-        /// Collect all vehicle prefabs and populate the dictionary. Each service now has a list of all available vehicle prefabs
+        /// Scans the world for service vehicle prefabs and stores them by service type.
         /// </summary>
         private void PopulateAvailableVehicles()
         {
@@ -538,6 +547,10 @@ namespace VehicleController.Systems
             return vehiclePrefabs;
         }
 
+        /// <summary>
+        /// Called when the selection changes in the info UI.
+        /// Refreshes the visible state of this section.
+        /// </summary>
         private void SelectedEntityChanged(Entity entity, Entity prefab, float3 position)
         {
             visible = Visible();
@@ -613,7 +626,7 @@ namespace VehicleController.Systems
         }
 
         /// <summary>
-        /// Triggered when a new service vehicle is created
+        /// Called each frame to handle newly created service vehicles.
         /// </summary>
         private void VehicleCreated()
         {
@@ -623,7 +636,7 @@ namespace VehicleController.Systems
         }
 
         /// <summary>
-        /// Forces an update of the selected entity and the info section
+        /// Forces an update of the selected entity and refreshes this section.
         /// </summary>
         private void TriggerUpdate()
         {
@@ -633,6 +646,9 @@ namespace VehicleController.Systems
             }
         }
 
+        /// <summary>
+        /// Iterates over the provided vehicle entities and replaces their prefab if needed.
+        /// </summary>
         private void ChangeVehiclePrefabs(NativeArray<Entity> entities)
         {
             // Loop through all vehicles that were just created (might be multiple in one frame)

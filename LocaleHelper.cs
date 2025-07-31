@@ -11,11 +11,17 @@ using Game.SceneFlow;
 
 namespace VehicleController
 {
-	public class LocaleHelper
+        /// <summary>
+        /// Helper for loading embedded localisation dictionaries.
+        /// </summary>
+        public class LocaleHelper
 	{
 		private readonly Dictionary<string, Dictionary<string, string>> _locale;
 
-		public LocaleHelper(string dictionaryResourceName)
+                /// <summary>
+                /// Loads all embedded locale resources with the same base name as the provided file.
+                /// </summary>
+                public LocaleHelper(string dictionaryResourceName)
 		{
 			var assembly = GetType().Assembly;
 
@@ -51,7 +57,10 @@ namespace VehicleController
 			}
 		}
 
-		public static string? Translate(string? id, string? fallback = null)
+                /// <summary>
+                /// Looks up a translated string in the currently active dictionary.
+                /// </summary>
+                public static string? Translate(string? id, string? fallback = null)
 		{
 			if (id is not null && GameManager.instance.localizationManager.activeDictionary.TryGetValue(id, out var result))
 			{
@@ -61,7 +70,10 @@ namespace VehicleController
 			return fallback ?? id;
 		}
 		
-		public IEnumerable<DictionarySource> GetAvailableLanguages()
+                /// <summary>
+                /// Returns a dictionary source for every embedded language.
+                /// </summary>
+                public IEnumerable<DictionarySource> GetAvailableLanguages()
 		{
 			foreach (var item in _locale)
 			{
@@ -69,24 +81,35 @@ namespace VehicleController
 			}
 		}
 
-		public class DictionarySource : IDictionarySource
+                /// <summary>
+                /// Simple wrapper exposing a dictionary to the localisation system.
+                /// </summary>
+                public class DictionarySource : IDictionarySource
 		{
 			private readonly Dictionary<string, string> _dictionary;
 
-			public DictionarySource(string localeId, Dictionary<string, string> dictionary)
+                        /// <summary>
+                        /// Creates a new dictionary source for the specified locale.
+                        /// </summary>
+                        public DictionarySource(string localeId, Dictionary<string, string> dictionary)
 			{
 				LocaleId = localeId;
 				_dictionary = dictionary;
 			}
 
-			public string LocaleId { get; }
+                        /// <summary>
+                        /// Identifier of the locale this dictionary provides.
+                        /// </summary>
+                        public string LocaleId { get; }
 
-			public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
-			{
-				return _dictionary;
-			}
+                        /// <inheritdoc />
+                        public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors, Dictionary<string, int> indexCounts)
+                        {
+                                return _dictionary;
+                        }
 
-			public void Unload() { }
+                        /// <inheritdoc />
+                        public void Unload() { }
 		}
 	}
 }

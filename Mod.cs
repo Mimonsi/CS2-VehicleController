@@ -12,6 +12,9 @@ using VehicleController.Systems;
 
 namespace VehicleController
 {
+    /// <summary>
+    /// Entry point for the Vehicle Controller mod.
+    /// </summary>
     public class Mod : IMod
     {
         public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(Mod)}")
@@ -28,6 +31,10 @@ namespace VehicleController
         public static bool EnableVehicleCounterSystem = true;
         public static bool EnableChangeVehicleSection = true;
 
+        /// <summary>
+        /// Called by the game when the mod is loaded.
+        /// Registers systems and loads settings.
+        /// </summary>
         public void OnLoad(UpdateSystem updateSystem)
         {
             Logger.Info(nameof(OnLoad));
@@ -71,6 +78,9 @@ namespace VehicleController
             Setting.Instance = m_Setting;
         }
         
+        /// <summary>
+        /// Copies embedded packs from the mod directory into the user data folder.
+        /// </summary>
         private bool CopyEmbeddedPacks(string subPath)
         {
             try
@@ -97,6 +107,9 @@ namespace VehicleController
             }
         }
 
+        /// <summary>
+        /// Called when the mod is unloaded.
+        /// </summary>
         public void OnDispose()
         {
             try

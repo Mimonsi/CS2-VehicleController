@@ -16,6 +16,9 @@ using PersonalCar = Game.Vehicles.PersonalCar;
 
 namespace VehicleController.Systems
 {
+    /// <summary>
+    /// Handles reading probability packs and applying spawn probabilities to vehicles.
+    /// </summary>
     public partial class VehicleProbabilitySystem : GameSystemBase
     {
         private static ILog Logger;
@@ -26,6 +29,9 @@ namespace VehicleController.Systems
         private ProbabilityPack _currentProbabilityPack;
         public static VehicleProbabilitySystem Instance { get; private set; }
 
+        /// <summary>
+        /// Called when the system is created. Sets up queries and registers updaters.
+        /// </summary>
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -47,12 +53,16 @@ namespace VehicleController.Systems
             Logger.Info("VehicleProbabilitySystem created and updater registered.");
         }
 
+        /// <inheritdoc />
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
         {
             base.OnGameLoadingComplete(purpose, mode);
             Setting.CurrentProbabilityPackVersion++;
         }
 
+        /// <summary>
+        /// Saves the game's default probabilities to a pack for reference.
+        /// </summary>
         private bool SaveVanillaPack()
         {
             Logger.Info("Saving vanilla probabilities");
@@ -94,6 +104,9 @@ namespace VehicleController.Systems
             }
         }
         
+        /// <summary>
+        /// Applies the specified probability pack and updates vehicle entities.
+        /// </summary>
         public void LoadProbabilityPack(ProbabilityPack pack)
         {
             Logger.Info("Loading Probability Pack: " + pack.Name);
@@ -104,6 +117,9 @@ namespace VehicleController.Systems
             UpdateProbabilities();
         }
 
+        /// <summary>
+        /// Pushes probability values from the current pack to the settings UI.
+        /// </summary>
         private void UpdateSliders()
         {
             if (_currentProbabilityPack.TryGetClassEntry("Motorbike", out var motorbikeEntry))
@@ -153,6 +169,9 @@ namespace VehicleController.Systems
             Logger.Info("Updated sliders with current probability pack values.");
         }
         
+        /// <summary>
+        /// Applies probability values to all existing vehicle entities.
+        /// </summary>
         private bool UpdateProbabilities()
         {
             Logger.Info("Updating Vehicle Probabilities");
@@ -198,16 +217,23 @@ namespace VehicleController.Systems
             return true;
         }
 
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
 
         }
         
+        /// <summary>
+        /// Called from settings when probability sliders are changed.
+        /// </summary>
         public void ApplySettings()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Re-applies probabilities when a user clicks the apply button.
+        /// </summary>
         public static void SaveValueChanges()
         {
             Instance.UpdateProbabilities();
