@@ -5,6 +5,9 @@ using System.Linq;
 namespace VehicleController.Data
 {
 
+    /// <summary>
+    /// Defines default properties and probabilities for a logical vehicle class.
+    /// </summary>
     public class VehicleClass
     {
         public string Name;
@@ -16,6 +19,9 @@ namespace VehicleController.Data
 
         private static Dictionary<string, VehicleClass> VehicleClasses;
 
+        /// <summary>
+        /// Initializes the static list of vehicle classes with built in values.
+        /// </summary>
         static VehicleClass()
         {
             var vehicleClasses = new[]
@@ -129,11 +135,17 @@ namespace VehicleController.Data
             }
         }
         
+        /// <summary>
+        /// Returns the names of all available vehicle classes.
+        /// </summary>
         public static string[] GetNames()
         {
             return VehicleClasses.Keys.ToArray();
         }
 
+        /// <summary>
+        /// Updates the vanilla probability value for an existing vehicle class.
+        /// </summary>
         public static void SetVanillaProbability(string className, int vanillaProbability)
         {
             if (VehicleClasses.TryGetValue(className, out var vehicleClass))
@@ -142,6 +154,9 @@ namespace VehicleController.Data
             }
         }
 
+        /// <summary>
+        /// Finds the class definition for the specified prefab.
+        /// </summary>
         public static VehicleClass GetVehicleClass(string prefabName)
         {
             foreach (var vehicleClass in VehicleClasses.Values)
@@ -156,6 +171,9 @@ namespace VehicleController.Data
             return VehicleClasses["Sedan"];
         }
 
+        /// <summary>
+        /// Returns spawn probability and property overrides for a prefab using current settings.
+        /// </summary>
         public static (int probability, int maxSpeed, int acceleration, int braking) GetValues(string prefabName)
         {
             var vehicleClass = GetVehicleClass(prefabName);
@@ -204,12 +222,18 @@ namespace VehicleController.Data
             //return vehicleClass.VanillaProbability * (prob / 100);
         }
 
+        /// <summary>
+        /// Helper for settings UI to produce sanitized class names.
+        /// </summary>
         public static (string, string)[] GetSettingClassNames()
         {
             // Replace spaces with empty string
             return VehicleClasses.Keys.Select(name => (name.Replace(" ", ""), name)).ToArray();
         }
 
+        /// <summary>
+        /// Returns all classes that contain the specified prefab.
+        /// </summary>
         public static List<string> GetClassesForPrefab(string name)
         {
             var classes = new List<string>();

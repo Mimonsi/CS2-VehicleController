@@ -10,6 +10,9 @@ using VehicleController.Data;
 
 namespace VehicleController.Systems
 {
+    /// <summary>
+    /// Utility system that counts vehicle prefabs currently present in the world.
+    /// </summary>
     public partial class VehicleCounterSystem : GameSystemBase
     {
         public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(VehicleCounterSystem)}")
@@ -22,6 +25,9 @@ namespace VehicleController.Systems
         private ProbabilityPack _currentProbabilityPack;
         public static VehicleCounterSystem Instance { get; private set; }
 
+        /// <summary>
+        /// Creates entity queries and prepares the system.
+        /// </summary>
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -43,6 +49,9 @@ namespace VehicleController.Systems
             Logger.Info("VehicleCounterSystem created.");
         }
         
+        /// <summary>
+        /// Counts current instances of each prefab and logs the results.
+        /// </summary>
         public void CountPrefabInstances()
         {
             Dictionary<string, int> prefabCounts = new Dictionary<string, int>();
@@ -84,6 +93,9 @@ namespace VehicleController.Systems
             SortByClasses(prefabCounts, totalInstances);
         }
 
+        /// <summary>
+        /// Aggregates the raw prefab counts by vehicle class.
+        /// </summary>
         private void SortByClasses(Dictionary<string, int> counts, int totalInstances)
         {
             Dictionary<string, int> classCounts = new Dictionary<string, int>();
@@ -109,6 +121,7 @@ namespace VehicleController.Systems
             Logger.Info(output);
         }
 
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
         }

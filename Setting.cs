@@ -18,6 +18,9 @@ namespace VehicleController
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
     [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup)]
     [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup)]
+    /// <summary>
+    /// Stores all mod settings and exposes them to the game UI.
+    /// </summary>
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -43,6 +46,9 @@ namespace VehicleController
         public const string DebugSection = "Debug";
         public const string DebugGroup = "Debug";
         
+        /// <summary>
+        /// Constructs the setting container for the specified mod instance.
+        /// </summary>
         public Setting(IMod mod) : base(mod)
         {
 
@@ -97,6 +103,9 @@ namespace VehicleController
             }
         }
         
+        /// <summary>
+        /// Populates the dropdown list for probability packs.
+        /// </summary>
         public DropdownItem<string>[] GetProbabilityPacksDropdownItems()
         {
             var names =  ProbabilityPack.GetPackNames();
@@ -195,6 +204,9 @@ namespace VehicleController
             }
         }
 
+        /// <summary>
+        /// Builds the dropdown list showing all available vehicle classes.
+        /// </summary>
         public DropdownItem<string>[] GetVehicleClassDropdownItems()
         {
             var items = new List<DropdownItem<string>>();
@@ -327,6 +339,9 @@ namespace VehicleController
         
         #endregion
         
+        /// <summary>
+        /// Restores the mod's recommended default probabilities.
+        /// </summary>
         public override void SetDefaults()
         {
             MotorbikeProbability = 25;
@@ -352,6 +367,9 @@ namespace VehicleController
             VanProbability = 100;
         }
         
+        /// <summary>
+        /// Resets probabilities to match the game's vanilla values.
+        /// </summary>
         public void SetVanillaDefaults()
         {
             MotorbikeProbability = 100;
@@ -378,15 +396,22 @@ namespace VehicleController
         }
     }
 
+    /// <summary>
+    /// Provides dynamic localisation entries for the options UI.
+    /// </summary>
     public class LocaleEN : IDictionarySource
     {
         private readonly Setting m_Setting;
 
+        /// <summary>
+        /// Creates the localisation source bound to the given setting instance.
+        /// </summary>
         public LocaleEN(Setting setting)
         {
             m_Setting = setting;
         }
 
+        /// <inheritdoc />
         public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
@@ -420,6 +445,7 @@ namespace VehicleController
             return values;
         }
 
+        /// <inheritdoc />
         public void Unload()
         {
         }

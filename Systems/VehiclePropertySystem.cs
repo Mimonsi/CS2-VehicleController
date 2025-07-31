@@ -14,6 +14,9 @@ using PersonalCar = Game.Vehicles.PersonalCar;
 
 namespace VehicleController.Systems
 {
+    /// <summary>
+    /// Modifies speed and handling parameters of vehicles based on selected packs.
+    /// </summary>
     public partial class VehiclePropertySystem : GameSystemBase
     {
         private static ILog Logger;
@@ -26,6 +29,9 @@ namespace VehicleController.Systems
         private PropertyPack _currentPropertyPack;
         public static VehiclePropertySystem Instance { get; private set; }
 
+        /// <summary>
+        /// Initializes queries and registers the vanilla export updater.
+        /// </summary>
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -56,11 +62,17 @@ namespace VehicleController.Systems
             Logger.Info("VehiclePropertySystem created and updater registered.");
         }
 
+        /// <summary>
+        /// Placeholder for saving vanilla property values.
+        /// </summary>
         private bool SaveVanillaPack()
         {
             return true;
         }
 
+        /// <summary>
+        /// Loads the given property pack and immediately updates entities.
+        /// </summary>
         public void LoadPropertyPack(PropertyPack pack)
         {
             if (!Enabled)
@@ -69,6 +81,9 @@ namespace VehicleController.Systems
             UpdateProperties();
         }
 
+        /// <summary>
+        /// Updates all car and train properties according to the loaded pack and settings.
+        /// </summary>
         private bool UpdateProperties()
         {
             if (UpdateCarProperties() && UpdateTrainProperties())
@@ -79,6 +94,9 @@ namespace VehicleController.Systems
             return false;
         }
         
+        /// <summary>
+        /// Applies property changes to all train entities if enabled.
+        /// </summary>
         private bool UpdateTrainProperties()
         {
             if (!Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
@@ -119,6 +137,9 @@ namespace VehicleController.Systems
             return true;
         }
 
+        /// <summary>
+        /// Applies property changes to all personal car entities.
+        /// </summary>
         private bool UpdateCarProperties()
         {
             Logger.Info("Updating Vehicle Properties");
@@ -163,11 +184,15 @@ namespace VehicleController.Systems
             return true;
         }
 
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
 
         }
 
+        /// <summary>
+        /// Invoked from the settings UI to reapply car properties.
+        /// </summary>
         public void ApplySettings()
         {
             UpdateCarProperties();
