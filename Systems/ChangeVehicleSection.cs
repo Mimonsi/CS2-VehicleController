@@ -19,6 +19,7 @@ using Game.Vehicles;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine;
 using VehicleController.Data;
 
 namespace VehicleController.Systems
@@ -356,15 +357,39 @@ namespace VehicleController.Systems
 
         private void ExportClipboardClicked()
         {
-            Logger.Info($"Export clipboard with {m_Clipboard.Count} entries");
-            // Set windows clipboard data
-            // TODO: Implement
+            try
+            {
+                string clipboardText = string.Join(",", m_Clipboard);
+                GUIUtility.systemCopyBuffer = clipboardText;
+                Logger.Info("Clipboard exported to system clipboard");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error exporting clipboard: {ex.Message}");
+            }
         }
 
         private void ImportClipboardClicked()
         {
-            Logger.Info("Import clipboard not implemented");
-            // TODO: Implement
+            try
+            {
+                string clipboardText = GUIUtility.systemCopyBuffer;
+                Logger.Info($"Importing clipboard data: {clipboardText}");
+                m_Clipboard.Clear();
+                if (!string.IsNullOrEmpty(clipboardText))
+                {
+                    foreach (string entry in clipboardText.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        m_Clipboard.Add(entry.Trim());
+                    }
+                }
+                m_ClipboardData.Update(string.Join(",", m_Clipboard));
+                Logger.Info($"Imported {m_Clipboard.Count} entries from system clipboard");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error importing clipboard: {ex.Message}");
+            }
         }
 
 
