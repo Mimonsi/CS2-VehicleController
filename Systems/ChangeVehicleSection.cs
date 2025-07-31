@@ -640,10 +640,7 @@ namespace VehicleController.Systems
         /// </summary>
         private void TriggerUpdate()
         {
-            if (!EntityManager.HasComponent<Updated>(selectedEntity))
-            {
-                EntityManager.AddComponent<Updated>(selectedEntity);
-            }
+            _selectedInfoUISystem.SetDirty();
         }
 
         /// <summary>
