@@ -463,6 +463,7 @@ namespace VehicleController.Systems
                 Logger.Info($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
                 CollectionUtils.RemoveValue(buffer, prefab);
             }
+            TriggerUpdate();
         }
         
         /// <summary>
@@ -621,6 +622,17 @@ namespace VehicleController.Systems
             ChangeVehiclePrefabs(entities);
         }
 
+        /// <summary>
+        /// Forces an update of the selected entity and the info section
+        /// </summary>
+        private void TriggerUpdate()
+        {
+            if (!EntityManager.HasComponent<Updated>(selectedEntity))
+            {
+                EntityManager.AddComponent<Updated>(selectedEntity);
+            }
+        }
+
         private void ChangeVehiclePrefabs(NativeArray<Entity> entities)
         {
             // Loop through all vehicles that were just created (might be multiple in one frame)
@@ -688,7 +700,6 @@ namespace VehicleController.Systems
 
         protected override void OnProcess()
         {
-            
         }
         
         private PrefabBase? GetPrefabBaseForName(string prefabName)
@@ -748,9 +759,7 @@ namespace VehicleController.Systems
                 Logger.Error("Selected entity is null, THIS SHOULD NEVER HAPPEN!");
                 return;
             }
-                
-            //Logger.Debug("Writing ChangeVehicleSection properties");
-            // TODO: Use ImageSystem.GetThumbnail(PrefabBase) to get UI
+            
             var types = GetServiceVehicleTypes();
             var prefabs = new List<SelectableVehiclePrefab>(); // Collect all available vehicle prefabs for the selected building
             PopulateAvailableVehicles();
