@@ -4,7 +4,7 @@ import { useLocalization            } from "cs2/l10n";
 import {FormattedParagraphs, FormattedParagraphsProps} from "cs2/ui";
 
 import   styles                       from "SIPVehicleSelectorComponent.module.scss";
-import { VehicleSelector            } from "./vehicleSelector";
+import { VehicleSelector            } from "./VehicleSelector";
 import { ClipboardActions } from "./ClipboardActions";
 import { ModuleResolver             } from "./ModuleResolver";
 import   mod                          from "../mod.json";

@@ -5,7 +5,7 @@ import { SelectableVehiclePrefab } from "./SIPVehicleSelectorComponent";
 import styles from "vehicleSelector.module.scss";
 import mod from "../mod.json";
 import { ModuleResolver } from "./ModuleResolver";
-import { VehicleLabel } from "./vehicleLabel";
+import { VehicleLabel } from "./VehicleLabel";
 import {getModule} from "cs2/modding";
 import {prefab} from "cs2/bindings";
 const dropdownStyle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
@@ -29,8 +29,6 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
         const selected = vehiclePrefab.selected ?? false;
         const imageUrl = vehiclePrefab.imageUrl;
         const isDummyItem = prefabName.includes("Vehicles Selected");
-        
-        console.log("VehicleSelector", prefabName, selected, imageUrl, isDummyItem);
 
         // Construct dropdown item content.
         const dropdownItemContent = (
