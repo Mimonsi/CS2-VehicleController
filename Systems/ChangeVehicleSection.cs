@@ -214,6 +214,7 @@ namespace VehicleController.Systems
             {
                 EntityManager.RemoveComponent<AllowedVehiclePrefab>(selectedEntity);
                 Logger.Info("Buffer has been cleared for entity: " + selectedEntity);
+                TriggerUpdate();
             }
         }
 
