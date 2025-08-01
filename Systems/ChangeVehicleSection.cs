@@ -736,26 +736,33 @@ namespace VehicleController.Systems
             return null;
         }
 
-        private int MarkSelectedVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
+        private int ProcessVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
         {
             var count = 0;
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 var allowedVehicles = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
-                foreach (var prefab in vehiclePrefabs)
+                foreach (var prefab in vehiclePrefabs) // Loop through all available vehicle prefabs
                 {
-                    foreach( var allowedVehicle in allowedVehicles)
+                    Logger.Debug("Checking prefab: " + prefab.prefabName);
+                    // Try getting the thumbnail
+                    try
                     {
-                        // Try getting the thumbnail
                         var prefabBase = GetPrefabBaseForName(prefab.prefabName);
                         var thumbnail = ImageSystem.GetThumbnail(prefabBase);
-                        //Logger.Debug("Thumbnail for " + prefab.prefabName + ": " + thumbnail);
                         prefab.imageUrl = thumbnail;
+                        Logger.Debug("Thumbnail found for prefab: " + prefab.prefabName);
+                    }
+                    catch (Exception x)
+                    {
+                        Logger.Warn("No thumbnail found for prefab: " + prefab.prefabName + ", " + x.Message);
+                    }
+                    foreach(var allowedVehicle in allowedVehicles)
+                    {
                         if (allowedVehicle.PrefabName == prefab.prefabName)
                         {
                             prefab.selected = true; // Mark the vehicle as selected
                             count++;
-                            //Logger.Info("Marked vehicle as selected: " + prefab.prefabName);
                         }
                     }
                 }
@@ -781,7 +788,7 @@ namespace VehicleController.Systems
             {
                 if (_availableVehiclePrefabs.TryGetValue(type, out var vehiclePrefabs))
                 {
-                    selectedVehicleCount += MarkSelectedVehicles(vehiclePrefabs); // Add selected = true to all allowed vehicles
+                    selectedVehicleCount += ProcessVehicles(vehiclePrefabs); // Add selected = true to all allowed vehicles
                     prefabs.AddRange(vehiclePrefabs);
                 }
             }

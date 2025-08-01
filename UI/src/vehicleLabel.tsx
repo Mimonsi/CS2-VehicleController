@@ -37,7 +37,7 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
     }
     else
     {
-        vehicleText = `[ ] ${vehicleText}`;
+        vehicleText = `[  ] ${vehicleText}`;
     }
     
     // If prefabName contains "Vehicles selected", change the vehicleText to "Vehicles selected".
