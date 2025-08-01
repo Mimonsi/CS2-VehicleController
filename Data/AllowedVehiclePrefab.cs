@@ -43,7 +43,7 @@ namespace VehicleController.Data
         /// </summary>
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
-            Mod.Logger.Info($"Serializing AllowedVehiclePrefab: {PrefabName}");
+            //Mod.Logger.Info($"Serializing AllowedVehiclePrefab: {PrefabName}");
             writer.Write(PrefabName.ToString());
         }
 
@@ -54,7 +54,7 @@ namespace VehicleController.Data
         {
             reader.Read(out string prefabNameStr);
             PrefabName = new FixedString128Bytes(prefabNameStr);
-            Mod.Logger.Info($"Deserialized AllowedVehiclePrefab: {PrefabName}");
+            //Mod.Logger.Info($"Deserialized AllowedVehiclePrefab: {PrefabName}");
         }
     }
 }

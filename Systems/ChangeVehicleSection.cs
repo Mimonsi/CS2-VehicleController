@@ -736,28 +736,37 @@ namespace VehicleController.Systems
             return null;
         }
 
+        /// <summary>
+        /// Get thumbnails for all vehicle prefabs and mark selected vehicles
+        /// </summary>
+        /// <param name="vehiclePrefabs"></param>
+        /// <returns>Count of selected vehicles</returns>
         private int ProcessVehicles(List<SelectableVehiclePrefab> vehiclePrefabs)
         {
             var count = 0;
+            DynamicBuffer<AllowedVehiclePrefab> allowedVehicles = new DynamicBuffer<AllowedVehiclePrefab>();
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
-                var allowedVehicles = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
-                foreach (var prefab in vehiclePrefabs) // Loop through all available vehicle prefabs
+                allowedVehicles = EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity);
+            }
+            foreach (var prefab in vehiclePrefabs)
+            {
+                Logger.Debug("Checking prefab: " + prefab.prefabName);
+                // Try getting the thumbnail
+                try
                 {
-                    Logger.Debug("Checking prefab: " + prefab.prefabName);
-                    // Try getting the thumbnail
-                    try
-                    {
-                        var prefabBase = GetPrefabBaseForName(prefab.prefabName);
-                        var thumbnail = ImageSystem.GetThumbnail(prefabBase);
-                        prefab.imageUrl = thumbnail;
-                        Logger.Debug("Thumbnail found for prefab: " + prefab.prefabName);
-                    }
-                    catch (Exception x)
-                    {
-                        Logger.Warn("No thumbnail found for prefab: " + prefab.prefabName + ", " + x.Message);
-                    }
-                    foreach(var allowedVehicle in allowedVehicles)
+                    var prefabBase = GetPrefabBaseForName(prefab.prefabName);
+                    var thumbnail = ImageSystem.GetThumbnail(prefabBase);
+                    prefab.imageUrl = thumbnail;
+                    Logger.Debug("Thumbnail found for prefab: " + prefab.prefabName);
+                }
+                catch (Exception x)
+                {
+                    Logger.Warn("No thumbnail found for prefab: " + prefab.prefabName + ", " + x.Message);
+                }
+                if (!allowedVehicles.IsEmpty)
+                {
+                    foreach (var allowedVehicle in allowedVehicles)
                     {
                         if (allowedVehicle.PrefabName == prefab.prefabName)
                         {
@@ -767,7 +776,6 @@ namespace VehicleController.Systems
                     }
                 }
             }
-
             return count;
         }
         
