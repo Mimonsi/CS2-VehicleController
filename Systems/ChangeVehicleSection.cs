@@ -44,7 +44,7 @@ namespace VehicleController.Systems
     public partial class ChangeVehicleSection : InfoSectionBase
     {
         private ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(ChangeVehicleSection)}")
-            .SetShowsErrorsInUI(false);
+            .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
     
         private EntityQuery m_ExistingServiceVehicleQuery;
         private EntityQuery m_CreatedServiceVehicleQuery;
@@ -752,14 +752,12 @@ namespace VehicleController.Systems
             }
             foreach (var prefab in vehiclePrefabs)
             {
-                Logger.Debug("Checking prefab: " + prefab.prefabName);
                 // Try getting the thumbnail
                 try
                 {
                     var prefabBase = GetPrefabBaseForName(prefab.prefabName);
                     var thumbnail = ImageSystem.GetThumbnail(prefabBase);
                     prefab.imageUrl = thumbnail;
-                    Logger.Debug("Thumbnail found for prefab: " + prefab.prefabName);
                 }
                 catch (Exception x)
                 {

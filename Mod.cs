@@ -18,7 +18,7 @@ namespace VehicleController
     public class Mod : IMod
     {
         public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(Mod)}")
-            .SetShowsErrorsInUI(false);
+            .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
 
         public static string Id = "VehicleController";
         private Setting m_Setting;

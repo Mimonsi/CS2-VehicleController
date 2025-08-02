@@ -16,7 +16,7 @@ namespace VehicleController.Systems
     public partial class VehicleCounterSystem : GameSystemBase
     {
         public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(VehicleCounterSystem)}")
-            .SetShowsErrorsInUI(false);
+            .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
 
         private EntityQuery carQuery;
         private EntityQuery instanceQuery;
