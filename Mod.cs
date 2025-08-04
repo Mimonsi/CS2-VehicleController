@@ -37,8 +37,10 @@ namespace VehicleController
         /// </summary>
         public void OnLoad(UpdateSystem updateSystem)
         {
-            Logger.Info(nameof(OnLoad));
-
+            //Logger.keepStreamOpen = false; // TEST: Solution for logger bug?
+            
+            Logger.Info("Loading VehicleController mod");
+            
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
             
