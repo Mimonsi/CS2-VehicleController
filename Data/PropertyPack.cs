@@ -60,7 +60,7 @@ namespace VehicleController.Data
         /// </summary>
         public static PropertyPack LoadFromFile(string name)
         {
-            Mod.Logger.Info("Loading probability pack " + name);
+            Mod.log.Info("Loading probability pack " + name);
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
                 "property", name + ".json");
             if (!File.Exists(path))

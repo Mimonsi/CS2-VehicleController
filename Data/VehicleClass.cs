@@ -167,7 +167,7 @@ namespace VehicleController.Data
                 }
             }
 
-            Mod.Logger.Info($"Vehicle class for vehicle {prefabName} not found, using Sedan class as default");
+            Mod.log.Info($"Vehicle class for vehicle {prefabName} not found, using Sedan class as default");
             return VehicleClasses["Sedan"];
         }
 
@@ -213,7 +213,7 @@ namespace VehicleController.Data
                     return (Setting.Instance.VanProbability, vehicleClass.MaxSpeed,
                         vehicleClass.Acceleration, vehicleClass.Braking);
                 default:
-                    Mod.Logger.Debug("Vehicle class not found, using default values");
+                    Mod.log.Debug("Vehicle class not found, using default values");
                     return (100, 250, 8, 15);
             }
 

@@ -43,9 +43,11 @@ namespace VehicleController.Systems
     /// </summary>
     public partial class ChangeVehicleSection : InfoSectionBase
     {
-        private ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(ChangeVehicleSection)}")
-            .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
-    
+        //public ILog log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(ChangeVehicleSection)}")
+        //    .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
+
+        private new static ILog log;
+        public static ChangeVehicleSection Instance;
         private EntityQuery m_ExistingServiceVehicleQuery;
         private EntityQuery m_CreatedServiceVehicleQuery;
         private EntityQuery m_ServiceBuildingQuery;
@@ -63,6 +65,9 @@ namespace VehicleController.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
+            Instance = this;
+            log = Mod.log;
+            
             m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             _selectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
@@ -70,8 +75,6 @@ namespace VehicleController.Systems
                 (Action<Entity, Entity, float3>)Delegate.Combine(
                     _selectedInfoUISystem.eventSelectionChanged,
                     (Action<Entity, Entity, float3>)SelectedEntityChanged);
-
-            Logger.effectivenessLevel = Level.All; // For debugging //TODO: Remove in production
             
             //m_InfoUISystem.AddMiddleSection(this); //
             AddMiddleSectionCustom();
@@ -81,6 +84,7 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding<string>(Mod.Id, "SelectedVehicleChanged", SelectedVehicleChanged));
             AddBinding(new TriggerBinding(Mod.Id, "ChangeNowClicked", ChangeNowClicked));
             AddBinding(new TriggerBinding(Mod.Id, "ClearBufferClicked", ClearBufferClicked));
+            AddBinding(new TriggerBinding(Mod.Id, "DeleteOwnedVehiclesClicked", DeleteOwnedVehiclesClicked));
             
             AddBinding(new TriggerBinding(Mod.Id, "CopySelectionClicked", CopySelectionClicked));            
             AddBinding(new TriggerBinding(Mod.Id, "ExportClipboardClicked", ExportClipboardClicked));
@@ -92,8 +96,6 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding(Mod.Id, "PasteSamePrefabDistrictClicked", PasteSamePrefabDistrictClicked));
             AddBinding(new TriggerBinding(Mod.Id, "PasteSameServiceTypeClicked", PasteSameServiceTypeClicked));
             AddBinding(new TriggerBinding(Mod.Id, "PasteSameServiceTypeDistrictClicked", PasteSameServiceTypeDistrictClicked));
-
-            AddBinding(new TriggerBinding(Mod.Id, "Debug2Clicked", Debug2Clicked));
             
             // C# -> UI
             m_Minimized = new ValueBinding<bool>(Mod.Id, "Minimized", false);
@@ -187,12 +189,12 @@ namespace VehicleController.Systems
             RequireForUpdate(m_CreatedServiceVehicleQuery);
 
             //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
-            Logger.Info("ChangeVehicleSection created.");
+            log.Info("ChangeVehicleSection created.");
         }
 
-        private void Debug2Clicked()
+        private void DeleteOwnedVehiclesClicked()
         {
-            Logger.Debug("DeleteVehicles clicked");
+            log.Verbose("DeleteVehicles clicked");
             NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             
             // Filter by owner = selectedEntity
@@ -205,21 +207,23 @@ namespace VehicleController.Systems
             {
                 EntityManager.AddComponent<Deleted>(entity);
             }
-            Logger.Info("Deleted " + entities.Length + " vehicles for entity: " + selectedEntity);
+            log.Info("Deleted " + entities.Length + " vehicles for entity: " + selectedEntity);
         }
 
         private void ClearBufferClicked()
         {
+            log.Verbose("ClearBufferClicked");
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 EntityManager.RemoveComponent<AllowedVehiclePrefab>(selectedEntity);
-                Logger.Info("Buffer has been cleared for entity: " + selectedEntity);
+                log.Info("Buffer has been cleared for entity: " + selectedEntity);
                 TriggerUpdate();
             }
         }
 
         private void CopySelectionClicked()
         {
+            log.Verbose("CopySelectionClicked");
             try
             {
                 m_Clipboard.Clear();
@@ -232,28 +236,29 @@ namespace VehicleController.Systems
                 }
 
                 m_ClipboardData.Update(string.Join(",", m_Clipboard));
-                Logger.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
+                log.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
             }
             catch(Exception x)
             {
-                Logger.Error($"Error copying vehicles: {x.Message}");
+                log.Error($"Error copying vehicles: {x.Message}");
             }
         }
         
         private void PasteSelectionClicked()
         {
+            log.Verbose("PasteSelectionClicked");
             if (selectedEntity == Entity.Null)
             {
-                Logger.Error("Selected entity is null, cannot paste vehicles");
+                log.Error("Selected entity is null, cannot paste vehicles");
                 return;
             }
             if (m_Clipboard.Count == 0)
             {
-                Logger.Warn("Clipboard is empty, nothing to paste");
+                log.Warn("Clipboard is empty, nothing to paste");
                 return;
             }
             ApplyClipboardToEntity(selectedEntity);
-            Logger.Info($"Pasted {m_Clipboard.Count} vehicles to entity: {selectedEntity}");
+            log.Info($"Pasted {m_Clipboard.Count} vehicles to entity: {selectedEntity}");
         }
 
         /// <summary>
@@ -280,6 +285,7 @@ namespace VehicleController.Systems
         /// </summary>
         private void PasteSamePrefabClicked()
         {
+            log.Verbose("PasteSamePrefabClicked");
             if (m_Clipboard.Count == 0)
                 return;
             if (!EntityManager.TryGetComponent(selectedEntity, out PrefabRef selectedPrefab))
@@ -304,6 +310,7 @@ namespace VehicleController.Systems
 
         private void PasteSameServiceTypeClicked()
         {
+            log.Verbose("PasteSameServiceTypeClicked");
             if (m_Clipboard.Count == 0)
                 return;
             var selectedTypes = GetServiceVehicleTypes();
@@ -358,30 +365,32 @@ namespace VehicleController.Systems
 
         private void PasteSameServiceTypeDistrictClicked()
         {
-            Logger.Info("PasteDistrictClicked not implemented");
+            log.Info("PasteDistrictClicked not implemented");
             // TODO: Implement
         }
 
         private void ExportClipboardClicked()
         {
+            log.Verbose("ExportClipboardClicked");
             try
             {
                 string clipboardText = string.Join(",", m_Clipboard);
                 GUIUtility.systemCopyBuffer = clipboardText;
-                Logger.Info("Clipboard exported to system clipboard");
+                log.Info("Clipboard exported to system clipboard");
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error exporting clipboard: {ex.Message}");
+                log.Error($"Error exporting clipboard: {ex.Message}");
             }
         }
 
         private void ImportClipboardClicked()
         {
+            log.Verbose("ImportClipboardClicked");
             try
             {
                 string clipboardText = GUIUtility.systemCopyBuffer;
-                Logger.Info($"Importing clipboard data: {clipboardText}");
+                log.Info($"Importing clipboard data: {clipboardText}");
                 m_Clipboard.Clear();
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
@@ -391,11 +400,11 @@ namespace VehicleController.Systems
                     }
                 }
                 m_ClipboardData.Update(string.Join(",", m_Clipboard));
-                Logger.Info($"Imported {m_Clipboard.Count} entries from system clipboard");
+                log.Info($"Imported {m_Clipboard.Count} entries from system clipboard");
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error importing clipboard: {ex.Message}");
+                log.Error($"Error importing clipboard: {ex.Message}");
             }
         }
 
@@ -427,7 +436,7 @@ namespace VehicleController.Systems
 
                 if (!found)
                 {
-                    Mod.Logger.Error(
+                    Mod.log.Error(
                         $"Change Company unable to find CompanySection in middle sections of SelectedInfoUISystem.");
                 }
             }
@@ -442,12 +451,13 @@ namespace VehicleController.Systems
         /// </summary>
         private void SelectedVehicleChanged(string prefabName)
         {
+            log.Verbose("SelectedVehicleChanged: " + prefabName);
             // Don't save dummy element
             if (prefabName.Contains("Vehicles Selected"))
                 return;
             // Save selected company index.
             //_selectedCompanyIndex = selectedCompanyIndex;
-            Logger.Info("SelectedVehicleChanged: " + prefabName);
+            log.Info("SelectedVehicleChanged: " + prefabName);
             // Send selected company index back to the UI so the correct dropdown entry is highlighted.
             //_bindingSelectedCompanyIndex.Update(_selectedCompanyIndex);
             AddAllowedVehicle(prefabName);
@@ -466,11 +476,11 @@ namespace VehicleController.Systems
             var prefab = new AllowedVehiclePrefab() { PrefabName = prefabName };
             if (CollectionUtils.TryAddUniqueValue(buffer, prefab))
             {
-                Logger.Info("Added allowed vehicle prefab: " + prefabName);
+                log.Info("Added allowed vehicle prefab: " + prefabName);
             }
             else
             { 
-                Logger.Info($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
+                log.Info($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
                 CollectionUtils.RemoveValue(buffer, prefab);
             }
             TriggerUpdate();
@@ -481,7 +491,7 @@ namespace VehicleController.Systems
         /// </summary>
         private void ChangeNowClicked()
         {
-            Logger.Debug("ChangeNow clicked");
+            log.Verbose("ChangeNow clicked");
             NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             
             // Filter by owner = selectedEntity
@@ -491,7 +501,7 @@ namespace VehicleController.Systems
                 .ToArray();
             
             NativeArray<Entity> entitiesArray = new NativeArray<Entity>(entities, Allocator.Temp);
-            Logger.Debug($"Changing vehicle prefabs for {entitiesArray.Length} existing service vehicles.");
+            log.Debug($"Changing vehicle prefabs for {entitiesArray.Length} existing service vehicles.");
             ChangeVehiclePrefabs(entitiesArray);
         }
 
@@ -531,13 +541,10 @@ namespace VehicleController.Systems
             List<SelectableVehiclePrefab> vehiclePrefabs = new List<SelectableVehiclePrefab>();
             foreach (var entity in entities)
             {
-                //Logger.Info("Checking Car: " + entity);
                 if (m_PrefabSystem.TryGetPrefab(entity, out PrefabBase prefab))
                 {
-                    //Logger.Info("Found Prefab: " + prefab.name);
                     if (prefab is VehiclePrefab vehiclePrefab)
                     {
-                        //Logger.Info("Found Police Vehicle Prefab: " + vehiclePrefab.name);
                         vehiclePrefabs.Add(new SelectableVehiclePrefab()
                         {
                             prefabName = vehiclePrefab.name
@@ -587,7 +594,7 @@ namespace VehicleController.Systems
 
             if (allowedVehicleNames.Count == 0)
             {
-                Logger.Warn("No allowed vehicle prefabs found");
+                log.Warn("No allowed vehicle prefabs found");
                 return; // No allowed vehicles, nothing to change
             }
 
@@ -604,12 +611,12 @@ namespace VehicleController.Systems
                 int index = UnityEngine.Random.Range(0, allowedVehicleNames.Count);
                 var newPrefabName = allowedVehicleNames[index];
             
-                Logger.Debug($"Changing {currentPrefab} Prefab to {newPrefabName}");
+                log.Debug($"Changing {currentPrefab} Prefab to {newPrefabName}");
                 if (m_PrefabSystem.TryGetPrefab(
                         new PrefabID("CarPrefab", newPrefabName),
                         out PrefabBase newPrefab))
                 {
-                    Logger.Debug("New Prefab: " + newPrefab!.name);
+                    log.Debug("New Prefab: " + newPrefab!.name);
                     if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity)) // Get entity for prefab
                     {
                         prefabRef.m_Prefab = prefabEntity;
@@ -617,13 +624,13 @@ namespace VehicleController.Systems
                         EntityManager.AddComponent<Updated>(vehicleEntity);
                         return;
                     }
-                    Logger.Warn("Could not find entity for new prefab: " + newPrefab.name);
+                    log.Warn("Could not find entity for new prefab: " + newPrefab.name);
                     return;
                 }
-                Logger.Warn("Could not get prefab for name: " + newPrefabName);
+                log.Warn("Could not get prefab for name: " + newPrefabName);
                 return;
             }
-            Logger.Error("Could not get prefab for prefabRef: " + prefabRef.m_Prefab);
+            log.Error("Could not get prefab for prefabRef: " + prefabRef.m_Prefab);
         }
 
         /// <summary>
@@ -704,10 +711,10 @@ namespace VehicleController.Systems
             string entityType = EntityManager.GetName(selectedEntity);
             if (types.Count == 0)
             {
-                Logger.Info($"No service vehicle types available for selected entity of type: {entityType}");
+                log.Info($"No service vehicle types available for selected entity of type: {entityType}");
                 return false;
             }
-            Logger.Info($"Service vehicle types for entity type {entityType}: " + string.Join(", ", types));
+            log.Info($"Service vehicle types for entity type {entityType}: " + string.Join(", ", types));
             // TODO: Add toggle to disable in settings
             return true;
         }
@@ -761,7 +768,7 @@ namespace VehicleController.Systems
                 }
                 catch (Exception x)
                 {
-                    Logger.Warn("No thumbnail found for prefab: " + prefab.prefabName + ", " + x.Message);
+                    log.Warn("No thumbnail found for prefab: " + prefab.prefabName + ", " + x.Message);
                 }
                 if (!allowedVehicles.IsEmpty)
                 {
@@ -783,7 +790,7 @@ namespace VehicleController.Systems
         {
             if (selectedEntity == Entity.Null)
             {
-                Logger.Error("Selected entity is null, THIS SHOULD NEVER HAPPEN!");
+                log.Error("Selected entity is null, THIS SHOULD NEVER HAPPEN!");
                 return;
             }
             
@@ -816,5 +823,10 @@ namespace VehicleController.Systems
         }
 
         protected override string group => nameof(ChangeVehicleSection);
+
+        public static void RemoveAllModComponents()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

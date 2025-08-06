@@ -19,7 +19,7 @@ namespace VehicleController.Systems
     /// </summary>
     public partial class VehiclePropertySystem : GameSystemBase
     {
-        private static ILog Logger;
+        private static ILog log;
 
         private EntityQuery carQuery;
         private EntityQuery trainQuery;
@@ -37,7 +37,7 @@ namespace VehicleController.Systems
             base.OnCreate();
             Instance = this;
             Enabled = true;
-            Logger = Mod.Logger;
+            log = Mod.log;
             
             carQuery = GetEntityQuery(new EntityQueryDesc
             {
@@ -59,7 +59,7 @@ namespace VehicleController.Systems
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             GameManager.instance.RegisterUpdater(SaveVanillaPack);
             //GameManager.instance.RegisterUpdater(UpdateProperties);
-            Logger.Info("VehiclePropertySystem created and updater registered.");
+            log.Info("VehiclePropertySystem created and updater registered.");
         }
 
         /// <summary>
@@ -101,10 +101,10 @@ namespace VehicleController.Systems
         {
             if (!Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
             {
-                Logger.Info("Not Updating Train Properties, Improved Car Behavior is disabled.");
+                log.Info("Not Updating Train Properties, Improved Car Behavior is disabled.");
                 return true;
             }
-            Logger.Info("Updating Train Properties");
+            log.Info("Updating Train Properties");
             var entities = trainQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -113,7 +113,7 @@ namespace VehicleController.Systems
                 {
                     if (trainData.m_TrackType == TrackTypes.None)
                     {
-                        Logger.Debug("TrainData not initialized, retrying later");
+                        log.Debug("TrainData not initialized, retrying later");
                         return false;
                     }
                     if (trainData.m_TrackType == TrackTypes.Train)
@@ -129,11 +129,11 @@ namespace VehicleController.Systems
             
             if (count == 0)
             {
-                Logger.Debug("Failed to update train parameters, no TrainData found.");
+                log.Debug("Failed to update train parameters, no TrainData found.");
                 return false;
             }
 
-            Logger.Info($"Updated parameters for {count}/{entities.Length} train entities.");
+            log.Info($"Updated parameters for {count}/{entities.Length} train entities.");
             return true;
         }
 
@@ -142,7 +142,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateCarProperties()
         {
-            Logger.Info("Updating Vehicle Properties");
+            log.Info("Updating Vehicle Properties");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -154,7 +154,7 @@ namespace VehicleController.Systems
                     {
                         if (carData is { m_Acceleration: 0, m_Braking: 0, m_MaxSpeed: 0 })
                         {
-                            Logger.Info("CarData not initialized, retrying later");
+                            log.Info("CarData not initialized, retrying later");
                             return false;
                         }
                         var values = VehicleClass.GetValues(prefabName);
@@ -166,7 +166,7 @@ namespace VehicleController.Systems
                     }
                     else
                     {
-                        Logger.Error("CarData component not found on entity " + prefabName);
+                        log.Error("CarData component not found on entity " + prefabName);
                     }
                     EntityManager.SetComponentData(entity, personalCarData);
                     EntityManager.AddComponent<BatchesUpdated>(entity);
@@ -176,11 +176,11 @@ namespace VehicleController.Systems
             
             if (count == 0)
             {
-                Logger.Debug("Failed to update properties. No PersonalCarData found.");
+                log.Debug("Failed to update properties. No PersonalCarData found.");
                 return false;
             }
             
-            Logger.Info($"Updated properties for {count}/{entities.Length} car entities.");
+            log.Info($"Updated properties for {count}/{entities.Length} car entities.");
             return true;
         }
 

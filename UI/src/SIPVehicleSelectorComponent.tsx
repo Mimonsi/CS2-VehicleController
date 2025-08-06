@@ -65,7 +65,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     const sectionHeading: string = translate(mod.id + ".VehicleController") || "Vehicle Controller";
     const changeNowLabel: string = translate(mod.id + ".ChangeNow"    ) || "Apply to existing vehicles";
     const clearBufferLabel: string = translate(mod.id + ".ClearBuffer"    ) || "Clear allowed Vehicles";
-    const debug2Label: string = translate(mod.id + ".Debug2"    ) || "Delete owned vehicles";
+    const DeleteOwnedVehiclesLabel: string = translate(mod.id + ".DeleteOwnedVehicles"    ) || "Delete owned vehicles";
 
     // Get the mod's translated formatted tooltip text based on property type.
     //const tooltipText: string = translate(mod.id + ".SectionTooltip" + PropertyType[props.propertyType]) ||
@@ -99,7 +99,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     function onDeleteOwnedClicked()
     {
       trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
-      trigger(mod.id, "Debug2Clicked");
+      trigger(mod.id, "DeleteOwnedVehiclesClicked");
     }
 
     function minimizeClick()

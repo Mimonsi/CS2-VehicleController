@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Colossal;
 using Colossal.IO.AssetDatabase;
+using Colossal.Logging;
 using Game.Modding;
 using Game.Settings;
 using Game.UI;
@@ -14,13 +15,22 @@ using VehicleController.Systems;
 // Settings structure inspired by Simple Mod Checker Plus by StarQ
 namespace VehicleController
 {
+    public enum LogLevel {
+        Verbose,
+        Debug,
+        Info,
+        Warning,
+        Error,
+        Disabled
+    }
+    
+    /// <summary>
+    /// Stores all mod settings and exposes them to the game UI.
+    /// </summary>
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
     [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup)]
     [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup)]
-    /// <summary>
-    /// Stores all mod settings and exposes them to the game UI.
-    /// </summary>
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -55,7 +65,57 @@ namespace VehicleController
         }
         
         #region MainSection
-
+        
+        private Level _loggingLevel = Level.Info;
+        
+        // TODO: Add Localization
+        [SettingsUISection(MainSection, MainGroup)]
+        public LogLevel LoggingLevel
+        {
+            get
+            {
+                if (_loggingLevel == Level.Verbose)
+                    return LogLevel.Verbose;
+                if (_loggingLevel == Level.Debug)
+                    return LogLevel.Debug;
+                if (_loggingLevel == Level.Info)
+                    return LogLevel.Info;
+                if (_loggingLevel == Level.Warn)
+                    return LogLevel.Warning;
+                if (_loggingLevel == Level.Error)
+                    return LogLevel.Error;
+                if (_loggingLevel == Level.Disabled)
+                    return LogLevel.Disabled;
+                return LogLevel.Info;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case LogLevel.Verbose:
+                        _loggingLevel = Level.Verbose;
+                        break;
+                    case LogLevel.Debug:
+                        _loggingLevel = Level.Debug;
+                        break;
+                    case LogLevel.Info:
+                        _loggingLevel = Level.Info;
+                        break;
+                    case LogLevel.Warning:
+                        _loggingLevel = Level.Warn;
+                        break;
+                    case LogLevel.Error:
+                        _loggingLevel = Level.Error;
+                        break;
+                    case LogLevel.Disabled:
+                        _loggingLevel = Level.Disabled;
+                        break;
+                }
+                Mod.log.effectivenessLevel = _loggingLevel;
+                Mod.log.Info("Logging level set to: " + _loggingLevel);
+            }
+        }
+        
         /*[SettingsUIButton]
         public bool DeleteInstances
         {
@@ -119,7 +179,7 @@ namespace VehicleController
                     displayName = s,
                 });
             }
-            Mod.Logger.Info("Displaying " + items.Count + " probability packs");
+            Mod.log.Info("Displaying " + items.Count + " probability packs");
             return items.ToArray();
         }
         
@@ -200,7 +260,7 @@ namespace VehicleController
             set
             {
                 _currentVehicleClass = value;
-                Mod.Logger.Info("Current vehicle class set to: " + value);
+                Mod.log.Info("Current vehicle class set to: " + value);
             }
         }
 
@@ -217,12 +277,12 @@ namespace VehicleController
                     displayName = vehicleClass,
                     value = vehicleClass,
                 });
-                Mod.Logger.Info("Added vehicle class: " + vehicleClass);
+                Mod.log.Info("Added vehicle class: " + vehicleClass);
             }
 
             if (items.Count == 0)
             {
-                Mod.Logger.Info("No vehicle classes found, adding dummy classes");
+                Mod.log.Info("No vehicle classes found, adding dummy classes");
                 items.Add(new DropdownItem<string>()
                 {
                     displayName = "Dummy Sedan",
@@ -268,8 +328,15 @@ namespace VehicleController
         
         #region VehicleSelection
 
+        // TODO: Add Localization
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
-        public bool DeleteVehicleInstances { get; set; } = false;
+        public bool RemoveAllModComponents 
+        {
+            set
+            {
+                ChangeVehicleSection.RemoveAllModComponents();
+            }
+        }
         
         #endregion
         
@@ -297,7 +364,7 @@ namespace VehicleController
                 }
                 catch (Exception e)
                 {
-                    Mod.Logger.Info(e);
+                    Mod.log.Info(e);
                 }
             }
         }
@@ -314,7 +381,7 @@ namespace VehicleController
                 }
                 catch (Exception e)
                 {
-                    Mod.Logger.Info(e);
+                    Mod.log.Info(e);
                 }
             }
         }
@@ -344,6 +411,8 @@ namespace VehicleController
         /// </summary>
         public override void SetDefaults()
         {
+            LoggingLevel = LogLevel.Info;
+            
             MotorbikeProbability = 25;
             
             ScooterProbability = 50;
@@ -439,6 +508,14 @@ namespace VehicleController
             values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CreateExamplePack)), "Create an example probability pack with some default values. This will create a file in the ModsData folder of VehicleController.");
             values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.CountPrefabInstances)), "Count Prefab Instances");
             values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CountPrefabInstances)), "Counts occurrences of each prefab in the game and logs them to the console. Useful for debugging and understanding how many instances of each prefab are present in the game.");
+            values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.LoggingLevel)), "Logging Level");
+            values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.LoggingLevel)), "Sets the logging level for the mod. Higher levels log more information, but might impact performance. Recommended is 'Info' for normal operation, 'Debug' for detailed information, and 'Verbose' for full debug output. Please use 'Verbose' when reporting bugs");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Verbose), "Verbose (Log EVERYTHING)");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Debug), "Debug");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Info), "Info (Recommended)");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Warning), "Warning");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Error), "Error");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Disabled), "Disabled (No Logging)");
             values.Add(m_Setting.GetOptionTabLocaleID(nameof(Setting.DebugSection)), "Debug");
             values.Add(m_Setting.GetOptionGroupLocaleID(nameof(Setting.DebugGroup)), "Debugging Tools");
             

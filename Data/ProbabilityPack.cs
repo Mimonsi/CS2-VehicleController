@@ -106,7 +106,7 @@ namespace VehicleController.Data
         /// <returns>Loaded probability pack or a placeholder if missing.</returns>
         public static ProbabilityPack LoadFromFile(string name)
         {
-            Mod.Logger.Info("Loading probability pack " + name);
+            Mod.log.Info("Loading probability pack " + name);
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
                 "probability", name + ".json");
             if (!File.Exists(path))
@@ -137,11 +137,11 @@ namespace VehicleController.Data
             }
             catch (Exception ex)
             {
-                Mod.Logger.Error($"Error saving probability pack {Name}: {ex.Message}");
+                Mod.log.Error($"Error saving probability pack {Name}: {ex.Message}");
                 throw;
             }
 
-            Mod.Logger.Info($"Saved probability pack {Name} to {path}");
+            Mod.log.Info($"Saved probability pack {Name} to {path}");
         }
         
         /// <summary>

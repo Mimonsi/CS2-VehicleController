@@ -17,8 +17,8 @@ namespace VehicleController
     /// </summary>
     public class Mod : IMod
     {
-        public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(Mod)}")
-            .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
+        public static ILog log = LogManager.GetLogger($"{nameof(VehicleController)}")
+            .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Error);
 
         public static string Id = "VehicleController";
         private Setting m_Setting;
@@ -39,7 +39,7 @@ namespace VehicleController
         {
             //Logger.keepStreamOpen = false; // TEST: Solution for logger bug?
             
-            Logger.Info("Loading VehicleController mod");
+            log.Info("Loading VehicleController mod");
             
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
@@ -49,7 +49,7 @@ namespace VehicleController
                 if (CopyEmbeddedPacks("probability"))
                     updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
                 else
-                    Logger.Info("Disabled VehicleProbabilitySystem due to error when copying embedded packs");
+                    log.Info("Disabled VehicleProbabilitySystem due to error when copying embedded packs");
             }
 
             if (EnablePropertySystem)
@@ -57,7 +57,7 @@ namespace VehicleController
                 if (CopyEmbeddedPacks("property"))
                     updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
                 else
-                    Logger.Info("Disabled VehiclePropertySystem due to error when copying embedded packs");
+                    log.Info("Disabled VehiclePropertySystem due to error when copying embedded packs");
             }
             
             if (EnableVehicleCounterSystem)
@@ -104,7 +104,7 @@ namespace VehicleController
             }
             catch (Exception x)
             {
-                Logger.Error("Error copying embedded packs: " + x.Message);
+                log.Error("Error copying embedded packs: " + x.Message);
                 return false;
             }
         }
@@ -116,12 +116,12 @@ namespace VehicleController
         {
             try
             {
-                Logger.Info(nameof(OnDispose));
+                log.Info(nameof(OnDispose));
                 m_Setting.UnregisterInOptionsUI();
             }
             catch (Exception e)
             {
-                Logger.Error($"Error during {nameof(OnDispose)}: {e.Message}");
+                log.Error($"Error during {nameof(OnDispose)}: {e.Message}");
             }
         }
     }

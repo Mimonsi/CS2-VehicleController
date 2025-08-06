@@ -21,7 +21,7 @@ namespace VehicleController.Systems
     /// </summary>
     public partial class VehicleProbabilitySystem : GameSystemBase
     {
-        private static ILog Logger;
+        private static ILog log;
 
         private EntityQuery carQuery;
 
@@ -37,7 +37,7 @@ namespace VehicleController.Systems
             base.OnCreate();
             Instance = this;
             Enabled = true;
-            Logger = Mod.Logger;
+            log = Mod.log;
             
             carQuery = GetEntityQuery(new EntityQueryDesc
             {
@@ -50,7 +50,7 @@ namespace VehicleController.Systems
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             GameManager.instance.RegisterUpdater(SaveVanillaPack);
             //GameManager.instance.RegisterUpdater(UpdateProbabilities);
-            Logger.Info("VehicleProbabilitySystem created and updater registered.");
+            log.Info("VehicleProbabilitySystem created and updater registered.");
         }
 
         /// <inheritdoc />
@@ -65,7 +65,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool SaveVanillaPack()
         {
-            Logger.Info("Saving vanilla probabilities");
+            log.Info("Saving vanilla probabilities");
             ProbabilityPack pack = new ProbabilityPack("Vanilla");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
@@ -75,7 +75,7 @@ namespace VehicleController.Systems
                 {
                     if (personalCarData.m_Probability == 0)
                     {
-                        Logger.Info("PersonalCarData not initialized, retrying later");
+                        log.Info("PersonalCarData not initialized, retrying later");
                         return false;
                     }
                     var prefabName = prefabSystem.GetPrefabName(entity);
@@ -87,19 +87,19 @@ namespace VehicleController.Systems
 
             if (count == 0)
             {
-                Logger.Debug("Failed to save vanilla probabilities, no PersonalCarData found.");
+                log.Debug("Failed to save vanilla probabilities, no PersonalCarData found.");
                 return false;
             }
 
             try
             {
                 pack.SaveToFile();
-                Logger.Info($"Saved vanilla probabilities for {count}/{entities.Length} car entities.");
+                log.Info($"Saved vanilla probabilities for {count}/{entities.Length} car entities.");
                 return true;
             }
             catch (Exception x)
             {
-                Logger.Error($"Error saving vanilla probabilities: {x.Message}");
+                log.Error($"Error saving vanilla probabilities: {x.Message}");
                 return false;
             }
         }
@@ -109,7 +109,7 @@ namespace VehicleController.Systems
         /// </summary>
         public void LoadProbabilityPack(ProbabilityPack pack)
         {
-            Logger.Info("Loading Probability Pack: " + pack.Name);
+            log.Info("Loading Probability Pack: " + pack.Name);
             if (!Enabled)
                 return;
             _currentProbabilityPack = pack;
@@ -166,7 +166,7 @@ namespace VehicleController.Systems
             {
                 Setting.Instance.VanProbability = vanEntry.Probability;
             }
-            Logger.Info("Updated sliders with current probability pack values.");
+            log.Info("Updated sliders with current probability pack values.");
         }
         
         /// <summary>
@@ -174,8 +174,8 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateProbabilities()
         {
-            Logger.Info("Updating Vehicle Probabilities");
-            Logger.Info("Loading probability pack: " + _currentProbabilityPack.Name);
+            log.Info("Updating Vehicle Probabilities");
+            log.Info("Loading probability pack: " + _currentProbabilityPack.Name);
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -187,7 +187,7 @@ namespace VehicleController.Systems
                     {
                         if (carData is { m_Acceleration: 0, m_Braking: 0, m_MaxSpeed: 0 })
                         {
-                            Logger.Info("CarData not initialized, retrying later");
+                            log.Info("CarData not initialized, retrying later");
                             return false;
                         }
 
@@ -199,7 +199,7 @@ namespace VehicleController.Systems
                     }
                     else
                     {
-                        Logger.Error("CarData component not found on entity " + prefabName);
+                        log.Error("CarData component not found on entity " + prefabName);
                     }
                     EntityManager.SetComponentData(entity, personalCarData);
                     EntityManager.AddComponent<BatchesUpdated>(entity);
@@ -209,11 +209,11 @@ namespace VehicleController.Systems
             
             if (count == 0)
             {
-                Logger.Debug("Failed to update probabilities. No PersonalCarData found.");
+                log.Debug("Failed to update probabilities. No PersonalCarData found.");
                 return false;
             }
             
-            Logger.Info($"Updated properties for {count}/{entities.Length} car entities.");
+            log.Info($"Updated properties for {count}/{entities.Length} car entities.");
             return true;
         }
 
