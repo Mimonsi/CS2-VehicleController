@@ -57,8 +57,8 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
       content={vehicleDropdownItems}
       focusKey={ModuleResolver.instance.FOCUS_DISABLED}
     >
-        <DropdownToggle className={styles.zWC}>
-            {selectedCompanyDropdownItemContent}
+        <DropdownToggle className={ModuleResolver.instance.SIPDropdownClasses.dropdown}>
+            <div className={ModuleResolver.instance.SIPDropdownClasses.dropdownLabel}>Select models</div>
         </DropdownToggle>
       
     </Dropdown>
