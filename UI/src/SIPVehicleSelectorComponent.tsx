@@ -7,6 +7,7 @@ import { ClipboardActions } from "./ClipboardActions";
 import { ModuleResolver             } from "./ModuleResolver";
 import   mod                          from "../mod.json";
 import React from "react";
+import {Wrapbox} from "./Wrapbox";
 
 export type SelectableVehiclePrefab =
   {
@@ -130,6 +131,8 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
               tooltip={<FormattedParagraphs>{tooltipText}</FormattedParagraphs>}
               disableFocus={true}
             />
+            
+            <Wrapbox vehicleTypes={modifiedVehicleList}/>
 
             <ModuleResolver.instance.InfoRow
               left={"Actions"}
