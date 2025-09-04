@@ -17,7 +17,7 @@ export const VehiclePill = ({ prefabName, image }: VehiclePillProps) =>
     const vehicleIcon: string = image ? image : "Media/Game/Icons/GenericVehicle.svg";
     const { translate } = useLocalization();
     const translated = translate("Assets.NAME[" + prefabName + "]");
-    let vehicleText: string = (translated && translated !== "null") ? `${translated} (${prefabName})` : prefabName;
+    let vehicleText: string = (translated && translated !== "null") ? `${translated}` : prefabName;
 
   // This would be better for the icon and more accurate, but the images are not square: <Icon className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}></Icon>
     return (
