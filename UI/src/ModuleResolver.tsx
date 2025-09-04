@@ -35,6 +35,18 @@ type ToolButtonProps = {
   onSelect?: (x: any) => any,
 } & HTMLAttributes<any>
 
+type SIPDropdownClassesProps = {
+  dropdown: string,
+  item: string,
+  thumb: string,
+  label: string,
+  hint: string,
+  padLeft: string,
+  dropdownGamepad: string,
+  padRight: string,
+  padThumbnail: string,
+}
+
 // Provide access to modules from index.js.
 export class ModuleResolver {
     // For unknown reasons, using the game's InfoRow and InfoSection directly from ui.d.ts causes a run time error.
@@ -49,8 +61,8 @@ export class ModuleResolver {
     private _toolButton: any;
     private _uiSound: any;
     // Define SCSS modules.
-    private _companySectionClasses: any;
     private _dropdownClasses: any;
+    private _sipDropdownClasses: any;
     private _infoRowClasses: any;
 
     // Define instance.
@@ -85,11 +97,6 @@ export class ModuleResolver {
         return this._uiSound ?? (this._uiSound = getModule("game-ui/common/data-binding/audio-bindings.ts", "UISound"));
     }
 
-    // Provide access to SCSS modules.
-    public get CompanySectionClasses(): Theme | any {
-        return this._companySectionClasses ?? (this._companySectionClasses = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/building-sections/company-section/company-section.module.scss", "classes"));
-    }
-
     // Wrong Dropdown Classes
     // public get DropdownClasses():       Theme | any                                         { return this._dropdownClasses          ?? (this._dropdownClasses       = getModule("game-ui/menu/themes/dropdown.module.scss",                                                                                         "classes")); }
     public get DropdownClasses(): Theme | any {
@@ -102,5 +109,9 @@ export class ModuleResolver {
 
     public get toolButtonTheme(): Theme | any {
         return this._toolButtonTheme ?? (this._toolButtonTheme = getModule("game-ui/game/components/tool-options/tool-button/tool-button.module.scss", "classes"));
+    }
+    
+    public get SIPDropdownClasses(): SIPDropdownClassesProps {
+        return this._sipDropdownClasses ?? (this._sipDropdownClasses = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes"));
     }
 }

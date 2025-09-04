@@ -1,11 +1,8 @@
 import { useLocalization    } from "cs2/l10n";
-
 import { ModuleResolver     } from "./ModuleResolver";
 import React from "react";
-import {getModule} from "cs2/modding";
 import {Icon} from "cs2/ui";
-const styles = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
-// Props for ResourceIconLabel.
+
 interface VehicleLabelProps
 {
     prefabName: string,
@@ -60,18 +57,13 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
 )}
 </div>
    */
-    // Return the resource icon and label.
-  
-  //        <div className={styles.dropdownRow}>
-  //           {/* Insert checkbox here */}
-  //           <img className={ModuleResolver.instance.CompanySectionClasses.icon} src={vehicleIcon} />
-  //           <div className={styles.resourceLabel}>{vehicleText}</div>
-  //         </div>
-  //
+
+  // This would be better for the icon and more accurate, but the images are not square: <Icon className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}></Icon>
     return (
-      <div className={styles.item}>
-          <Icon className={styles.icon} src={vehicleIcon}></Icon>
-        <div className={styles.label}>{vehicleText}</div>
+      <div className={ModuleResolver.instance.SIPDropdownClasses.item}>
+          <Icon className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}></Icon>
+        
+        <div className={ModuleResolver.instance.SIPDropdownClasses.label}>{vehicleText}</div>
       </div>
     );
 }

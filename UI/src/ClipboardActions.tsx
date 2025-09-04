@@ -2,17 +2,7 @@ import React, { useMemo } from "react";
 import { bindValue, useValue, trigger } from "cs2/api";
 import { ModuleResolver } from "./ModuleResolver";
 import mod from "../mod.json";
-import { getModule } from "cs2/modding";
-import {FormattedParagraphs, FormattedParagraphsProps} from "cs2/ui";
-
-const InfoButton = getModule(
-  "game-ui/game/components/selected-info-panel/shared-components/info-button/info-button.tsx",
-  "InfoButton"
-);
-
-// This components create buttons allowing the player to copy and paste the vehicle selection
-// Options include copying to other buildings of the exact same prefab, copying to all buildings of the same type, copying to clipboard. Also differentiate between district-wide copying and
-// city-wide copying (global)
+import {FormattedParagraphs} from "cs2/ui";
 
 
 // UI-Idea:

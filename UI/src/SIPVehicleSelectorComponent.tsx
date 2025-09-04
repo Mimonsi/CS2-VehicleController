@@ -1,19 +1,13 @@
 ﻿import {bindValue, trigger, useValue} from "cs2/api";
 import { SelectedInfoSectionBase    } from "cs2/bindings";
 import { useLocalization            } from "cs2/l10n";
-import {FormattedParagraphs, FormattedParagraphsProps} from "cs2/ui";
-
-import   styles                       from "SIPVehicleSelectorComponent.module.scss";
+import {FormattedParagraphs, } from "cs2/ui";
 import { VehicleSelector            } from "./VehicleSelector";
 import { ClipboardActions } from "./ClipboardActions";
 import { ModuleResolver             } from "./ModuleResolver";
 import   mod                          from "../mod.json";
-import {getModule} from "cs2/modding";
 import React from "react";
-const styleSelectVehicle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
-const dropdownToggleStyle = getModule("game-ui/game/themes/game-dropdown.module.scss", "classes");
 
-// Resource data for a company.
 export type SelectableVehiclePrefab =
   {
     prefabName: string,
@@ -27,7 +21,7 @@ const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
 const expandSrc =                       uilStandard + "ArrowsExpand.svg";
 
 const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
-// The component for the change company section.
+// The component for the change vehicle section
 export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
   // Define service vehicle types
@@ -46,7 +40,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     ParkMaintenanceVehicle
   }
 
-  // Define props for change company section.
+  // Define props for change vehicle section.
   // Adapted from bindings.d.ts for the game's sections.
   interface ChangeVehicleSection extends SelectedInfoSectionBase
   {

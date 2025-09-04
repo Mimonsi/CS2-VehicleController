@@ -6,19 +6,13 @@ import styles from "vehicleSelector.module.scss";
 import mod from "../mod.json";
 import { ModuleResolver } from "./ModuleResolver";
 import { VehicleLabel } from "./VehicleLabel";
-import {getModule} from "cs2/modding";
-import {prefab} from "cs2/bindings";
-const dropdownStyle = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes");
 
-
-// Define props for company selector dropdown.
+// Define props for vehicle selector dropdown.
 type VehicleSelectorProps = {
     vehicleTypes: SelectableVehiclePrefab[];
 }
 
 export const VehicleSelector = (props: VehicleSelectorProps) => {
-
-    //const selectedCompanyIndex: number = useValue(bindingSelectedCompanyIndex);
 
     // Empty array as fallback if vehicleTypes is not provided
     const vehicleTypes = props.vehicleTypes ?? [];
