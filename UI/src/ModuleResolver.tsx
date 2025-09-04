@@ -47,71 +47,83 @@ type SIPDropdownClassesProps = {
   padThumbnail: string,
 }
 
+function safeGetModule(path: string, exportName: string) {
+  try
+  {
+    return getModule(path, exportName);
+  }
+  catch (e)
+  {
+    console.warn(`Failed to load module: ${path}:${exportName}`, e);
+    return {};
+  }
+}
+
 // Provide access to modules from index.js.
 export class ModuleResolver {
-    // For unknown reasons, using the game's InfoRow and InfoSection directly from ui.d.ts causes a run time error.
-    private _focusDisabled: any;
-    private _formattedParagraphs: any;
+  // For unknown reasons, using the game's InfoRow and InfoSection directly from ui.d.ts causes a run time error.
+  private _focusDisabled: any;
+  private _formattedParagraphs: any;
 
-    // Define modules.
-    private _infoRow: any;
-    private _infoSection: any;
-    private _infoButton: any;
-    private _toolButtonTheme: any;
-    private _toolButton: any;
-    private _uiSound: any;
-    // Define SCSS modules.
-    private _dropdownClasses: any;
-    private _sipDropdownClasses: any;
-    private _infoRowClasses: any;
+  // Define modules.
+  private _infoRow: any;
+  private _infoSection: any;
+  private _infoButton: any;
+  private _toolButtonTheme: any;
+  private _toolButton: any;
+  private _uiSound: any;
+  // Define SCSS modules.
+  private _dropdownClasses: any;
+  private _sipDropdownClasses: any;
+  private _infoRowClasses: any;
 
-    // Define instance.
-    private static _instance: ModuleResolver = new ModuleResolver();
+  // Define instance.
+  private static _instance: ModuleResolver = new ModuleResolver();
 
-    public static get instance(): ModuleResolver {
-        return this._instance
-    }
+  public static get instance(): ModuleResolver {
+    return this._instance
+  }
 
-    // Provide access to modules.
-    public get FOCUS_DISABLED(): UniqueFocusKey {
-        return this._focusDisabled ?? (this._focusDisabled = getModule("game-ui/common/focus/focus-key.ts", "FOCUS_DISABLED"));
-    }
+  // Provide access to modules.
+  public get FOCUS_DISABLED(): UniqueFocusKey {
+    return this._focusDisabled ?? (this._focusDisabled = safeGetModule("game-ui/common/focus/focus-key.ts", "FOCUS_DISABLED"));
+  }
 
-    public get FormattedParagraphs(): (props: FormattedParagraphsProps) => JSX.Element {
-        return this._formattedParagraphs ?? (this._formattedParagraphs = getModule("game-ui/common/text/formatted-paragraphs.tsx", "FormattedParagraphs"));
-    }
+  public get FormattedParagraphs(): (props: FormattedParagraphsProps) => JSX.Element {
+    return this._formattedParagraphs ?? (this._formattedParagraphs = safeGetModule("game-ui/common/text/formatted-paragraphs.tsx", "FormattedParagraphs"));
+  }
 
-    public get InfoRow(): (props: InfoRowProps) => JSX.Element {
-        return this._infoRow ?? (this._infoRow = getModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.tsx", "InfoRow"));
-    }
+  public get InfoRow(): (props: InfoRowProps) => JSX.Element {
+    return this._infoRow ?? (this._infoRow = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.tsx", "InfoRow"));
+  }
 
-    public get InfoSection(): (props: InfoSectionProps) => JSX.Element {
-        return this._infoSection ?? (this._infoSection = getModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.tsx", "InfoSection"));
-    }
+  public get InfoSection(): (props: InfoSectionProps) => JSX.Element {
+    return this._infoSection ?? (this._infoSection = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.tsx", "InfoSection"));
+  }
 
-    public get ToolButton(): (props: ToolButtonProps) => JSX.Element {
-        return this._toolButton ?? (this._toolButton = getModule("game-ui/game/components/tool-options/tool-button/tool-button.tsx", "ToolButton"));
-    }
+  public get ToolButton(): (props: ToolButtonProps) => JSX.Element {
+    return this._toolButton ?? (this._toolButton = safeGetModule("game-ui/game/components/tool-options/tool-button/tool-button.tsx", "ToolButton"));
+  }
 
-    public get UISound() {
-        return this._uiSound ?? (this._uiSound = getModule("game-ui/common/data-binding/audio-bindings.ts", "UISound"));
-    }
+  public get UISound() {
+    return this._uiSound ?? (this._uiSound = safeGetModule("game-ui/common/data-binding/audio-bindings.ts", "UISound"));
+  }
 
-    // Wrong Dropdown Classes
-    // public get DropdownClasses():       Theme | any                                         { return this._dropdownClasses          ?? (this._dropdownClasses       = getModule("game-ui/menu/themes/dropdown.module.scss",                                                                                         "classes")); }
-    public get DropdownClasses(): Theme | any {
-        return this._dropdownClasses ?? (this._dropdownClasses = getModule("game-ui/game/themes/game-dropdown.module.scss", "classes"));
-    }
+  // Wrong Dropdown Classes
+  // public get DropdownClasses():       Theme | any                                         { return this._dropdownClasses          ?? (this._dropdownClasses       = safeGetModule("game-ui/menu/themes/dropdown.module.scss",                                                                                         "classes")); }
+  public get DropdownClasses(): any {
+    return this._dropdownClasses ?? (this._dropdownClasses = safeGetModule("game-ui/game/themes/game-dropdown.module.scss", "classes"));
+  }
 
-    public get InfoRowClasses(): Theme | any {
-        return this._infoRowClasses ?? (this._infoRowClasses = getModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss", "classes"));
-    }
+  public get InfoRowClasses(): Theme | any {
+    return this._infoRowClasses ?? (this._infoRowClasses = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss", "classes"));
+  }
 
-    public get toolButtonTheme(): Theme | any {
-        return this._toolButtonTheme ?? (this._toolButtonTheme = getModule("game-ui/game/components/tool-options/tool-button/tool-button.module.scss", "classes"));
-    }
-    
-    public get SIPDropdownClasses(): SIPDropdownClassesProps {
-        return this._sipDropdownClasses ?? (this._sipDropdownClasses = getModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes"));
-    }
+  public get toolButtonTheme(): Theme | any {
+    return this._toolButtonTheme ?? (this._toolButtonTheme = safeGetModule("game-ui/game/components/tool-options/tool-button/tool-button.module.scss", "classes"));
+  }
+
+  public get SIPDropdownClasses(): SIPDropdownClassesProps {
+    return this._sipDropdownClasses ?? (this._sipDropdownClasses = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section.module.scss", "classes"));
+  }
 }
