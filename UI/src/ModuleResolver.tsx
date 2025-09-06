@@ -1,6 +1,6 @@
 ﻿import {Theme, UniqueFocusKey} from "cs2/bindings";
 import {getModule} from "cs2/modding";
-import {ClassProps, FocusKey, FormattedParagraphsProps, InfoRowProps} from "cs2/ui";
+import {ClassProps, DropdownToggleProps, FocusKey, FormattedParagraphsProps, InfoRowProps} from "cs2/ui";
 import {HTMLAttributes, ReactNode} from 'react';
 
 // When attempting to use the game's InfoSectionProps from ui.d.ts directly, there is a compile error:
@@ -59,6 +59,12 @@ type InfoSectionClassesProps = {
   infoWrapBox: string
 }
 
+type SelectVehiclesDropdownItemClassesProps = {
+  dropdownFlagItem: any,
+  toggle: any,
+  label: any,
+}
+
 function safeGetModule(path: string, exportName: string) {
   try
   {
@@ -88,6 +94,8 @@ export class ModuleResolver {
   private _dropdownClasses: any;
   private _sipDropdownClasses: any;
   private _infoSectionClasses: any;
+  private _dropdownFlagItem: any;
+  private _dropdownFlagItemTheme: any;
   private _infoRowClasses: any;
 
   // Define instance.
@@ -116,7 +124,15 @@ export class ModuleResolver {
   
   public get InfoWrapBox(): (props: InfoSectionProps) => JSX.Element {
     return this._infoSection ?? (this._infoSection = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-wrap-box.tsx", "InfoWrapBox"));
+  }
+
+  public get DropdownFlagItem(): any {
+    return this._dropdownFlagItem ?? (this._dropdownFlagItem = safeGetModule("game-ui/common/input/dropdown/items/dropdown-flag-item.tsx", "DropdownFlagItem"));
   }  
+  
+  public get DropdownFlagItemTheme(): Theme {
+    return this._dropdownFlagItemTheme ?? (this._dropdownFlagItemTheme = safeGetModule("game-ui/common/input/dropdown/items/dropdown-flag-item.module.scss", "classes"));
+  }
   
   // Unused, a lot of weird variables
   public get SelectVehiclesSection(): (props: InfoSectionProps) => JSX.Element {
@@ -147,6 +163,10 @@ export class ModuleResolver {
   
   public get SIPDropdownClasses(): SIPDropdownClassesProps {
     return this._sipDropdownClasses ?? (this._sipDropdownClasses = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section/select-vehicles-section.module.scss", "classes"));
+  }    
+  
+  public get SelectVehiclesDropdownItem(): SelectVehiclesDropdownItemClassesProps {
+    return this._sipDropdownClasses ?? (this._sipDropdownClasses = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section/select-vehicles-dropdown-item.module.scss", "classes"));
   }  
   
   public get InfoSectionClasses(): InfoSectionClassesProps {

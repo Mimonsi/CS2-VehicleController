@@ -28,14 +28,6 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
     //const resourceText: string = (translate("Resources.TITLE[" + resource + "]") || resource);
     const translated = translate("Assets.NAME[" + prefabName + "]");
     let vehicleText: string = (translated && translated !== "null") ? `${translated} (${prefabName})` : prefabName;
-    if (selected)
-    {
-        vehicleText = `[✓] ${vehicleText}`;
-    }
-    else
-    {
-        vehicleText = `[  ] ${vehicleText}`;
-    }
     
     // If prefabName contains "Vehicles selected", change the vehicleText to "Vehicles selected".
     if (prefabName === "0 Vehicles Selected")

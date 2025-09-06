@@ -18,11 +18,10 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     const vehicleTypes = props.vehicleTypes ?? [];
 
     // Create a dropdown item for each selectable prefab and get content of the selected item.
-    const vehicleDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index) => {
+    const vehicleDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index): JSX.Element => {
         const prefabName = vehiclePrefab.prefabName;
         const selected = vehiclePrefab.selected ?? false;
         const imageUrl = vehiclePrefab.imageUrl;
-        const isDummyItem = prefabName.includes("Vehicles Selected");
 
         // Construct dropdown item content.
         const dropdownItemContent = (
@@ -30,17 +29,15 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
         );
 
         return (
-          <DropdownItem
-            key={vehiclePrefab.prefabName}
-            theme={ModuleResolver.instance.DropdownClasses}
-            value=""
-            closeOnSelect={false}
-            selected={isDummyItem}
+          <ModuleResolver.instance.DropdownFlagItem
+            theme={ModuleResolver.instance.DropdownFlagItemTheme}
+            value={vehiclePrefab.prefabName}
+            checked={selected}
             onChange={() => trigger(mod.id, "SelectedVehicleChanged", prefabName)}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
           >
               {dropdownItemContent}
-          </DropdownItem>
+          </ModuleResolver.instance.DropdownFlagItem>
         );
     });
     
