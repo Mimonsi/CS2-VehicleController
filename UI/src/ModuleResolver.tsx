@@ -41,6 +41,7 @@ type SIPDropdownClassesProps = {
   wrapbox: string,
   item: string,
   pill: string,
+  icon: string,
   thumb: string,
   label: string,
   hint: string,
