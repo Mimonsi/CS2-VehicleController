@@ -60,9 +60,10 @@ type InfoSectionClassesProps = {
 }
 
 type SelectVehiclesDropdownItemClassesProps = {
-  dropdownFlagItem: any,
-  toggle: any,
-  label: any,
+  dropdownFlagItem: string,
+  toggle: string,
+  label: string,
+  thumb: string,
 }
 
 function safeGetModule(path: string, exportName: string) {
@@ -93,6 +94,7 @@ export class ModuleResolver {
   // Define SCSS modules.
   private _dropdownClasses: any;
   private _sipDropdownClasses: any;
+  private _selectVehiclesDropdownItemClasses: any;
   private _infoSectionClasses: any;
   private _dropdownFlagItem: any;
   private _dropdownFlagItemTheme: any;
@@ -166,8 +168,8 @@ export class ModuleResolver {
   }    
   
   public get SelectVehiclesDropdownItem(): SelectVehiclesDropdownItemClassesProps {
-    return this._sipDropdownClasses ?? (this._sipDropdownClasses = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section/select-vehicles-dropdown-item.module.scss", "classes"));
-  }  
+    return this._selectVehiclesDropdownItemClasses ?? (this._selectVehiclesDropdownItemClasses = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section/select-vehicles-dropdown-item.module.scss", "classes"));
+  }
   
   public get InfoSectionClasses(): InfoSectionClassesProps {
     return this._infoSectionClasses ?? (this._infoSectionClasses = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.module.scss", "classes"));

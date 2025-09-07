@@ -18,9 +18,6 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
     // Get game's icon for the vehicle.
     //const resourceIcon: string = "Media/Game/Resources/" + resource + ".svg";
     const vehicleIcon: string = image ? image : "Media/Game/Icons/GenericVehicle.svg";
-    //const vehicleIcon: string = image ? image : "assetdb://Global/292d20d2f0c5403c5d3bc3452649fde9";
-    const checkmarkIcon: string = "Media/Glyphs/Checkmark.svg";
-    //selected = true;
 
     // Get the game's translated text for the resource.
     // The game uses "+" for the concatenator character for all languages.
@@ -39,23 +36,12 @@ export const VehicleLabel = ({ prefabName, selected, image }: VehicleLabelProps)
         vehicleText = prefabName;
     }
 
-    //        <img className={styles.thumb} src={vehicleIcon} />
-    
-    //{/*<div style={{ "--checkmark-url": `url(${checkmarkIcon})` } as React.CSSProperties} className={styles.checkmark}></div>*/} 
-  /*
-<div>}
-{selected && (
-  <div>x</div>
-)}
-</div>
-   */
+    const classes = ModuleResolver.instance.SelectVehiclesDropdownItem;
 
-  // This would be better for the icon and more accurate, but the images are not square: <Icon className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}></Icon>
     return (
-      <div className={ModuleResolver.instance.SIPDropdownClasses.item}>
-          <Icon className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}></Icon>
-        
-        <div className={ModuleResolver.instance.SIPDropdownClasses.label}>{vehicleText}</div>
-      </div>
+      <>
+        <Icon className={classes.thumb} src={vehicleIcon}></Icon>
+        <div className={classes.label}>{vehicleText}</div>
+      </>
     );
 }

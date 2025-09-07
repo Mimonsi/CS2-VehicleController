@@ -1,8 +1,7 @@
 ﻿import { trigger } from "cs2/api";
-import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import { Dropdown, DropdownToggle } from "cs2/ui";
 
 import { SelectableVehiclePrefab } from "./SIPVehicleSelectorComponent";
-import styles from "vehicleSelector.module.scss";
 import mod from "../mod.json";
 import { ModuleResolver } from "./ModuleResolver";
 import { VehicleLabel } from "./VehicleLabel";
@@ -17,6 +16,11 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
     // Empty array as fallback if vehicleTypes is not provided
     const vehicleTypes = props.vehicleTypes ?? [];
 
+    const dropdownItemTheme = {
+      ...ModuleResolver.instance.DropdownFlagItemTheme,
+      ...ModuleResolver.instance.SelectVehiclesDropdownItem,
+    };
+
     // Create a dropdown item for each selectable prefab and get content of the selected item.
     const vehicleDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index): JSX.Element => {
         const prefabName = vehiclePrefab.prefabName;
@@ -30,7 +34,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
 
         return (
           <ModuleResolver.instance.DropdownFlagItem
-            theme={ModuleResolver.instance.DropdownFlagItemTheme}
+            theme={dropdownItemTheme}
             value={vehiclePrefab.prefabName}
             checked={selected}
             onChange={() => trigger(mod.id, "SelectedVehicleChanged", prefabName)}
