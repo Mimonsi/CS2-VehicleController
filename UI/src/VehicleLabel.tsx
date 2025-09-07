@@ -24,16 +24,6 @@ export const VehicleLabel = ({ prefabName, image }: VehicleLabelProps) =>
     //const resourceText: string = (translate("Resources.TITLE[" + resource + "]") || resource);
     const translated = translate("Assets.NAME[" + prefabName + "]");
     let vehicleText: string = (translated && translated !== "null") ? `${translated} (${prefabName})` : prefabName;
-    
-    // If prefabName contains "Vehicles selected", change the vehicleText to "Vehicles selected".
-    if (prefabName === "0 Vehicles Selected")
-    {
-        vehicleText = "No custom selection"
-    }
-    else if (prefabName.includes("Vehicles Selected"))
-    {
-        vehicleText = prefabName;
-    }
 
     return (
       <div className={ModuleResolver.instance.SIPDropdownClasses.item}>
