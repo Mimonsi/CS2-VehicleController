@@ -69,10 +69,10 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     //const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
     //const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
 
-    const dummyVehicle: SelectableVehiclePrefab = { prefabName: props.vehiclesSelected + " Vehicles Selected" };
+    //const dummyVehicle: SelectableVehiclePrefab = { prefabName: props.vehiclesSelected + " Vehicles Selected" };
     // Add dummy vehicle on first index
     const modifiedVehicleList: SelectableVehiclePrefab[] = [
-      dummyVehicle,
+      //dummyVehicle,
       ...props.availableVehicles
     ];
 

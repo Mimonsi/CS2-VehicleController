@@ -1,8 +1,7 @@
 ﻿import { trigger } from "cs2/api";
-import { Dropdown, DropdownItem, DropdownToggle } from "cs2/ui";
+import { Dropdown, DropdownToggle } from "cs2/ui";
 
 import { SelectableVehiclePrefab } from "./SIPVehicleSelectorComponent";
-import styles from "vehicleSelector.module.scss";
 import mod from "../mod.json";
 import { ModuleResolver } from "./ModuleResolver";
 import { VehicleLabel } from "./VehicleLabel";
@@ -25,12 +24,15 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
 
         // Construct dropdown item content.
         const dropdownItemContent = (
-          <VehicleLabel prefabName={prefabName} selected={selected} image={imageUrl}/>
+          <VehicleLabel prefabName={prefabName} image={imageUrl}/>
         );
 
         return (
           <ModuleResolver.instance.DropdownFlagItem
-            theme={ModuleResolver.instance.DropdownFlagItemTheme}
+            theme={{
+              ...ModuleResolver.instance.DropdownFlagItemTheme,
+              ...ModuleResolver.instance.SelectVehiclesDropdownItem,
+            }}
             value={vehiclePrefab.prefabName}
             checked={selected}
             onChange={() => trigger(mod.id, "SelectedVehicleChanged", prefabName)}
@@ -41,13 +43,6 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
         );
     });
     
-    // First item is selected by default, it's the header item
-    const selectedCompanyDropdownItemContent = vehicleTypes[0] ? (
-      <VehicleLabel prefabName={vehicleTypes[0].prefabName} />
-    ) : (
-      <>Nothing here :/</>
-    );
-
     return (
     <Dropdown
       theme={ModuleResolver.instance.DropdownClasses}

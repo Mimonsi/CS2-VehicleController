@@ -23,7 +23,6 @@ export const Wrapbox = (props: WrapboxProps) => {
     const vehiclePills: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index) => {
         const prefabName = vehiclePrefab.prefabName;
         const imageUrl = vehiclePrefab.imageUrl;
-        const isDummyItem = prefabName.includes("Vehicles Selected");
         
         return (
           <VehiclePill prefabName={prefabName} image={imageUrl}/>
