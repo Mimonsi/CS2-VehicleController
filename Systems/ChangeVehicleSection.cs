@@ -572,7 +572,8 @@ namespace VehicleController.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            VehicleCreated();
+            if (Setting.Instance.EnableChangeVehicles)
+                VehicleCreated();
         }
         
         private void ChangePrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
@@ -620,8 +621,10 @@ namespace VehicleController.Systems
                     if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity)) // Get entity for prefab
                     {
                         prefabRef.m_Prefab = prefabEntity;
+                        log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
                         EntityManager.SetComponentData(vehicleEntity, prefabRef);
                         EntityManager.AddComponent<Updated>(vehicleEntity);
+                        log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
                         return;
                     }
                     log.Warn("Could not find entity for new prefab: " + newPrefab.name);
@@ -640,7 +643,9 @@ namespace VehicleController.Systems
         {
             NativeArray<Entity> entities = m_CreatedServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             //EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+            log.Verbose($"Calling Change Vehicle Prefabs for {entities.Length} created vehicles.");
             ChangeVehiclePrefabs(entities);
+            log.Verbose("Finished Change Vehicle Prefabs");
         }
 
         /// <summary>
@@ -826,7 +831,20 @@ namespace VehicleController.Systems
 
         public static void RemoveAllModComponents()
         {
-            throw new NotImplementedException();
+            var componentQuery = Instance.GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[]
+                {
+                    ComponentType.ReadOnly<AllowedVehiclePrefab>(),
+                },
+            });
+
+            var entities = componentQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                Instance.EntityManager.RemoveComponent<AllowedVehiclePrefab>(entity);
+            }
+            log.Info("Removed AllowedVehiclePrefab component from " + entities.Length + " entities.");
         }
     }
 }

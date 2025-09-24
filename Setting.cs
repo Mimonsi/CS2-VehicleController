@@ -328,6 +328,10 @@ namespace VehicleController
         
         #region VehicleSelection
 
+        
+        [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
+        public bool EnableChangeVehicles { get; set; }
+        
         // TODO: Add Localization
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
         public bool RemoveAllModComponents 
