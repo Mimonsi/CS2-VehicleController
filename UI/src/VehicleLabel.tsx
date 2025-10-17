@@ -27,7 +27,7 @@ export const VehicleLabel = ({ prefabName, image }: VehicleLabelProps) =>
 
     return (
       <div className={ModuleResolver.instance.SIPDropdownClasses.item}>
-        <img className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon} data-src={vehicleIcon}></img>
+        <img className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon} data-src={vehicleIcon}/>
         <div className={ModuleResolver.instance.SIPDropdownClasses.label}>{vehicleText}</div>
       </div>
     );
