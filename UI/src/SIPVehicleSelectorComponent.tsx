@@ -7,6 +7,7 @@ import { ClipboardActions } from "./ClipboardActions";
 import { ModuleResolver             } from "./ModuleResolver";
 import   mod                          from "../mod.json";
 import React from "react";
+import {Wrapbox} from "./Wrapbox";
 
 export type SelectableVehiclePrefab =
   {
@@ -68,10 +69,10 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     //const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
     //const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
 
-    const dummyVehicle: SelectableVehiclePrefab = { prefabName: props.vehiclesSelected + " Vehicles Selected" };
+    //const dummyVehicle: SelectableVehiclePrefab = { prefabName: props.vehiclesSelected + " Vehicles Selected" };
     // Add dummy vehicle on first index
     const modifiedVehicleList: SelectableVehiclePrefab[] = [
-      dummyVehicle,
+      //dummyVehicle,
       ...props.availableVehicles
     ];
 
@@ -130,6 +131,8 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
               tooltip={<FormattedParagraphs>{tooltipText}</FormattedParagraphs>}
               disableFocus={true}
             />
+            
+            <Wrapbox vehicleTypes={modifiedVehicleList}/>
 
             <ModuleResolver.instance.InfoRow
               left={"Actions"}
