@@ -1,5 +1,6 @@
 {
     "Options.SECTION[VehicleController.VehicleController.Mod]": "Vehicle Controller",
+  
     "Options.TAB[VehicleController.VehicleController.Mod.Settings]": "Settings",
     "Options.GROUP[VehicleController.VehicleController.Mod.General Settings]": "General Settings",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetSettings]": "Reset settings to default",
@@ -19,12 +20,7 @@
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Property Pack]": "Vehicle Property Pack",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Pack Name",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Enter a name for your pack.",
-
-    "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
-    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "Delete Vehicle Instances",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "When activated, delete incorrectly spawned vehicles. The default behavior is changing the vehicle on spawn to the correct one.",
-
+  
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export Pack",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export your current properties to a json property pack file.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavePropertyChanges]": "Save Property Changes",
@@ -35,7 +31,19 @@
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedTrainBehavior]": "Enable changed parameters for trains. This will impact acceleration, braking, and max speed. Requires restart.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply Changes",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply the changes to the probabilities.",
-    
+
+
+    "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "Delete Vehicle Instances",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "When activated, delete incorrectly spawned vehicles. The default behavior is changing the vehicle on spawn to the correct one.",
+  
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enable Change Vehicles",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enabled vehicle prefabs from service buildings automatically changing to the selected vehicles.",   
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllModComponents]": "Remove All Mod Components",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllModComponents]": "Removes all custom vehicle selections from your current savegame.",
+  
+  
     
     "Options.TAB[VehicleController.VehicleController.Mod.About]": "About",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.NameText]": "Mod Name",
