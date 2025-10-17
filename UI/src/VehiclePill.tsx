@@ -22,7 +22,7 @@ export const VehiclePill = ({ prefabName, image }: VehiclePillProps) =>
   // This would be better for the icon and more accurate, but the images are not square: <Icon className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}></Icon>
     return (
       <div className={ModuleResolver.instance.SIPDropdownClasses.item + " " + ModuleResolver.instance.SIPDropdownClasses.pill}>
-          <img className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}></img>
+          <img className={ModuleResolver.instance.SIPDropdownClasses.thumb} src={vehicleIcon}/>
         
         <div className={ModuleResolver.instance.SIPDropdownClasses.label}>{vehicleText}</div>
       </div>
