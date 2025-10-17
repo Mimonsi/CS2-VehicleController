@@ -79,27 +79,23 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     // Handle click on Change Now button
     function onChangeNowClicked()
     {
-      trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
       trigger(mod.id, "ChangeNowClicked");
     }
 
     // Handle click
     function onClearBufferClicked()
     {
-      trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
       trigger(mod.id, "ClearBufferClicked");
     }
 
     // Handle click
     function onDeleteOwnedClicked()
     {
-      trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
       trigger(mod.id, "DeleteOwnedVehiclesClicked");
     }
 
     function minimizeClick()
     {
-      trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
       trigger(mod.id, "Minimize");
     }
 

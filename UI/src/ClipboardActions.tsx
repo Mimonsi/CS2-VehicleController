@@ -13,7 +13,8 @@ export const ClipboardActions = () => {
   
   function handleClick(eventName : string)
   {
-    trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1);
+    //trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1); // Sound already played by ToolButton
+    //trigger("audio", "playSound", ModuleResolver.instance.UISound.xpEvent, 1);
     trigger(mod.id, eventName);
   }
   
