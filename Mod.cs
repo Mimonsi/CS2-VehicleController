@@ -27,9 +27,9 @@ namespace VehicleController
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
         public static bool EnableProbabilitySystem = false;
-        public static bool EnablePropertySystem = false;
-        public static bool EnableVehicleCounterSystem = true;
-        public static bool EnableChangeVehicleSection = true;
+        public static bool EnablePropertySystem = true;
+        public static bool EnableVehicleCounterSystem = false;
+        public static bool EnableChangeVehicleSection = false;
 
         /// <summary>
         /// Called by the game when the mod is loaded.

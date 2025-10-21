@@ -63,6 +63,11 @@ namespace VehicleController
         {
 
         }
+
+        private bool IsIngame()
+        {
+            return VehiclePropertySystem.IsIngame;
+        }
         
         #region MainSection
         
@@ -245,7 +250,7 @@ namespace VehicleController
         
         #region VehicleProperties
         
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         public bool EnableImprovedTrainBehavior { get; set; } = true;
         
         private string _currentVehicleClass = "Sedan";
@@ -291,9 +296,88 @@ namespace VehicleController
             }
             
             return items.ToArray();
+        }*/
+
+
+        private string _defaultPropertyPackDropdown = "";
+        [SettingsUIDropdown(typeof(Setting), nameof(GetPropertyPackDropdownItems))]
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        public string DefaultPropertyPackDropdown
+        {
+            get => _defaultPropertyPackDropdown;
+            set
+            {
+                _defaultPropertyPackDropdown = value;
+                UpdateDefaultPropertyPack();
+            }
+        }
+        
+        public DropdownItem<string>[] GetPropertyPackDropdownItems()
+        {
+            var names = new[]
+            {
+                "Vanilla",
+                "Improved",
+                "Realistic"
+            };
+            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
+            foreach(string s in names)
+            {
+                items.Add(new DropdownItem<string>()
+                {
+                    value = s,
+                    displayName = s,
+                });
+            }
+            return items.ToArray();
+        }
+        
+        private string _savegamePropertyPackDropdown = "Default";
+        [SettingsUIDropdown(typeof(Setting), nameof(GetSavegamePropertyPackDropdownItems))]
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(IsIngame), true)]
+        public string SavegamePropertyPackDropdown
+        {
+            get => _savegamePropertyPackDropdown;
+            set
+            {
+                _savegamePropertyPackDropdown = value;
+                UpdateSavegamePropertyPack();
+            }
+        }
+        
+        public DropdownItem<string>[] GetSavegamePropertyPackDropdownItems()
+        {
+            var names = new[]
+            {
+                "Default",
+                "Vanilla",
+                "Improved",
+                "Realistic"
+            };
+            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
+            foreach(string s in names)
+            {
+                items.Add(new DropdownItem<string>()
+                {
+                    value = s,
+                    displayName = s,
+                });
+            }
+            return items.ToArray();
         }
 
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        private void UpdateDefaultPropertyPack()
+        {
+            VehiclePropertySystem.UpdateSavegamePropertyPack();
+        }
+        
+        private void UpdateSavegamePropertyPack()
+        {
+            VehiclePropertySystem.UpdateSavegamePropertyPack();
+        }
+
+        /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUITextInput]
         public string PackName { get; set; } = "My Custom Pack";
 
@@ -303,7 +387,7 @@ namespace VehicleController
         {
             set
             {
-                // TODO: Implement
+                // TO DO: Implement
             }
         }
 
@@ -322,7 +406,7 @@ namespace VehicleController
         public bool SavePropertyChanges
         {
             set => VehiclePropertySystem.Instance.ApplySettings();
-        }
+        }*/
         
         #endregion
         

@@ -1,6 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Colossal.Entities;
 using Colossal.Logging;
+using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
 using Game.Net;
@@ -20,10 +24,14 @@ namespace VehicleController.Systems
     public partial class VehiclePropertySystem : GameSystemBase
     {
         private static ILog log;
+        /// <summary> Whether or not the player is in a savegame</summary>
+        public static bool IsIngame;
 
         private EntityQuery carQuery;
         private EntityQuery trainQuery;
         private EntityQuery instanceQuery;
+        private EntityQuery savegamePackQuery;
+        private EntityQuery savegameHostEntityQuery;
 
         private PrefabSystem prefabSystem;
         private PropertyPack _currentPropertyPack;
@@ -54,6 +62,22 @@ namespace VehicleController.Systems
                     ComponentType.ReadOnly<TrainData>(),
                 }
             });
+            
+            savegamePackQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                Any =
+                    new []{
+                        ComponentType.ReadOnly<SavegamePropertyPack>(),
+                    }
+            });
+            
+            savegameHostEntityQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                Any =
+                    new []{
+                        ComponentType.ReadOnly<EconomyParameterData>(),
+                    }
+            });
 
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
@@ -81,6 +105,113 @@ namespace VehicleController.Systems
             UpdateProperties();
         }
 
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            log.Debug("OnGameLoadingComplete called with mode " + mode);
+            base.OnGameLoadingComplete(purpose, mode);
+            IsIngame = mode == GameMode.Game;
+            // TODO: Load property pack from the save, or default
+
+            if (IsIngame)
+            {
+                LoadSelectedPropertyPack();
+            }
+        }
+
+        private string? GetSavegamePack()
+        {
+            var entities = savegamePackQuery.ToEntityArray(Allocator.Temp);
+            if (entities.Length == 0)
+                return null;
+            if (entities.Length == 1)
+            {
+                if (EntityManager.TryGetComponent<SavegamePropertyPack>(entities[0], out var savegamePack))
+                {
+                    return savegamePack.PackName.ToString();
+                }
+                return null;
+            }
+            log.Error("Multiple SavegamePropertyPack entities found! Using default pack instead.");
+            return null;
+        }
+
+        private string GetDefaultPack()
+        {
+            return Setting.Instance.DefaultPropertyPackDropdown;
+        }
+
+        private void LoadSelectedPropertyPack()
+        {
+            string? packName = GetSavegamePack();
+            if (packName == null)
+            {
+                log.Debug("No savegame pack found, loading default pack.");
+                packName = GetDefaultPack();
+            }
+
+            try
+            {
+                var pack = PropertyPack.LoadFromFile(packName);
+                LoadPropertyPack(pack);
+            }
+            catch (Exception x)
+            {
+                log.Warn("Could not load property pack from file: " + x.Message);
+            }
+        }
+        
+        public static void UpdateSavegamePropertyPack()
+        {
+            Instance.LoadSelectedPropertyPack();
+            Instance.UpdateSavegameComponent();   
+        }
+
+        /// <summary>
+        /// Adds or updates the SavegamePropertyPack component in the savegame to reflect the current pack.
+        /// </summary>
+        private void UpdateSavegameComponent()
+        {
+            var entities = savegamePackQuery.ToEntityArray(Allocator.Temp);
+            if (entities.Length == 0)
+            {
+                var hostEntities = savegameHostEntityQuery.ToEntityArray(Allocator.Temp);
+                if (hostEntities.Length == 0)
+                {
+                    log.Error("No host entity found to add SavegamePropertyPack component to.");
+                    return;
+                }
+                if (hostEntities.Length == 1)
+                {
+                    var savegamePackName = Setting.Instance.SavegamePropertyPackDropdown;
+                    var hostEntity = hostEntities.First();
+                    EntityManager.AddComponent<SavegamePropertyPack>(hostEntity);
+                    if (EntityManager.TryGetComponent<SavegamePropertyPack>(hostEntity, out var savegamePack))
+                    {
+                        savegamePack.PackName = Setting.Instance.SavegamePropertyPackDropdown;
+                        EntityManager.SetComponentData(hostEntity, savegamePack);
+                    }
+                    log.Info("SavegamePropertyPack component created with pack " + savegamePackName);
+                }
+                else
+                {
+                    log.Error("Too many host entities found to add SavegamePropertyPack component to. (" + hostEntities.Length + ")");
+                }
+            }
+            else if (entities.Length == 1)
+            {
+                if (EntityManager.TryGetComponent<SavegamePropertyPack>(entities.First(), out var savegamePack))
+                {
+                    savegamePack.PackName = Setting.Instance.SavegamePropertyPackDropdown;
+                    EntityManager.SetComponentData(entities.First(), savegamePack);
+                    log.Info("SavegamePropertyPack component updated to " + savegamePack.PackName);
+                }
+            }
+            else
+            {
+                log.Error("Multiple SavegamePropertyPack entities found! This should not happen.");
+            }
+        }
+
         /// <summary>
         /// Updates all car and train properties according to the loaded pack and settings.
         /// </summary>
@@ -99,11 +230,11 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateTrainProperties()
         {
-            if (!Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
+            /*if (!Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
             {
                 log.Info("Not Updating Train Properties, Improved Car Behavior is disabled.");
                 return true;
-            }
+            }*/
             log.Info("Updating Train Properties");
             var entities = trainQuery.ToEntityArray(Allocator.Temp);
             int count = 0;

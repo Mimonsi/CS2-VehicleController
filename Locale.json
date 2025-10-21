@@ -12,28 +12,23 @@
     "Options.GROUP[VehicleController.VehicleController.Mod.Probability Settings]": "Probability Settings",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.CurrentProbabilityPack]": "Current Probability Pack",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.CurrentProbabilityPack]": "Currently loaded probability pack. Select other pack to load it.",
-    
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply Changes",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply the changes to the probabilities.",
+  
     
     
     "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Properties]": "Vehicle Properties",
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Class Properties]": "Vehicle Class Properties",
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Property Pack]": "Vehicle Property Pack",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Pack Name",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.PackName]": "Enter a name for your pack.",
-  
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export Pack",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ExportPack]": "Export your current properties to a json property pack file.",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavePropertyChanges]": "Save Property Changes",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SavePropertyChanges]": "Save the changes to your current class.",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedCarBehavior]": "Enable Improved Car Behavior",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedCarBehavior]": "Enable changed parameters for cars. This will impact acceleration, braking, and max speed. Requires restart.",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedTrainBehavior]": "Enable Improved Train Behavior",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableImprovedTrainBehavior]": "Enable changed parameters for trains. This will impact acceleration, braking, and max speed. Requires restart.",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply Changes",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ApplyProbabilityChanges]": "Apply the changes to the probabilities.",
+
+  "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DefaultPropertyPackDropdown]": "Default Property Pack",
+  "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DefaultPropertyPackDropdown]": "Choose which Property Pack to use per Default. This pack will be used unless a save game specific pack is selected below. The following packs can be used: \n\nVanilla: Normal Base Game Vehicle Behaviour\nImproved: More detailed and realistic behaviour (recommended)\nRealistic: Like improved pack, but max speed is halved",
+  "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackDropdown]": "Savegame Property Pack",
+  "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackDropdown]": "Choose which Property Pack to use in this specific savegame",
 
 
-    "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
+
+  "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "Delete Vehicle Instances",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "When activated, delete incorrectly spawned vehicles. The default behavior is changing the vehicle on spawn to the correct one.",
