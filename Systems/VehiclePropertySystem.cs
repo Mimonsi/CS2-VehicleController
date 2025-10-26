@@ -28,6 +28,7 @@ namespace VehicleController.Systems
         public static bool IsIngame;
 
         private EntityQuery carQuery;
+        private EntityQuery vehicleQuery;
         private EntityQuery trainQuery;
         private EntityQuery instanceQuery;
         private EntityQuery savegamePackQuery;
@@ -63,6 +64,15 @@ namespace VehicleController.Systems
                 }
             });
             
+            vehicleQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                Any =
+                    new []{
+                        ComponentType.ReadOnly<TrainData>(),
+                        ComponentType.ReadOnly<CarData>(),
+                    }
+            });
+            
             savegamePackQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
@@ -92,27 +102,34 @@ namespace VehicleController.Systems
         public bool SaveVanillaPack()
         {
             // Read values from game
-            var entities = carQuery.ToEntityArray(Allocator.Temp);
+            var entities = vehicleQuery.ToEntityArray(Allocator.Temp);
             var entries = new Dictionary<string, PropertyPackEntry>();
             foreach (var entity in entities)
             {
-                if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCar))
+                var prefabName = prefabSystem.GetPrefabName(entity);
+                if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                 {
-                    var prefabName = prefabSystem.GetPrefabName(entity);
-                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                    var entry = new PropertyPackEntry(prefabName)
                     {
-                        var entry = new PropertyPackEntry(prefabName)
-                        {
-                            MaxSpeed = carData.m_MaxSpeed,
-                            Acceleration = carData.m_Acceleration,
-                            Braking = carData.m_Braking
-                        };
-                        entries.Add(prefabName, entry);
-                    }
+                        MaxSpeed = carData.m_MaxSpeed,
+                        Acceleration = carData.m_Acceleration,
+                        Braking = carData.m_Braking
+                    };
+                    entries.Add(prefabName, entry);
+                }
+                if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
+                {
+                    var entry = new PropertyPackEntry(prefabName)
+                    {
+                        MaxSpeed = trainData.m_MaxSpeed,
+                        Acceleration = trainData.m_Acceleration,
+                        Braking = trainData.m_Braking
+                    };
+                    entries.Add(prefabName, entry);
                 }
             }
             log.Info($"Saving vanilla property pack with {entries.Count} entries.");
-            PropertyPack.SaveEntriesToFile(entries, "Vanilla", 1);
+            PropertyPack.SaveEntriesToFile(entries, "Exported Vanilla", 1);
             return true;
         }
 
@@ -272,7 +289,6 @@ namespace VehicleController.Systems
             {
                 return true;
             }
-
             return false;
         }
         
@@ -282,12 +298,7 @@ namespace VehicleController.Systems
         private bool UpdateTrainProperties()
         {
             return true;
-            /*if (!Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
-            {
-                log.Info("Not Updating Train Properties, Improved Car Behavior is disabled.");
-                return true;
-            }*/
-            log.Info("Updating Train Properties");
+            log.Debug("Updating Train Properties");
             var entities = trainQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -326,7 +337,7 @@ namespace VehicleController.Systems
         private bool UpdateCarProperties()
         {
             return true;
-            log.Info("Updating Vehicle Properties");
+            log.Debug("Updating Car Properties");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -341,10 +352,11 @@ namespace VehicleController.Systems
                             log.Info("CarData not initialized, retrying later");
                             return false;
                         }
-                        var values = VehicleClass.GetValues(prefabName);
-                        carData.m_MaxSpeed = values.maxSpeed;
-                        carData.m_Acceleration = values.acceleration;
-                        carData.m_Braking = values.braking;
+
+                        var entry = _currentPropertyPack.GetEntry(prefabName);
+                        carData.m_MaxSpeed = entry.MaxSpeed;
+                        carData.m_Acceleration = entry.Acceleration;
+                        carData.m_Braking = entry.Braking;
                         EntityManager.SetComponentData(entity, carData);
                     }
                     else
