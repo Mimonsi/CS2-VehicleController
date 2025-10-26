@@ -73,6 +73,9 @@
         <Reference Include="Colossal.Mathematics">
             <Private>False</Private>
         </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+            <Private>false</Private>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
@@ -90,6 +93,15 @@
     <ItemGroup>
         <None Include="$(ModPropsFile)" Link="Properties\Mod.props"/>
         <None Include="$(ModTargetsFile)" Link="Properties\Mod.targets"/>
+        <None Update="Resources\packs\property\Realistic.json">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\packs\property\Vanilla.json">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
+        <None Update="Resources\packs\property\Improved.json">
+          <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>

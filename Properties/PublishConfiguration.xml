@@ -35,7 +35,7 @@ This mod also offers more realistic values for vehicle behaviour. In the base ga
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.3.*" />
 	<!--Dependency for the mod, can be set multiple times-->
-	<Dependency Id="" />
+	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
 - Add Settings to Enable/Disable improved vehicle behaviour (requires restart)

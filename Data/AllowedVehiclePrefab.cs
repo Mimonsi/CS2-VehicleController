@@ -7,41 +7,54 @@ namespace VehicleController.Data
 {
     using Unity.Entities;
 
-    [InternalBufferCapacity(0)] // Initial buffer size is 0, it will grow as needed
-    // IBufferElementData is used for dynamic buffers, so we can have multiple AllowedVehiclePrefabs on an entity
-    // IEquatable is used for comparing AllowedVehiclePrefab instances
-    // ISerializable allows to make the component persistent in save files
+    // Initial buffer capacity is set to 0 because entries are usually added at runtime.
+    // Implements IBufferElementData so multiple entries can be attached to one entity and
+    // ISerializable so the buffer contents are persisted in save games.
+    [InternalBufferCapacity(0)]
     public struct AllowedVehiclePrefab : IBufferElementData, IEquatable<AllowedVehiclePrefab>, ISerializable
     {
         //public Entity Prefab;
         public FixedString128Bytes PrefabName;
 
+        /// <summary>
+        /// Checks equality based on the stored prefab name.
+        /// </summary>
+        /// <param name="other">Other struct instance to compare with.</param>
+        /// <returns>True if both entries reference the same prefab.</returns>
         public bool Equals(AllowedVehiclePrefab other)
         {
             return PrefabName.Equals(other.PrefabName);
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
             return obj is AllowedVehiclePrefab other && Equals(other);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return PrefabName.GetHashCode();
         }
 
+        /// <summary>
+        /// Writes the prefab name to the save file.
+        /// </summary>
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
-            Mod.log.Info($"Serializing AllowedVehiclePrefab: {PrefabName}");
+            //Mod.Logger.Info($"Serializing AllowedVehiclePrefab: {PrefabName}");
             writer.Write(PrefabName.ToString());
         }
 
+        /// <summary>
+        /// Reads the prefab name from the save file and restores the struct.
+        /// </summary>
         public void Deserialize<TReader>(TReader reader) where TReader : IReader
         {
             reader.Read(out string prefabNameStr);
             PrefabName = new FixedString128Bytes(prefabNameStr);
-            Mod.log.Info($"Deserialized AllowedVehiclePrefab: {PrefabName}");
+            //Mod.Logger.Info($"Deserialized AllowedVehiclePrefab: {PrefabName}");
         }
     }
 }

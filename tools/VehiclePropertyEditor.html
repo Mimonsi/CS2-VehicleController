@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vehicle Speed Tuner – km/h ↔ m/s (JSON)</title>
+  <style>
+    :root { --bg:#0f1115; --fg:#e6e6e6; --muted:#9aa3b2; --accent:#7aa2f7; --card:#151823; --line:#23283a; }
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; background:var(--bg); color:var(--fg)}
+    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(15,17,21,.85));backdrop-filter:saturate(140%) blur(8px);z-index:5;border-bottom:1px solid var(--line)}
+    .wrap{max-width:1150px;margin:0 auto;padding:14px 18px}
+    h1{font-size:20px;margin:4px 0}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+    input[type="file"]{display:none}
+    .btn{background:#1d2333;color:#e6e6e6;border:1px solid var(--line);padding:8px 12px;border-radius:10px;cursor:pointer}
+    .btn.primary{background:var(--accent);border-color:#5c7bd9;color:#080b12}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;background:#1a1f2e;border:1px solid var(--line)}
+    .pill input[type="search"]{background:transparent;color:var(--fg);border:none;outline:none;min-width:200px}
+    .grid{margin:16px 0}
+    table{width:100%;border-collapse:separate;border-spacing:0 10px}
+    thead th{font-size:12px;font-weight:600;text-transform:uppercase;color:var(--muted);letter-spacing:.06em;text-align:left}
+    tbody tr{background:var(--card);border:1px solid var(--line)}
+    tbody td{padding:10px 10px;vertical-align:middle;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    tbody tr td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px}
+    tbody tr td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+    .prefab{font-weight:600}
+    .muted{color:var(--muted);font-size:12px}
+    .w100{width:100%}
+    .sliderCell{min-width:290px}
+    .num{width:90px; padding:6px 8px; border-radius:8px; border:1px solid var(--line); background:#111522; color:var(--fg)}
+    .num.small{width:80px}
+    input[type=range]{width:100%}
+    .badgelite{font-size:12px;color:#b3c0ff;background:#1a2440;border:1px solid #283555;border-radius:999px;padding:3px 8px}
+    .footer{color:var(--muted);font-size:12px;margin:10px 0}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Vehicle Speed Tuner <span class="muted">– Stelle <b>MaxSpeed</b> in km/h per Prefab ein; Export als JSON (m/s)</span></h1>
+      <div class="row" style="gap:12px">
+        <label class="btn">
+          <input id="fileInput" type="file" accept="application/json" />
+          JSON laden…
+        </label>
+        <button id="downloadBtn" class="btn primary" disabled>JSON exportieren</button>
+        <button id="resetBtn" class="btn" disabled>Änderungen verwerfen</button>
+        <label class="pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/></svg>
+          <input id="search" type="search" placeholder="Prefab suchen… (z. B. Car01, Train, Police)" />
+        </label>
+        <label class="pill"><input type="checkbox" id="editedOnly"/> nur geänderte</label>
+        <label class="pill">Slider-Spanne: <input id="rangeMin" class="num small" type="number" value="0" step="10"/>–<input id="rangeMax" class="num small" type="number" value="400" step="10"/> km/h</label>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div id="meta" class="footer"></div>
+    <div class="grid">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:280px">Prefab</th>
+            <th class="sliderCell">MaxSpeed (km/h)</th>
+            <th>Wert</th>
+            <th>Acceleration</th>
+            <th>Braking</th>
+            <th>Original</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const tbody = document.getElementById('tbody');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const searchInput = document.getElementById('search');
+    const editedOnly = document.getElementById('editedOnly');
+    const rangeMin = document.getElementById('rangeMin');
+    const rangeMax = document.getElementById('rangeMax');
+    const meta = document.getElementById('meta');
+
+    let original = null; // original parsed JSON
+    let working = null;  // deep-cloned and mutated
+    let order = [];      // list of keys in display order
+
+    const msToKmh = (ms) => (ms == null ? '' : (Number(ms) * 3.6));
+    const kmhToMs = (kmh) => (kmh == null ? null : (Number(kmh) / 3.6));
+
+    function deepClone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+    function setStateFromJson(obj){
+      original = deepClone(obj);
+      working = deepClone(obj);
+      order = Object.keys(working.Entries || {}).sort((a,b)=>a.localeCompare(b,'de')); // alphabetisch
+      renderTable();
+      updateMeta();
+      downloadBtn.disabled = false;
+      resetBtn.disabled = false;
+    }
+
+    fileInput.addEventListener('change', async (e)=>{
+      const file = e.target.files?.[0];
+      if(!file) return;
+      const text = await file.text();
+      try{
+        const json = JSON.parse(text);
+        if(!json || typeof json !== 'object' || !json.Entries){
+          alert('Ungültiges Format: Es wird ein Objekt mit einem "Entries"-Feld erwartet.');
+          return;
+        }
+        setStateFromJson(json);
+      }catch(err){
+        console.error(err);
+        alert('Konnte die Datei nicht parsen: '+err.message);
+      }
+    });
+
+    function renderTable(){
+      const q = (searchInput.value||'').toLowerCase();
+      const onlyEdited = editedOnly.checked;
+      const min = Number(rangeMin.value)||0;
+      const max = Number(rangeMax.value)||400;
+
+      tbody.innerHTML = '';
+      let shown = 0, changed = 0;
+
+      for(const key of order){
+        const e0 = original.Entries[key];
+        const e  = working.Entries[key];
+        const name = e.PrefabName || key;
+        const currMs = e.MaxSpeed;
+        const currKmh = msToKmh(currMs);
+        const origKmh = msToKmh(e0.MaxSpeed);
+
+        const isEdited = Math.abs((currKmh||0) - (origKmh||0)) > 1e-6
+                       || (e.Acceleration!==e0.Acceleration)
+                       || (e.Braking!==e0.Braking);
+
+        if(q && !name.toLowerCase().includes(q)) continue;
+        if(onlyEdited && !isEdited) continue;
+
+        const tr = document.createElement('tr');
+
+        // Prefab cell
+        const tdName = document.createElement('td');
+        tdName.innerHTML = `<div class="prefab">${escapeHtml(name)}</div>`;
+        tr.appendChild(tdName);
+
+        // Slider cell
+        const tdSlider = document.createElement('td');
+        tdSlider.className = 'sliderCell';
+        const sliderId = `s_${cssId(name)}`;
+        tdSlider.innerHTML = `<input type="range" id="${sliderId}" min="${min}" max="${max}" step="1" value="${(currKmh||0).toFixed(0)}" />`;
+        tr.appendChild(tdSlider);
+
+        // Number cell (km/h precise)
+        const tdNum = document.createElement('td');
+        const numId = `n_${cssId(name)}`;
+        tdNum.innerHTML = `<input class="num" id="${numId}" type="number" step="0.1" value="${round(currKmh,1)}" />`;
+        tr.appendChild(tdNum);
+
+        // Acceleration
+        const tdAcc = document.createElement('td');
+        const accId = `a_${cssId(name)}`;
+        tdAcc.innerHTML = `<input class="num" id="${accId}" type="number" step="0.1" value="${Number(e.Acceleration ?? 0)}" />`;
+        tr.appendChild(tdAcc);
+
+        // Braking
+        const tdBrk = document.createElement('td');
+        const brkId = `b_${cssId(name)}`;
+        tdBrk.innerHTML = `<input class="num" id="${brkId}" type="number" step="0.1" value="${Number(e.Braking ?? 0)}" />`;
+        tr.appendChild(tdBrk);
+
+        // Original badge
+        const tdOrig = document.createElement('td');
+        tdOrig.innerHTML = `<span class="badgelite">${round(origKmh,1)} km/h</span>`;
+        tr.appendChild(tdOrig);
+
+        // Wiring events
+        setTimeout(()=>{
+          const slider = document.getElementById(sliderId);
+          const num = document.getElementById(numId);
+          const acc = document.getElementById(accId);
+          const brk = document.getElementById(brkId);
+
+          function applyKmh(val){
+            num.value = String(val);
+            slider.value = String(Math.max(min, Math.min(max, Math.round(val))));
+            e.MaxSpeed = kmhToMs(val);
+            markRowState(tr, e0, e);
+            updateMeta();
+          }
+
+          slider.addEventListener('input', ()=> applyKmh(Number(slider.value)));
+          num.addEventListener('input', ()=> applyKmh(Number(num.value)));
+          acc.addEventListener('input', ()=>{ e.Acceleration = Number(acc.value); markRowState(tr, e0, e); updateMeta(); });
+          brk.addEventListener('input', ()=>{ e.Braking = Number(brk.value); markRowState(tr, e0, e); updateMeta(); });
+
+          markRowState(tr, e0, e);
+        }, 0);
+
+        tbody.appendChild(tr);
+        shown++;
+        if(isEdited) changed++;
+      }
+
+      if(shown===0){
+        const tr = document.createElement('tr');
+        const td = document.createElement('td'); td.colSpan = 6; td.className='muted'; td.textContent = 'Keine Einträge für die aktuelle Filterung.'; tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+    }
+
+    function markRowState(tr, e0, e){
+      const edited = Math.abs(msToKmh(e.MaxSpeed)-msToKmh(e0.MaxSpeed))>1e-6 || e.Acceleration!==e0.Acceleration || e.Braking!==e0.Braking;
+      tr.style.outline = edited ? '1px solid #3b82f6' : 'none';
+      tr.style.boxShadow = edited ? '0 0 0 2px rgba(59,130,246,.15)' : 'none';
+      tr.dataset.edited = edited ? '1':'0';
+    }
+
+    function updateMeta(){
+      if(!working){ meta.textContent = ''; return; }
+      const total = Object.keys(working.Entries||{}).length;
+      let edited = 0; for(const k of Object.keys(working.Entries)){ const e=working.Entries[k], e0=original.Entries[k]; if(!e0) continue; if(Math.abs(msToKmh(e.MaxSpeed)-msToKmh(e0.MaxSpeed))>1e-6 || e.Acceleration!==e0.Acceleration || e.Braking!==e0.Braking) edited++; }
+      meta.innerHTML = `Version: <b>${escapeHtml(working.Version ?? '—')}</b> · Set: <b>${escapeHtml(working.Name ?? '—')}</b> · Einträge: <b>${total}</b> · Geändert: <b>${edited}</b>`;
+    }
+
+    searchInput.addEventListener('input', renderTable);
+    editedOnly.addEventListener('change', renderTable);
+    rangeMin.addEventListener('change', renderTable);
+    rangeMax.addEventListener('change', renderTable);
+
+    resetBtn.addEventListener('click', ()=>{
+      if(!original) return;
+      working = deepClone(original);
+      renderTable();
+      updateMeta();
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      if(!working) return;
+      // Ensure m/s in output (already maintained). Round to 6 decimals to keep file tidy
+      const out = deepClone(working);
+      for(const k of Object.keys(out.Entries||{})){
+        const e = out.Entries[k];
+        if(typeof e.MaxSpeed === 'number') e.MaxSpeed = Number((e.MaxSpeed).toFixed(6));
+        if(typeof e.Acceleration === 'string') e.Acceleration = Number(e.Acceleration);
+        if(typeof e.Braking === 'string') e.Braking = Number(e.Braking);
+      }
+      const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+      const a = document.createElement('a');
+      const ts = new Date().toISOString().replace(/[:.]/g,'-');
+      const base = (out.Name || 'Exported').replace(/\s+/g,'_');
+      a.download = `${base}_edited_${ts}.json`;
+      a.href = URL.createObjectURL(blob);
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    });
+
+    // Helpers
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c])); }
+    function cssId(s){ return String(s).replace(/[^a-zA-Z0-9_-]/g,'_'); }
+    function round(x, d){ if(x==null||Number.isNaN(x)) return ''; const p = Math.pow(10,d|0); return Math.round(Number(x)*p)/p; }
+
+    // Demo: you can paste JSON via clipboard to load
+    window.addEventListener('paste', async (e)=>{
+      if(!e.clipboardData) return;
+      const t = e.clipboardData.getData('text');
+      try{ const json = JSON.parse(t); if(json && json.Entries){ setStateFromJson(json); } }catch{ /* ignore */ }
+    });
+  </script>
+</body>
+</html>

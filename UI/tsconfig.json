@@ -14,7 +14,6 @@
     "resolveJsonModule": true,
     "paths": {
       "mod.json": ["../mod.json"]
-    },
-    "sourceMap": true,
+    }
   },
 } 

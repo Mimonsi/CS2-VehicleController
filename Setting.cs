@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Colossal;
 using Colossal.IO.AssetDatabase;
+using Colossal.Logging;
 using Game.Modding;
 using Game.Settings;
 using Game.UI;
@@ -14,6 +15,18 @@ using VehicleController.Systems;
 // Settings structure inspired by Simple Mod Checker Plus by StarQ
 namespace VehicleController
 {
+    public enum LogLevel {
+        Verbose,
+        Debug,
+        Info,
+        Warning,
+        Error,
+        Disabled
+    }
+    
+    /// <summary>
+    /// Stores all mod settings and exposes them to the game UI.
+    /// </summary>
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
     [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup)]
@@ -43,13 +56,71 @@ namespace VehicleController
         public const string DebugSection = "Debug";
         public const string DebugGroup = "Debug";
         
+        /// <summary>
+        /// Constructs the setting container for the specified mod instance.
+        /// </summary>
         public Setting(IMod mod) : base(mod)
         {
 
         }
+
+        private bool IsIngame()
+        {
+            return VehiclePropertySystem.IsIngame;
+        }
         
         #region MainSection
-
+        
+        private Level _loggingLevel = Level.Info;
+        
+        // TODO: Add Localization
+        [SettingsUISection(MainSection, MainGroup)]
+        public LogLevel LoggingLevel
+        {
+            get
+            {
+                if (_loggingLevel == Level.Verbose)
+                    return LogLevel.Verbose;
+                if (_loggingLevel == Level.Debug)
+                    return LogLevel.Debug;
+                if (_loggingLevel == Level.Info)
+                    return LogLevel.Info;
+                if (_loggingLevel == Level.Warn)
+                    return LogLevel.Warning;
+                if (_loggingLevel == Level.Error)
+                    return LogLevel.Error;
+                if (_loggingLevel == Level.Disabled)
+                    return LogLevel.Disabled;
+                return LogLevel.Info;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case LogLevel.Verbose:
+                        _loggingLevel = Level.Verbose;
+                        break;
+                    case LogLevel.Debug:
+                        _loggingLevel = Level.Debug;
+                        break;
+                    case LogLevel.Info:
+                        _loggingLevel = Level.Info;
+                        break;
+                    case LogLevel.Warning:
+                        _loggingLevel = Level.Warn;
+                        break;
+                    case LogLevel.Error:
+                        _loggingLevel = Level.Error;
+                        break;
+                    case LogLevel.Disabled:
+                        _loggingLevel = Level.Disabled;
+                        break;
+                }
+                Mod.log.effectivenessLevel = _loggingLevel;
+                Mod.log.Info("Logging level set to: " + _loggingLevel);
+            }
+        }
+        
         /*[SettingsUIButton]
         public bool DeleteInstances
         {
@@ -91,12 +162,17 @@ namespace VehicleController
             get => _currentProbabilityPack.Name;
             set
             {
+                if (VehicleProbabilitySystem.Instance == null) // System might be disabled
+                    return;
                 _currentProbabilityPack = ProbabilityPack.LoadFromFile(value);
                 VehicleProbabilitySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);
                 ApplyProbabilityChanges = true;
             }
         }
         
+        /// <summary>
+        /// Populates the dropdown list for probability packs.
+        /// </summary>
         public DropdownItem<string>[] GetProbabilityPacksDropdownItems()
         {
             var names =  ProbabilityPack.GetPackNames();
@@ -176,7 +252,7 @@ namespace VehicleController
         
         #region VehicleProperties
         
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         public bool EnableImprovedTrainBehavior { get; set; } = true;
         
         private string _currentVehicleClass = "Sedan";
@@ -195,6 +271,9 @@ namespace VehicleController
             }
         }
 
+        /// <summary>
+        /// Builds the dropdown list showing all available vehicle classes.
+        /// </summary>
         public DropdownItem<string>[] GetVehicleClassDropdownItems()
         {
             var items = new List<DropdownItem<string>>();
@@ -219,9 +298,85 @@ namespace VehicleController
             }
             
             return items.ToArray();
+        }*/
+
+
+        private string _defaultPropertyPackDropdown = "";
+        [SettingsUIDropdown(typeof(Setting), nameof(GetPropertyPackDropdownItems))]
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        public string DefaultPropertyPackDropdown
+        {
+            get => _defaultPropertyPackDropdown;
+            set
+            {
+                _defaultPropertyPackDropdown = value;
+                VehiclePropertySystem.DefaultPackSettingChanged();
+            }
+        }
+        
+        public DropdownItem<string>[] GetPropertyPackDropdownItems()
+        {
+            var names = new[]
+            {
+                "Vanilla",
+                "Improved",
+                "Realistic"
+            };
+            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
+            foreach(string s in names)
+            {
+                items.Add(new DropdownItem<string>()
+                {
+                    value = s,
+                    displayName = s,
+                });
+            }
+            return items.ToArray();
+        }
+        
+        private string _savegamePropertyPackDropdown = "Default";
+        [SettingsUIDropdown(typeof(Setting), nameof(GetSavegamePropertyPackDropdownItems))]
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(IsIngame), true)]
+        public string SavegamePropertyPackDropdown
+        {
+            get => _savegamePropertyPackDropdown;
+            set
+            {
+                _savegamePropertyPackDropdown = value;
+                VehiclePropertySystem.SavegamePackSettingChanged();
+            }
+        }
+        
+        public DropdownItem<string>[] GetSavegamePropertyPackDropdownItems()
+        {
+            var names = new[]
+            {
+                "Default",
+                "Vanilla",
+                "Improved",
+                "Realistic"
+            };
+            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
+            foreach(string s in names)
+            {
+                items.Add(new DropdownItem<string>()
+                {
+                    value = s,
+                    displayName = s,
+                });
+            }
+            return items.ToArray();
+        }
+        
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIAdvanced]
+        public bool ExportVanillaPack
+        {
+            set => VehiclePropertySystem.Instance.SaveVanillaPack();
         }
 
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUITextInput]
         public string PackName { get; set; } = "My Custom Pack";
 
@@ -231,7 +386,7 @@ namespace VehicleController
         {
             set
             {
-                // TODO: Implement
+                // TO DO: Implement
             }
         }
 
@@ -250,14 +405,21 @@ namespace VehicleController
         public bool SavePropertyChanges
         {
             set => VehiclePropertySystem.Instance.ApplySettings();
-        }
+        }*/
         
         #endregion
         
         #region VehicleSelection
 
-        [SettingsUISection(SpawnBehaviorSection, VehicleSelectionGroup)]
-        public bool DeleteVehicleInstances { get; set; } = false;
+        
+        [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
+        public bool EnableChangeVehicles { get; set; }
+        
+        [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
+        public bool RemoveAllModComponents 
+        {
+            set => ChangeVehicleSection.RemoveAllModComponents();
+        }
         
         #endregion
         
@@ -327,8 +489,13 @@ namespace VehicleController
         
         #endregion
         
+        /// <summary>
+        /// Restores the mod's recommended default probabilities.
+        /// </summary>
         public override void SetDefaults()
         {
+            LoggingLevel = LogLevel.Info;
+            
             MotorbikeProbability = 25;
             
             ScooterProbability = 50;
@@ -352,6 +519,9 @@ namespace VehicleController
             VanProbability = 100;
         }
         
+        /// <summary>
+        /// Resets probabilities to match the game's vanilla values.
+        /// </summary>
         public void SetVanillaDefaults()
         {
             MotorbikeProbability = 100;
@@ -378,15 +548,22 @@ namespace VehicleController
         }
     }
 
+    /// <summary>
+    /// Provides dynamic localisation entries for the options UI.
+    /// </summary>
     public class LocaleEN : IDictionarySource
     {
         private readonly Setting m_Setting;
 
+        /// <summary>
+        /// Creates the localisation source bound to the given setting instance.
+        /// </summary>
         public LocaleEN(Setting setting)
         {
             m_Setting = setting;
         }
 
+        /// <inheritdoc />
         public IEnumerable<KeyValuePair<string, string>> ReadEntries(IList<IDictionaryEntryError> errors,
             Dictionary<string, int> indexCounts)
         {
@@ -414,12 +591,21 @@ namespace VehicleController
             values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CreateExamplePack)), "Create an example probability pack with some default values. This will create a file in the ModsData folder of VehicleController.");
             values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.CountPrefabInstances)), "Count Prefab Instances");
             values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CountPrefabInstances)), "Counts occurrences of each prefab in the game and logs them to the console. Useful for debugging and understanding how many instances of each prefab are present in the game.");
+            values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.LoggingLevel)), "Logging Level");
+            values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.LoggingLevel)), "Sets the logging level for the mod. Higher levels log more information, but might impact performance. Recommended is 'Info' for normal operation, 'Debug' for detailed information, and 'Verbose' for full debug output. Please use 'Verbose' when reporting bugs");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Verbose), "Verbose (Log EVERYTHING)");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Debug), "Debug");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Info), "Info (Recommended)");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Warning), "Warning");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Error), "Error");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Disabled), "Disabled (No Logging)");
             values.Add(m_Setting.GetOptionTabLocaleID(nameof(Setting.DebugSection)), "Debug");
             values.Add(m_Setting.GetOptionGroupLocaleID(nameof(Setting.DebugGroup)), "Debugging Tools");
             
             return values;
         }
 
+        /// <inheritdoc />
         public void Unload()
         {
         }

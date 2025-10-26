@@ -1,0 +1,120 @@
+{
+  "Version": 1,
+  "Name": "Vanilla",
+  "Entries": {
+    "MuscleCar01": {
+      "PrefabName": "MuscleCar01",
+      "MaxSpeed": 83.3333359,
+      "Acceleration": 10.0,
+      "Braking": 16.0
+    },
+    "MuscleCar02": {
+      "PrefabName": "MuscleCar02",
+      "MaxSpeed": 83.3333359,
+      "Acceleration": 10.0,
+      "Braking": 16.0
+    },
+    "MuscleCar03": {
+      "PrefabName": "MuscleCar03",
+      "MaxSpeed": 83.3333359,
+      "Acceleration": 10.0,
+      "Braking": 16.0
+    },
+    "MuscleCar04": {
+      "PrefabName": "MuscleCar04",
+      "MaxSpeed": 83.3333359,
+      "Acceleration": 10.0,
+      "Braking": 16.0
+    },
+    "MuscleCar05": {
+      "PrefabName": "MuscleCar05",
+      "MaxSpeed": 83.3333359,
+      "Acceleration": 10.0,
+      "Braking": 16.0
+    },
+    "CarTrailer01": {
+      "PrefabName": "CarTrailer01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car02": {
+      "PrefabName": "Car02",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car03": {
+      "PrefabName": "Car03",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car04": {
+      "PrefabName": "Car04",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car05": {
+      "PrefabName": "Car05",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car06": {
+      "PrefabName": "Car06",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car07": {
+      "PrefabName": "Car07",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car08": {
+      "PrefabName": "Car08",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Van01": {
+      "PrefabName": "Van01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car09": {
+      "PrefabName": "Car09",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Car01": {
+      "PrefabName": "Car01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Motorbike01": {
+      "PrefabName": "Motorbike01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Scooter01": {
+      "PrefabName": "Scooter01",
+      "MaxSpeed": 16.6666679,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "CamperTrailer01": {
+      "PrefabName": "CamperTrailer01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    }
+  }
+}

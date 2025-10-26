@@ -1,0 +1,177 @@
+﻿import {Theme, UniqueFocusKey} from "cs2/bindings";
+import {getModule} from "cs2/modding";
+import {ClassProps, DropdownToggleProps, FocusKey, FormattedParagraphsProps, InfoRowProps} from "cs2/ui";
+import {HTMLAttributes, ReactNode} from 'react';
+
+// When attempting to use the game's InfoSectionProps from ui.d.ts directly, there is a compile error:
+// Property 'children' does not exist on type ... InfoSectionProps.
+// So copy the game's InfoSectionProps here but include children.
+export interface InfoSectionProps extends ClassProps {
+  focusKey?: FocusKey;
+  tooltip?: ReactNode;
+  disableFocus?: boolean;
+  children: any;
+}
+
+export interface InfoButtonProps extends ClassProps {
+  focusKey?: FocusKey;
+  tooltip?: ReactNode;
+  disableFocus?: boolean;
+  label?: string;
+  icon?: ReactNode;
+}
+
+type ToolButtonProps = {
+  focusKey?: UniqueFocusKey | null
+  src?: string
+  selected?: boolean
+  multiSelect?: boolean
+  disabled?: boolean
+  tooltip?: ReactNode | null
+  selectSound?: any
+  uiTag?: string
+  className?: string
+  children?: string | JSX.Element | JSX.Element[]
+  onSelect?: (x: any) => any,
+} & HTMLAttributes<any>
+
+type SIPDropdownClassesProps = {
+  dropdown: string,
+  dropdownLabel: string,
+  wrapbox: string,
+  item: string,
+  pill: string,
+  icon: string,
+  thumb: string,
+  label: string,
+  hint: string,
+  multiUnit: string,
+  tooltipIcon: string,
+}
+
+type InfoSectionClassesProps = {
+  infoSection: string,
+  content: string,
+  column: string,
+  divider: string,
+  "no-margin": string,
+  noMargin: string,
+  disableFocusHighlight: string,
+  infoWrapBox: string
+}
+
+type SelectVehiclesDropdownItemClassesProps = {
+  dropdownFlagItem: any,
+  toggle: any,
+  label: any,
+}
+
+function safeGetModule(path: string, exportName: string) {
+  try
+  {
+    return getModule(path, exportName);
+  }
+  catch (e)
+  {
+    console.warn(`Failed to load module: ${path}:${exportName}`, e);
+    return {};
+  }
+}
+
+// Provide access to modules from index.js.
+export class ModuleResolver {
+  // For unknown reasons, using the game's InfoRow and InfoSection directly from ui.d.ts causes a run time error.
+  private _focusDisabled: any;
+  private _formattedParagraphs: any;
+
+  // Define modules.
+  private _infoRow: any;
+  private _infoSection: any;
+  private _infoButton: any;
+  private _toolButtonTheme: any;
+  private _toolButton: any;
+  private _uiSound: any;
+  // Define SCSS modules.
+  private _dropdownClasses: any;
+  private _sipDropdownClasses: any;
+  private _selectVehiclesDropdownItem: any;
+  private _infoSectionClasses: any;
+  private _dropdownFlagItem: any;
+  private _dropdownFlagItemTheme: any;
+  private _infoRowClasses: any;
+
+  // Define instance.
+  private static _instance: ModuleResolver = new ModuleResolver();
+
+  public static get instance(): ModuleResolver {
+    return this._instance
+  }
+
+  // Provide access to modules.
+  public get FOCUS_DISABLED(): UniqueFocusKey {
+    return this._focusDisabled ?? (this._focusDisabled = safeGetModule("game-ui/common/focus/focus-key.ts", "FOCUS_DISABLED"));
+  }
+
+  public get FormattedParagraphs(): (props: FormattedParagraphsProps) => JSX.Element {
+    return this._formattedParagraphs ?? (this._formattedParagraphs = safeGetModule("game-ui/common/text/formatted-paragraphs.tsx", "FormattedParagraphs"));
+  }
+
+  public get InfoRow(): (props: InfoRowProps) => JSX.Element {
+    return this._infoRow ?? (this._infoRow = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.tsx", "InfoRow"));
+  }
+
+  public get InfoSection(): (props: InfoSectionProps) => JSX.Element {
+    return this._infoSection ?? (this._infoSection = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.tsx", "InfoSection"));
+  }    
+  
+  public get InfoWrapBox(): (props: InfoSectionProps) => JSX.Element {
+    return this._infoSection ?? (this._infoSection = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-wrap-box.tsx", "InfoWrapBox"));
+  }
+
+  public get DropdownFlagItem(): any {
+    return this._dropdownFlagItem ?? (this._dropdownFlagItem = safeGetModule("game-ui/common/input/dropdown/items/dropdown-flag-item.tsx", "DropdownFlagItem"));
+  }  
+  
+  public get DropdownFlagItemTheme(): Theme {
+    return this._dropdownFlagItemTheme ?? (this._dropdownFlagItemTheme = safeGetModule("game-ui/common/input/dropdown/items/dropdown-flag-item.module.scss", "classes"));
+  }
+  
+  // Unused, a lot of weird variables
+  public get SelectVehiclesSection(): (props: InfoSectionProps) => JSX.Element {
+    return this._infoSection ?? (this._infoSection = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section/select-vehicles-section.tsx", "SelectVehiclesSection"));
+  }
+
+  public get ToolButton(): (props: ToolButtonProps) => JSX.Element {
+    return this._toolButton ?? (this._toolButton = safeGetModule("game-ui/game/components/tool-options/tool-button/tool-button.tsx", "ToolButton"));
+  }
+
+  public get UISound() {
+    return this._uiSound ?? (this._uiSound = safeGetModule("game-ui/common/data-binding/audio-bindings.ts", "UISound"));
+  }
+
+  // Wrong Dropdown Classes
+  // public get DropdownClasses():       Theme | any                                         { return this._dropdownClasses          ?? (this._dropdownClasses       = safeGetModule("game-ui/menu/themes/dropdown.module.scss",                                                                                         "classes")); }
+  public get DropdownClasses(): any {
+    return this._dropdownClasses ?? (this._dropdownClasses = safeGetModule("game-ui/game/themes/game-dropdown.module.scss", "classes"));
+  }
+
+  public get InfoRowClasses(): Theme | any {
+    return this._infoRowClasses ?? (this._infoRowClasses = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-row/info-row.module.scss", "classes"));
+  }
+
+  public get toolButtonTheme(): Theme | any {
+    return this._toolButtonTheme ?? (this._toolButtonTheme = safeGetModule("game-ui/game/components/tool-options/tool-button/tool-button.module.scss", "classes"));
+  }
+  
+  public get SIPDropdownClasses(): SIPDropdownClassesProps {
+    return this._sipDropdownClasses ?? (this._sipDropdownClasses = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section/select-vehicles-section.module.scss", "classes"));
+  }
+
+  public get SelectVehiclesDropdownItem(): SelectVehiclesDropdownItemClassesProps {
+    return this._selectVehiclesDropdownItem ?? (this._selectVehiclesDropdownItem = safeGetModule("game-ui/game/components/selected-info-panel/selected-info-sections/route-sections/select-vehicles-section/select-vehicles-dropdown-item.module.scss", "classes"));
+  }
+  
+  public get InfoSectionClasses(): InfoSectionClassesProps {
+    return this._infoSectionClasses ?? (this._infoSectionClasses = safeGetModule("game-ui/game/components/selected-info-panel/shared-components/info-section/info-section.module.scss", "classes"));
+  }
+}

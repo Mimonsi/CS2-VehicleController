@@ -10,11 +10,15 @@ using VehicleController.Data;
 
 namespace VehicleController.Systems
 {
+    /// <summary>
+    /// Utility system that counts vehicle prefabs currently present in the world.
+    /// </summary>
     public partial class VehicleCounterSystem : GameSystemBase
     {
-        public static ILog Logger = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(VehicleCounterSystem)}")
-            .SetShowsErrorsInUI(false);
+        //public static ILog log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(VehicleCounterSystem)}")
+        //    .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
 
+        private static ILog log;
         private EntityQuery carQuery;
         private EntityQuery instanceQuery;
 
@@ -22,10 +26,14 @@ namespace VehicleController.Systems
         private ProbabilityPack _currentProbabilityPack;
         public static VehicleCounterSystem Instance { get; private set; }
 
+        /// <summary>
+        /// Creates entity queries and prepares the system.
+        /// </summary>
         protected override void OnCreate()
         {
             base.OnCreate();
             Instance = this;
+            log = Mod.log;
             Enabled = true;
             
             carQuery = GetEntityQuery(new EntityQueryDesc
@@ -40,15 +48,18 @@ namespace VehicleController.Systems
             
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            Logger.Info("VehicleCounterSystem created.");
+            log.Info("VehicleCounterSystem created.");
         }
         
+        /// <summary>
+        /// Counts current instances of each prefab and logs the results.
+        /// </summary>
         public void CountPrefabInstances()
         {
             Dictionary<string, int> prefabCounts = new Dictionary<string, int>();
             int totalInstances = 0;
             var entities = instanceQuery.ToEntityArray(Allocator.Temp);
-            Logger.Info("Entities found: " + entities.Length);
+            log.Info("Entities found: " + entities.Length);
             foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
@@ -80,10 +91,13 @@ namespace VehicleController.Systems
                 var percentage = (float)kvp.Value / totalInstances * 100;
                 output += $"{kvp.Key}: {kvp.Value} instances, {percentage}%\n";
             }
-            Logger.Info(output);
+            log.Info(output);
             SortByClasses(prefabCounts, totalInstances);
         }
 
+        /// <summary>
+        /// Aggregates the raw prefab counts by vehicle class.
+        /// </summary>
         private void SortByClasses(Dictionary<string, int> counts, int totalInstances)
         {
             Dictionary<string, int> classCounts = new Dictionary<string, int>();
@@ -106,9 +120,10 @@ namespace VehicleController.Systems
                 var percentage = (float)kvp.Value / totalInstances * 100;
                 output += $"{kvp.Key}: {percentage} ({kvp.Value} instances)\n";
             }
-            Logger.Info(output);
+            log.Info(output);
         }
 
+        /// <inheritdoc />
         protected override void OnUpdate()
         {
         }
