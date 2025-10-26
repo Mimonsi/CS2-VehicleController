@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vehicle Speed Tuner – km/h ↔ m/s (JSON)</title>
+    <title>Vehicle Controller - Vehicle Property Tuner(JSON)</title>
     <style>
         :root { --bg:#0f1115; --fg:#e6e6e6; --muted:#9aa3b2; --accent:#7aa2f7; --card:#151823; --line:#23283a; }
         html,body{height:100%}
@@ -40,28 +40,28 @@
 <body>
 <header>
     <div class="wrap">
-        <h1>Vehicle Speed Tuner <span class="muted">– km/h pro Prefab einstellen, Name/Version bearbeiten, JSON exportieren</span></h1>
+        <h1>Vehicle Property Tuner <span class="muted">– Adjust km/h per prefab, edit Name/Version, export as JSON</span></h1>
         <div class="row" style="gap:12px">
             <label class="btn">
                 <input id="fileInput" type="file" accept="application/json" />
-                JSON laden…
+                Load JSON…
             </label>
-            <button id="downloadBtn" class="btn primary" disabled>JSON exportieren</button>
-            <button id="resetBtn" class="btn" disabled>Änderungen verwerfen</button>
+            <button id="downloadBtn" class="btn primary" disabled>Export JSON</button>
+            <button id="resetBtn" class="btn" disabled>Reset changes</button>
             <label class="pill"><b>Name:</b> <input id="setName" type="text" placeholder="Name" /></label>
             <label class="pill"><b>Version:</b> <input id="setVersion" type="number" min="0" /></label>
             <label class="pill">
-                <input id="search" type="search" placeholder="Prefab suchen…" />
+                <input id="search" type="search" placeholder="Search prefab…" />
             </label>
-            <label class="pill"><input type="checkbox" id="editedOnly"/> nur geänderte</label>
-            <label class="pill">Slider-Spanne: <input id="rangeMin" class="num small" type="number" value="0" step="10"/>–<input id="rangeMax" class="num small" type="number" value="400" step="10"/> km/h</label>
+            <label class="pill"><input type="checkbox" id="editedOnly"/> edited only</label>
+            <label class="pill">Slider range: <input id="rangeMin" class="num small" type="number" value="0" step="10"/>–<input id="rangeMax" class="num small" type="number" value="400" step="10"/> km/h</label>
         </div>
     </div>
 </header>
 
 <div class="wrap">
     <div class="row" style="margin-top:10px;gap:10px">
-        <button id="addPrefabBtn" class="btn">+ Prefab hinzufügen</button>
+        <button id="addPrefabBtn" class="btn">+ Add prefab</button>
     </div>
     <div id="meta" class="footer"></div>
     <div class="grid">
@@ -70,10 +70,10 @@
             <tr>
                 <th style="width:280px">Prefab</th>
                 <th class="sliderCell">MaxSpeed (km/h)</th>
-                <th>Wert</th>
+                <th>Value</th>
                 <th>Acceleration</th>
                 <th>Braking</th>
-                <th>Aktionen</th>
+                <th>Actions</th>
             </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -107,7 +107,7 @@
     function setStateFromJson(obj){
         original = deepClone(obj);
         working = deepClone(obj);
-        order = Object.keys(working.Entries || {}).sort((a,b)=>a.localeCompare(b,'de'));
+        order = Object.keys(working.Entries || {}).sort((a,b)=>a.localeCompare(b,'en'));
         setName.value = working.Name || '';
         setVersion.value = working.Version ?? 0;
         renderTable();
@@ -123,12 +123,12 @@
         try{
             const json = JSON.parse(text);
             if(!json || typeof json !== 'object' || !json.Entries){
-                alert('Ungültiges Format: Es wird ein Objekt mit einem "Entries"-Feld erwartet.');
+                alert('Invalid format: expected an object with an "Entries" field.');
                 return;
             }
             setStateFromJson(json);
         }catch(err){
-            alert('Konnte die Datei nicht parsen: '+err.message);
+            alert('Could not parse file: '+err.message);
         }
     });
 
@@ -159,21 +159,21 @@
           <td><input class="num" type="number" step="0.1" value="${currKmh.toFixed(1)}" /></td>
           <td><input class="num" type="number" step="0.1" value="${Number(e.Acceleration ?? 0)}" /></td>
           <td><input class="num" type="number" step="0.1" value="${Number(e.Braking ?? 0)}" /></td>
-          <td><button class="btn" style="padding:4px 8px" data-action="del">Löschen</button></td>`;
+          <td><button class="btn" style="padding:4px 8px" data-action="del">Delete</button></td>`;
 
             const [slider, num, acc, brk, del] = tr.querySelectorAll('input,button');
             slider.addEventListener('input', ()=>{ num.value = slider.value; e.MaxSpeed = kmhToMs(slider.value); });
             num.addEventListener('input', ()=>{ slider.value = num.value; e.MaxSpeed = kmhToMs(num.value); });
             acc.addEventListener('input', ()=> e.Acceleration = Number(acc.value));
             brk.addEventListener('input', ()=> e.Braking = Number(brk.value));
-            del.addEventListener('click', ()=>{ if(confirm(`Prefab ${name} löschen?`)){ delete working.Entries[key]; renderTable(); updateMeta(); }});
+            del.addEventListener('click', ()=>{ if(confirm(`Delete prefab ${name}?`)){ delete working.Entries[key]; renderTable(); updateMeta(); }});
             tbody.appendChild(tr);
         }
     }
 
     function updateMeta(){
         const total = Object.keys(working.Entries||{}).length;
-        meta.innerHTML = `Name: <b>${escapeHtml(working.Name??'—')}</b> · Version: <b>${escapeHtml(working.Version??'—')}</b> · Einträge: <b>${total}</b>`;
+        meta.innerHTML = `Name: <b>${escapeHtml(working.Name??'—')}</b> · Version: <b>${escapeHtml(working.Version??'—')}</b> · Entries: <b>${total}</b>`;
     }
 
     setName.addEventListener('input', ()=> working.Name = setName.value);
@@ -182,7 +182,7 @@
     resetBtn.addEventListener('click', ()=>{ if(!original) return; working = deepClone(original); renderTable(); updateMeta(); });
 
     addPrefabBtn.addEventListener('click', ()=>{
-        const name = prompt('Name des neuen Prefabs?');
+        const name = prompt('Name of new prefab?');
         if(!name) return;
         working.Entries[name] = { PrefabName: name, MaxSpeed: kmhToMs(100), Acceleration: 10, Braking: 10 };
         renderTable();
