@@ -162,6 +162,8 @@ namespace VehicleController
             get => _currentProbabilityPack.Name;
             set
             {
+                if (VehicleProbabilitySystem.Instance == null) // System might be disabled
+                    return;
                 _currentProbabilityPack = ProbabilityPack.LoadFromFile(value);
                 VehicleProbabilitySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);
                 ApplyProbabilityChanges = true;
@@ -308,7 +310,7 @@ namespace VehicleController
             set
             {
                 _defaultPropertyPackDropdown = value;
-                UpdateDefaultPropertyPack();
+                VehiclePropertySystem.DefaultPackSettingChanged();
             }
         }
         
@@ -342,7 +344,7 @@ namespace VehicleController
             set
             {
                 _savegamePropertyPackDropdown = value;
-                UpdateSavegamePropertyPack();
+                VehiclePropertySystem.SavegamePackSettingChanged();
             }
         }
         
@@ -366,15 +368,12 @@ namespace VehicleController
             }
             return items.ToArray();
         }
-
-        private void UpdateDefaultPropertyPack()
-        {
-            VehiclePropertySystem.UpdateSavegamePropertyPack();
-        }
         
-        private void UpdateSavegamePropertyPack()
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIAdvanced]
+        public bool ExportVanillaPack
         {
-            VehiclePropertySystem.UpdateSavegamePropertyPack();
+            set => VehiclePropertySystem.Instance.SaveVanillaPack();
         }
 
         /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]

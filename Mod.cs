@@ -100,7 +100,7 @@ namespace VehicleController
                     if (!File.Exists(destFile))
                         File.Copy(file, destFile);
                 }
-
+                log.Debug("Copied embedded packs for " + subPath);
                 return true;
             }
             catch (Exception x)

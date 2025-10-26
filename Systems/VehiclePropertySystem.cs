@@ -81,7 +81,7 @@ namespace VehicleController.Systems
 
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            GameManager.instance.RegisterUpdater(SaveVanillaPack);
+            //GameManager.instance.RegisterUpdater(SaveVanillaPack);
             //GameManager.instance.RegisterUpdater(UpdateProperties);
             log.Info("VehiclePropertySystem created and updater registered.");
         }
@@ -89,8 +89,30 @@ namespace VehicleController.Systems
         /// <summary>
         /// Placeholder for saving vanilla property values.
         /// </summary>
-        private bool SaveVanillaPack()
+        public bool SaveVanillaPack()
         {
+            // Read values from game
+            var entities = carQuery.ToEntityArray(Allocator.Temp);
+            var entries = new Dictionary<string, PropertyPackEntry>();
+            foreach (var entity in entities)
+            {
+                if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCar))
+                {
+                    var prefabName = prefabSystem.GetPrefabName(entity);
+                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                    {
+                        var entry = new PropertyPackEntry(prefabName)
+                        {
+                            MaxSpeed = carData.m_MaxSpeed,
+                            Acceleration = carData.m_Acceleration,
+                            Braking = carData.m_Braking
+                        };
+                        entries.Add(prefabName, entry);
+                    }
+                }
+            }
+            log.Info($"Saving vanilla property pack with {entries.Count} entries.");
+            PropertyPack.SaveEntriesToFile(entries, "Vanilla", 1);
             return true;
         }
 
@@ -102,6 +124,8 @@ namespace VehicleController.Systems
             if (!Enabled)
                 return;
             _currentPropertyPack = pack;
+            log.Info($"Property pack {pack.Name} loaded with {pack.Entries?.Count ?? 0} entries.");
+            Instance.UpdateSavegameComponent();
             UpdateProperties();
         }
 
@@ -110,7 +134,6 @@ namespace VehicleController.Systems
             log.Debug("OnGameLoadingComplete called with mode " + mode);
             base.OnGameLoadingComplete(purpose, mode);
             IsIngame = mode == GameMode.Game;
-            // TODO: Load property pack from the save, or default
 
             if (IsIngame)
             {
@@ -127,6 +150,8 @@ namespace VehicleController.Systems
             {
                 if (EntityManager.TryGetComponent<SavegamePropertyPack>(entities[0], out var savegamePack))
                 {
+                    // Set the setting to the loaded pack for persistence
+                    Setting.Instance.SavegamePropertyPackDropdown = savegamePack.PackName.ToString();
                     return savegamePack.PackName.ToString();
                 }
                 return null;
@@ -140,6 +165,9 @@ namespace VehicleController.Systems
             return Setting.Instance.DefaultPropertyPackDropdown;
         }
 
+        /// <summary>
+        /// Loads the property pack selected in settings, if no savegame pack is provided, falls back to default.
+        /// </summary>
         private void LoadSelectedPropertyPack()
         {
             string? packName = GetSavegamePack();
@@ -153,17 +181,40 @@ namespace VehicleController.Systems
             {
                 var pack = PropertyPack.LoadFromFile(packName);
                 LoadPropertyPack(pack);
+                
             }
             catch (Exception x)
             {
                 log.Warn("Could not load property pack from file: " + x.Message);
             }
         }
-        
-        public static void UpdateSavegamePropertyPack()
+
+        public static void DefaultPackSettingChanged()
         {
-            Instance.LoadSelectedPropertyPack();
-            Instance.UpdateSavegameComponent();   
+            if (!IsIngame)
+                return;
+            if (Setting.Instance.SavegamePropertyPackDropdown == "Default")
+            {
+                var pack = PropertyPack.LoadFromFile(Setting.Instance.DefaultPropertyPackDropdown);
+                Instance.LoadPropertyPack(pack);
+            }
+        }
+        
+        public static void SavegamePackSettingChanged()
+        {
+            if (!IsIngame)
+                return;
+            // When savegame pack is changed, only update when not using default
+            if (Setting.Instance.SavegamePropertyPackDropdown == "Default")
+            {
+                var pack = PropertyPack.LoadFromFile(Setting.Instance.DefaultPropertyPackDropdown);
+                Instance.LoadPropertyPack(pack);
+            }
+            else
+            {
+                var pack = PropertyPack.LoadFromFile(Setting.Instance.SavegamePropertyPackDropdown);
+                Instance.LoadPropertyPack(pack);
+            }
         }
 
         /// <summary>
@@ -230,6 +281,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateTrainProperties()
         {
+            return true;
             /*if (!Setting.Instance.EnableImprovedTrainBehavior) // TODO: Track original settings to not require restart
             {
                 log.Info("Not Updating Train Properties, Improved Car Behavior is disabled.");
@@ -273,6 +325,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateCarProperties()
         {
+            return true;
             log.Info("Updating Vehicle Properties");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
@@ -289,7 +342,6 @@ namespace VehicleController.Systems
                             return false;
                         }
                         var values = VehicleClass.GetValues(prefabName);
-                        personalCarData.m_Probability = values.probability;
                         carData.m_MaxSpeed = values.maxSpeed;
                         carData.m_Acceleration = values.acceleration;
                         carData.m_Braking = values.braking;

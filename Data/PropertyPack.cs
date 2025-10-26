@@ -11,9 +11,9 @@ namespace VehicleController.Data
     public record PropertyPackEntry
     {
         public string PrefabName;
-        public int MaxSpeed;
-        public int Acceleration;
-        public int Braking;
+        public float MaxSpeed;
+        public float Acceleration;
+        public float Braking;
 
         /// <summary>
         /// Creates a new entry for the given prefab.
@@ -42,7 +42,7 @@ namespace VehicleController.Data
     {
         public int Version = 1;
         public string Name;
-        private Dictionary<string, PropertyPackEntry>? _entries;
+        public Dictionary<string, PropertyPackEntry>? Entries;
         
         /// <summary>
         /// Creates a new property pack.
@@ -60,18 +60,29 @@ namespace VehicleController.Data
         /// </summary>
         public static PropertyPack LoadFromFile(string name)
         {
-            Mod.log.Info("Loading probability pack " + name);
+            Mod.log.Info($"Loading property pack {name}");
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
                 "property", name + ".json");
-            Mod.log.Verbose("Loading path: " + path);
+            Mod.log.Verbose($"Loading path: {path}");
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException($"Could not load property pack {path}, because the file doesn't exist");
             }
             var json = File.ReadAllText(path);
-            Mod.log.Verbose("Pack file content: " + json);
+            //Mod.log.Verbose($"Pack file content: {json}");
             return JsonConvert.DeserializeObject<PropertyPack>(json) ?? throw new InvalidDataException($"Failed to deserialize property pack {name}");
         }
+        
+        /// <summary>
+        /// Write a set of entries to a new pack file.
+        /// </summary>
+        public static void SaveEntriesToFile(Dictionary<string, PropertyPackEntry> entries, string name, int version=1)
+        {
+            var pack = new PropertyPack(name, version);
+            pack.Entries = entries;
+            pack.SaveToFile();
+        }
+
         
         /// <summary>
         /// Persists the pack to a file in the ModsData folder.
@@ -80,6 +91,9 @@ namespace VehicleController.Data
         {
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
                 "property", Name + ".json");
+            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            File.WriteAllText(path, json);
+            Mod.log.Info($"Saved property pack to {path}");
         }
         
         /// <summary>
@@ -87,7 +101,7 @@ namespace VehicleController.Data
         /// </summary>
         public PropertyPackEntry GetEntry(string prefabName)
         {
-            if (_entries == null || !_entries.TryGetValue(prefabName, out var entry))
+            if (Entries == null || !Entries.TryGetValue(prefabName, out var entry))
             {
                 return PropertyPackEntry.Default();
             }
@@ -101,7 +115,9 @@ namespace VehicleController.Data
         {
             return new PropertyPack("Default")
             {
-                _entries = new Dictionary<string, PropertyPackEntry>
+                Version =  1,
+                Name = "Default",
+                Entries = new Dictionary<string, PropertyPackEntry>
                 {
                     { "default", PropertyPackEntry.Default() }
                 }
