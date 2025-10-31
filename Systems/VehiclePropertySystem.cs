@@ -143,7 +143,8 @@ namespace VehicleController.Systems
             _currentPropertyPack = pack;
             log.Info($"Property pack {pack.Name} loaded with {pack.Entries?.Count ?? 0} entries.");
             Instance.UpdateSavegameComponent();
-            UpdateProperties();
+            var success = UpdateProperties();
+            log.Verbose("UpdateProperties returned " + success);
         }
 
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
@@ -336,42 +337,42 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateCarProperties()
         {
-            return true;
             log.Debug("Updating Car Properties");
-            var entities = carQuery.ToEntityArray(Allocator.Temp);
+            var entities = vehicleQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
             {
-                if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
+                var prefabName = prefabSystem.GetPrefabName(entity);
+                log.Verbose("Prefab name: " + prefabName);
+                if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                 {
-                    var prefabName = prefabSystem.GetPrefabName(entity);
-                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                    log.Verbose("Has CarData component");
+                    if (carData is { m_Acceleration: 0, m_Braking: 0, m_MaxSpeed: 0 })
                     {
-                        if (carData is { m_Acceleration: 0, m_Braking: 0, m_MaxSpeed: 0 })
-                        {
-                            log.Info("CarData not initialized, retrying later");
-                            return false;
-                        }
+                        log.Info("CarData not initialized, retrying later");
+                        return false;
+                    }
 
-                        var entry = _currentPropertyPack.GetEntry(prefabName);
+                    var entry = _currentPropertyPack.GetEntry(prefabName);
+                    log.Verbose("Entry found: " + (entry != null));
+                    if (entry != null)
+                    {
                         carData.m_MaxSpeed = entry.MaxSpeed;
                         carData.m_Acceleration = entry.Acceleration;
                         carData.m_Braking = entry.Braking;
                         EntityManager.SetComponentData(entity, carData);
+                        count++;
                     }
-                    else
-                    {
-                        log.Error("CarData component not found on entity " + prefabName);
-                    }
-                    EntityManager.SetComponentData(entity, personalCarData);
-                    EntityManager.AddComponent<BatchesUpdated>(entity);
-                    count++;
+                }
+                else
+                {
+                    log.Error("CarData component not found on entity " + prefabName);
                 }
             }
             
             if (count == 0)
             {
-                log.Debug("Failed to update properties. No PersonalCarData found.");
+                log.Debug("No vehicles were updated");
                 return false;
             }
             

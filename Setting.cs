@@ -300,10 +300,19 @@ namespace VehicleController
             return items.ToArray();
         }*/
 
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIAdvanced]
+        public bool IncreasePropertyPackItemsVersion
+        {
+            set => PropertyPackDropdownItemsVersion++;
+        }
+        
+        private int PropertyPackDropdownItemsVersion { get; set; }
 
         private string _defaultPropertyPackDropdown = "";
         [SettingsUIDropdown(typeof(Setting), nameof(GetPropertyPackDropdownItems))]
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIValueVersion(typeof(Setting), nameof(PropertyPackDropdownItemsVersion))]
         public string DefaultPropertyPackDropdown
         {
             get => _defaultPropertyPackDropdown;
@@ -316,19 +325,14 @@ namespace VehicleController
         
         public DropdownItem<string>[] GetPropertyPackDropdownItems()
         {
-            var names = new[]
-            {
-                "Vanilla",
-                "Improved",
-                "Realistic"
-            };
+            var names = PropertyPack.GetPackNames();
             List<DropdownItem<string>> items = new List<DropdownItem<string>>();
             foreach(string s in names)
             {
                 items.Add(new DropdownItem<string>()
                 {
                     value = s,
-                    displayName = s,
+                    displayName = s, // TODO: Get name from pack metadata
                 });
             }
             return items.ToArray();
@@ -338,6 +342,7 @@ namespace VehicleController
         [SettingsUIDropdown(typeof(Setting), nameof(GetSavegamePropertyPackDropdownItems))]
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(IsIngame), true)]
+        [SettingsUIValueVersion(typeof(Setting), nameof(PropertyPackDropdownItemsVersion))]
         public string SavegamePropertyPackDropdown
         {
             get => _savegamePropertyPackDropdown;
@@ -350,23 +355,19 @@ namespace VehicleController
         
         public DropdownItem<string>[] GetSavegamePropertyPackDropdownItems()
         {
-            var names = new[]
+            var items = GetPropertyPackDropdownItems(); // Reuse same items
+            DropdownItem<string>[] extendedItems = new DropdownItem<string>[items.Length + 1];
+            extendedItems[0] = new DropdownItem<string>()
             {
-                "Default",
-                "Vanilla",
-                "Improved",
-                "Realistic"
+                value = "Default",
+                displayName = "Default (Use global setting)",
             };
-            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
-            foreach(string s in names)
+            for (int i = 0; i < items.Length; i++)
             {
-                items.Add(new DropdownItem<string>()
-                {
-                    value = s,
-                    displayName = s,
-                });
+                extendedItems[i + 1] = items[i];
             }
-            return items.ToArray();
+
+            return extendedItems;
         }
         
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]

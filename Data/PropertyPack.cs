@@ -99,11 +99,11 @@ namespace VehicleController.Data
         /// <summary>
         /// Retrieves the properties for a prefab, returning defaults if none are defined.
         /// </summary>
-        public PropertyPackEntry GetEntry(string prefabName)
+        public PropertyPackEntry? GetEntry(string prefabName)
         {
             if (Entries == null || !Entries.TryGetValue(prefabName, out var entry))
             {
-                return PropertyPackEntry.Default();
+                return null;
             }
             return entry;
         }
