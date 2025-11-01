@@ -719,7 +719,7 @@ namespace VehicleController.Systems
                 return false;
             }
             var types = GetServiceVehicleTypes();
-            serviceName = EntityManager.GetName(selectedEntity); // Police Car, etc.. -> Not exactly serviceName. TODO: Improve
+            serviceName = EntityManager.GetName(selectedEntity); // Police Car, etc.. -> Not exactly serviceName. TODO: Fix, service name and prefab name are wrong
             prefabName = m_PrefabSystem.GetPrefabName(selectedEntity);
             districtName = null;
             log.Info($"Service name for selected entity: {serviceName}, prefab: {prefabName}");

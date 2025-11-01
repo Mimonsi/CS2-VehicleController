@@ -91,6 +91,7 @@ export const ClipboardActions = (props : ClipboardActionsProps) => {
         disableFocus={true}
       />
 
+      
       { /* Paste buttons */ }
       { (showPasteButtons) && (
       <ModuleResolver.instance.InfoRow
@@ -110,25 +111,26 @@ export const ClipboardActions = (props : ClipboardActionsProps) => {
                 src = {"coui://uil/Standard/SingleRhombus.svg"}
                 focusKey={ModuleResolver.instance.FOCUS_DISABLED}
                 selected={false}
-                tooltip = {<FormattedParagraphs>{`Paste selection to all ${prefabName} in district ${districtName}`}</FormattedParagraphs>}
+                tooltip = {<FormattedParagraphs>{`Paste selection to all ${prefabName}`}</FormattedParagraphs>}
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSamePrefabClicked")}
               />
               <ModuleResolver.instance.ToolButton
-                src = {"coui://uil/Colored/SingleRhombus.svg"}
-                focusKey={ModuleResolver.instance.FOCUS_DISABLED}
-                selected={false}
-                tooltip = {<FormattedParagraphs>{`Paste selection to all ${prefabName} in district ${districtName}`}</FormattedParagraphs>}
-                className = {ModuleResolver.instance.toolButtonTheme.button}
-                onSelect={() => handleClick("PasteSamePrefabDistrictClicked")}
+                  src = {"coui://uil/Standard/SameRhombus.svg"}
+                  focusKey={ModuleResolver.instance.FOCUS_DISABLED}
+                  selected={false}
+                  tooltip = {<FormattedParagraphs>{`Paste selection to all ${serviceName} buildings`}</FormattedParagraphs>}
+                  className = {ModuleResolver.instance.toolButtonTheme.button}
+                  onSelect={() => handleClick("PasteSameServiceTypeClicked")}
               />
+              {props.districtName && (<>
               <ModuleResolver.instance.ToolButton
-                src = {"coui://uil/Standard/SameRhombus.svg"}
-                focusKey={ModuleResolver.instance.FOCUS_DISABLED}
-                selected={false}
-                tooltip = {<FormattedParagraphs>{`Paste selection to all ${serviceName} buildings`}</FormattedParagraphs>}
-                className = {ModuleResolver.instance.toolButtonTheme.button}
-                onSelect={() => handleClick("PasteSameServiceTypeClicked")}
+                  src = {"coui://uil/Colored/SingleRhombus.svg"}
+                  focusKey={ModuleResolver.instance.FOCUS_DISABLED}
+                  selected={false}
+                  tooltip = {<FormattedParagraphs>{`Paste selection to all ${prefabName} in district ${districtName}`}</FormattedParagraphs>}
+                  className = {ModuleResolver.instance.toolButtonTheme.button}
+                  onSelect={() => handleClick("PasteSamePrefabDistrictClicked")}
               />
               <ModuleResolver.instance.ToolButton
                 src = {"coui://uil/Colored/SameRhombus.svg"}
@@ -138,6 +140,7 @@ export const ClipboardActions = (props : ClipboardActionsProps) => {
                 className = {ModuleResolver.instance.toolButtonTheme.button}
                 onSelect={() => handleClick("PasteSameServiceTypeDistrictClicked")}
               />
+              </>)}
             </>
         }
         disableFocus={true}
