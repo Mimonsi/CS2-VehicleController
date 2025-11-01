@@ -4,7 +4,7 @@
 
 ## Service Vehicle Selection
 - Select which service building can spawn which vehicles
-- Allows to select one prefab (multi select will be added later) per individual building, that will always be used
+- Allows to select multiple prefabs per individual building, that will always be used
 - Copy and Paste your values to other buildings of the same name, all other buildings in the district, or even the whole map
 - Suggestions welcome
 

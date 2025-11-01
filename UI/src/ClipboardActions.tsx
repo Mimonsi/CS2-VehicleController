@@ -5,11 +5,18 @@ import mod from "../mod.json";
 import {FormattedParagraphs} from "cs2/ui";
 
 
+interface ClipboardActionsProps
+{
+  prefabName: string,
+  serviceName: string,
+  districtName: string | null,
+}
+
 // UI-Idea:
 // Display a text:
 // "Paste selection to all *FR_PoliceStation* in the *city/district*" -> Paste to prefab type
 // "Paste selection to all *Police Buildings* in the *city/district*" -> Paste to service type
-export const ClipboardActions = () => {
+export const ClipboardActions = (props : ClipboardActionsProps) => {
   
   function handleClick(eventName : string)
   {
@@ -18,9 +25,9 @@ export const ClipboardActions = () => {
     trigger(mod.id, eventName);
   }
   
-  const prefabName = "**prefabName**"
-  const serviceName = "**serviceName**";
-  const districtName = "**districtName**";
+  const prefabName = `**${props.prefabName}**`
+  const serviceName = `**${props.serviceName}**`;
+  const districtName = `**${props.districtName}**`;
 
   const clipboardData$ = bindValue<string>(mod.id, "ClipboardData", "");
   const clipboardData = useValue(clipboardData$);

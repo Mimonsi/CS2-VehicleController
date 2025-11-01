@@ -29,7 +29,7 @@ namespace VehicleController
         public static bool EnableProbabilitySystem = false;
         public static bool EnablePropertySystem = true;
         public static bool EnableVehicleCounterSystem = false;
-        public static bool EnableChangeVehicleSection = false;
+        public static bool EnableChangeVehicleSection = true;
 
         /// <summary>
         /// Called by the game when the mod is loaded.

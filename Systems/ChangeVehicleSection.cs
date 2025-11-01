@@ -9,6 +9,7 @@ using Colossal.Entities;
 using Colossal.Logging;
 using Colossal.UI.Binding;
 using Game;
+using Game.Areas;
 using Game.Common;
 using Game.Prefabs;
 using Game.Rendering;
@@ -57,6 +58,10 @@ namespace VehicleController.Systems
         private SelectedInfoUISystem _selectedInfoUISystem;
         private ValueBinding<bool> m_Minimized;
         private ValueBinding<string> m_ClipboardData;
+
+        private string serviceName;
+        private string? districtName;
+        private string prefabName;
         
         // <inheritdoc/>
         /// <summary>
@@ -319,6 +324,7 @@ namespace VehicleController.Systems
             {
                 foreach (var type in selectedTypes)
                 {
+                    // TODO: Refactor to use a mapping
                     if (type == ServiceVehicleType.Ambulance && EntityManager.HasComponent<Game.Buildings.Hospital>(entity))
                     {
                         ApplyClipboardToEntity(entity);
@@ -713,13 +719,24 @@ namespace VehicleController.Systems
                 return false;
             }
             var types = GetServiceVehicleTypes();
-            string entityType = EntityManager.GetName(selectedEntity);
+            serviceName = EntityManager.GetName(selectedEntity); // Police Car, etc.. -> Not exactly serviceName. TODO: Improve
+            prefabName = m_PrefabSystem.GetPrefabName(selectedEntity);
+            districtName = null;
+            log.Info($"Service name for selected entity: {serviceName}, prefab: {prefabName}");
+            if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var district))
+            {
+                if (district.m_District != Entity.Null)
+                {
+                    districtName = m_NameSystem.GetRenderedLabelName(district.m_District);
+                }
+            }
+            
             if (types.Count == 0)
             {
-                log.Info($"No service vehicle types available for selected entity of type: {entityType}");
+                log.Info($"No service vehicle types available for selected entity of type: {serviceName}");
                 return false;
             }
-            log.Info($"Service vehicle types for entity type {entityType}: " + string.Join(", ", types));
+            log.Info($"Service vehicle types for entity type {serviceName}: " + string.Join(", ", types));
             // TODO: Add toggle to disable in settings
             return true;
         }
@@ -822,8 +839,15 @@ namespace VehicleController.Systems
             writer.ArrayEnd();
             writer.PropertyName("vehiclesSelected");
             writer.Write(selectedVehicleCount);
-            //writer.PropertyName("serviceType");
-            //writer.Write("");
+            
+            writer.PropertyName("serviceName");
+            writer.Write(serviceName); // TODO: Get actual service name based on building type
+            writer.PropertyName("prefabName");
+            writer.Write(prefabName);
+            writer.PropertyName("districtName");
+            writer.Write(districtName);
+            
+            
             //Logger.Debug("ChangeVehicleSection properties written");
         }
 

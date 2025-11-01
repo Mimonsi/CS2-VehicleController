@@ -45,7 +45,10 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
   // Adapted from bindings.d.ts for the game's sections.
   interface ChangeVehicleSection extends SelectedInfoSectionBase
   {
+    prefabName: string,
     serviceType: ServiceVehicleType,
+    serviceName: string,
+    districtName: string | null,
     availableVehicles: SelectableVehiclePrefab[],
     vehiclesSelected: number
   }
@@ -164,7 +167,11 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
               disableFocus={false}
             />
 
-            <ClipboardActions/>
+            <ClipboardActions
+                prefabName={props.prefabName}
+                serviceName={props.serviceName}
+                districtName={props.districtName}
+            />
           </>
         )}
       </ModuleResolver.instance.InfoSection>
