@@ -229,6 +229,7 @@ namespace VehicleController.Systems
         /// <param name="entity"></param>
         private void ApplyClipboardToEntity(Entity entity)
         {
+            log.Verbose("Applying clipboard to entity: " + entity);
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(entity))
             {
                 EntityManager.RemoveComponent<AllowedVehiclePrefab>(entity);
@@ -248,6 +249,11 @@ namespace VehicleController.Systems
         private void PasteSamePrefabClicked()
         {
             log.Verbose("PasteSamePrefabClicked");
+            PasteSamePrefabWithinDistrict();
+        }
+
+        private void PasteSamePrefabWithinDistrict(Entity? district = null)
+        {
             if (m_Clipboard.Count == 0)
                 return;
             if (!EntityManager.TryGetComponent(selectedEntity, out PrefabRef selectedPrefab))
@@ -259,7 +265,16 @@ namespace VehicleController.Systems
                 {
                     if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && prefabRef.m_Prefab == selectedPrefab.m_Prefab)
                     {
-                        ApplyClipboardToEntity(entity);
+                        if(EntityManager.TryGetComponent<CurrentDistrict>(entity, out var currentDistrict))
+                        {
+                            // Don't apply if district doesn't match
+                            if (district != null && currentDistrict.m_District != district)
+                            {
+                                continue;
+                            }
+                            ApplyClipboardToEntity(entity);
+                        }
+
                     }
                 }
             }
@@ -274,12 +289,23 @@ namespace VehicleController.Systems
         /// </summary>
         private void PasteSamePrefabDistrictClicked()
         {
-            // TODO: Implement
+            log.Verbose("PasteSamePrefabDistrictClicked");
+            if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var buildingDistrict))
+            {
+                PasteSamePrefabWithinDistrict(buildingDistrict.m_District);
+            }
+            
         }
 
         private void PasteSameServiceTypeClicked()
         {
             log.Verbose("PasteSameServiceTypeClicked");
+            PasteSameServiceWithinDistrict();
+        }
+
+        private void PasteSameServiceWithinDistrict(Entity? district = null)
+        {
+
             if (m_Clipboard.Count == 0)
                 return;
             var selectedTypes = new HashSet<ServiceType>(GetServiceTypes());
@@ -295,7 +321,15 @@ namespace VehicleController.Systems
                 {
                     if (TryGetServiceTypeForBuilding(entity, out ServiceType serviceType) && selectedTypes.Contains(serviceType))
                     {
-                        ApplyClipboardToEntity(entity);
+                        if(EntityManager.TryGetComponent<CurrentDistrict>(entity, out var currentDistrict))
+                        {
+                            // Don't apply if district doesn't match
+                            if (district != null && currentDistrict.m_District != district)
+                            {
+                                continue;
+                            }
+                            ApplyClipboardToEntity(entity);
+                        }
                     }
                 }
             }
@@ -307,8 +341,11 @@ namespace VehicleController.Systems
 
         private void PasteSameServiceTypeDistrictClicked()
         {
-            log.Info("PasteDistrictClicked not implemented");
-            // TODO: Implement
+            log.Info("PasteSameServiceTypeDistrictClicked");
+            if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var buildingDistrict))
+            {
+                PasteSameServiceWithinDistrict(buildingDistrict.m_District);
+            }
         }
 
         private void ExportClipboardClicked()
