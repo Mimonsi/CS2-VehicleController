@@ -12,7 +12,7 @@ using VehicleController.Systems;
 // Settings structure inspired by Simple Mod Checker Plus by StarQ
 namespace VehicleController
 {
-    [FileLocation($"ModsSettings/{nameof(VehicleController)}/{nameof(VehicleController)}")]
+    [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, AboutSection)]
     [SettingsUIGroupOrder(MainGroup, SpawnProbabilitiesGroup, VehiclePropertiesGroup, InfoGroup)]
     [SettingsUIShowGroupName(MainGroup, SpawnProbabilitiesGroup)]

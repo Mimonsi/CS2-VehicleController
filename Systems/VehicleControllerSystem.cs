@@ -34,25 +34,28 @@ namespace VehicleController.Systems
             carQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
-                [
-                    ComponentType.ReadOnly<PersonalCarData>(),
-                ]
+                new [] 
+                {
+                    ComponentType.ReadOnly<PersonalCarData>()
+                    
+                }
             });
             
             trainQuery = GetEntityQuery(new EntityQueryDesc
             {
                 Any =
-                [
+                    new [] 
+                    {
                     ComponentType.ReadOnly<TrainData>(),
-                ]
+                }
             });
             
             instanceQuery = GetEntityQuery(new EntityQueryDesc
             {
-                Any =
-                [
+                Any = new [] 
+                {
                     ComponentType.ReadOnly<PersonalCar>(),
-                ],
+                }
             });
 
             
