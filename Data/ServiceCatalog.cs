@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Prefabs;
 using Unity.Entities;
 
 namespace VehicleController.Data
@@ -38,7 +39,13 @@ namespace VehicleController.Data
         public ComponentType[] BuildingComponents { get; }
         public ComponentType[] VehiclePrefabComponents { get; }
 
-        public bool MatchesBuilding(EntityManager entityManager, Entity entity)
+        /// <summary>
+        /// Returns true if the entity has a supported building component
+        /// </summary>
+        /// <param name="entityManager"></param>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public bool IsSupportedBuilding(EntityManager entityManager, Entity entity)
         {
             foreach (var componentType in BuildingComponents)
             {
@@ -51,7 +58,7 @@ namespace VehicleController.Data
             return false;
         }
 
-        public bool MatchesVehicle(EntityManager entityManager, Entity entity)
+        public bool IsSupportedVehicle(EntityManager entityManager, Entity entity)
         {
             foreach (var componentType in VehicleComponents)
             {
@@ -73,32 +80,32 @@ namespace VehicleController.Data
                 ServiceType.Healthcare,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.Ambulance>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.Hospital>() },
-                new[] { ComponentType.ReadOnly<Game.Vehicles.AmbulanceData>() }),
+                new[] { ComponentType.ReadOnly<AmbulanceData>() }),
             new ServiceDescriptor(
                 ServiceType.Fire,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.FireEngine>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.FireStation>() },
-                new[] { ComponentType.ReadOnly<Game.Vehicles.FireEngineData>() }),
+                new[] { ComponentType.ReadOnly<FireEngineData>() }),
             new ServiceDescriptor(
                 ServiceType.Police,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.PoliceCar>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.PoliceStation>() },
-                new[] { ComponentType.ReadOnly<Game.Vehicles.PoliceCarData>() }),
+                new[] { ComponentType.ReadOnly<PoliceCarData>() }),
             new ServiceDescriptor(
                 ServiceType.Garbage,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.GarbageTruck>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.GarbageFacility>() },
-                new[] { ComponentType.ReadOnly<Game.Vehicles.GarbageTruckData>() }),
+                new[] { ComponentType.ReadOnly<GarbageTruckData>() }),
             new ServiceDescriptor(
                 ServiceType.Deathcare,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.Hearse>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.DeathcareFacility>() },
-                new[] { ComponentType.ReadOnly<Game.Vehicles.HearseData>() }),
+                new[] { ComponentType.ReadOnly<HearseData>() }),
             new ServiceDescriptor(
                 ServiceType.Postal,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.PostVan>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.PostFacility>() },
-                new[] { ComponentType.ReadOnly<Game.Vehicles.PostVanData>() }),
+                new[] { ComponentType.ReadOnly<PostVanData>() }),
             new ServiceDescriptor(
                 ServiceType.RoadMaintenance,
                 new[]

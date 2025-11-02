@@ -63,6 +63,7 @@ namespace VehicleController.Systems
 
         private static readonly ComponentType s_CarDataComponent = ComponentType.ReadOnly<CarData>();
         
+        
         // <inheritdoc/>
         /// <summary>
         /// Initializes UI bindings and entity queries for the info section.
@@ -633,7 +634,7 @@ namespace VehicleController.Systems
             List<ServiceType> types = new List<ServiceType>();
             foreach (var descriptor in s_ServiceDescriptors)
             {
-                if (descriptor.MatchesBuilding(EntityManager, selectedEntity))
+                if (descriptor.IsSupportedBuilding(EntityManager, selectedEntity))
                 {
                     types.Add(descriptor.ServiceType);
                 }
@@ -646,7 +647,7 @@ namespace VehicleController.Systems
         {
             foreach (var descriptor in s_ServiceDescriptors)
             {
-                if (descriptor.MatchesBuilding(EntityManager, entity))
+                if (descriptor.IsSupportedBuilding(EntityManager, entity))
                 {
                     serviceType = descriptor.ServiceType;
                     return true;
@@ -657,11 +658,20 @@ namespace VehicleController.Systems
             return false;
         }
 
+        private string GetServiceTypeNameForBuilding(Entity entity)
+        {
+            if (TryGetServiceTypeForBuilding(entity, out ServiceType serviceType))
+            {
+                return serviceType.ToString();
+            }
+            return "Unknown ServiceType";
+        }
+
         private bool TryGetServiceTypeForVehicle(Entity entity, out ServiceType serviceType)
         {
             foreach (var descriptor in s_ServiceDescriptors)
             {
-                if (descriptor.MatchesVehicle(EntityManager, entity))
+                if (descriptor.IsSupportedVehicle(EntityManager, entity))
                 {
                     serviceType = descriptor.ServiceType;
                     return true;
@@ -688,6 +698,19 @@ namespace VehicleController.Systems
             return false;
         }
 
+        private string GetLocalizedPrefabName(Entity entity)
+        {
+            if (EntityManager.TryGetComponent<PrefabRef>(entity, out var prefabRef))
+            {
+                if (m_PrefabSystem.TryGetPrefab(prefabRef, out PrefabBase prefab))
+                {
+                    var localizedName = prefab.name; // TODO: Actual localization logic
+                    return localizedName;
+                }
+            }
+            return "Unknown Prefab";
+        }
+
         private bool Visible()
         {
             if (selectedEntity == Entity.Null)
@@ -695,8 +718,8 @@ namespace VehicleController.Systems
                 return false;
             }
             var types = GetServiceTypes();
-            serviceName = EntityManager.GetName(selectedEntity); // Police Car, etc.. -> Not exactly serviceName. TODO: Fix, service name and prefab name are wrong
-            prefabName = m_PrefabSystem.GetPrefabName(selectedEntity);
+            serviceName = GetServiceTypeNameForBuilding(selectedEntity);
+            prefabName = GetLocalizedPrefabName(selectedEntity);
             districtName = null;
             log.Info($"Service name for selected entity: {serviceName}, prefab: {prefabName}");
             if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var district))
