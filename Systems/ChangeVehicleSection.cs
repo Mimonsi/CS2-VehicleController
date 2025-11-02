@@ -704,8 +704,7 @@ namespace VehicleController.Systems
             {
                 if (m_PrefabSystem.TryGetPrefab(prefabRef, out PrefabBase prefab))
                 {
-                    var localizedName = prefab.name; // TODO: Actual localization logic
-                    return localizedName;
+                    return LocaleHelper.Translate($"Assets.NAME[{prefab.name}]") ?? prefab.name;
                 }
             }
             return "Unknown Prefab";
