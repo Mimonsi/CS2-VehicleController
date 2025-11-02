@@ -25,18 +25,18 @@ using VehicleController.Data;
 
 namespace VehicleController.Systems
 {
-    enum ServiceVehicleType
+    enum ServiceType
     {
         None,
-        Ambulance,
-        FireEngine,
-        PoliceCar,
-        GarbageTruck,
-        Hearse,
-        PostVan,
-        TransportVehicle, // Taxi, Bus
-        RoadMaintenanceVehicle,
-        ParkMaintenanceVehicle
+        Healthcare,
+        Fire,
+        Police,
+        Garbage,
+        Deathcare,
+        Postal,
+        Transport,
+        RoadMaintenance,
+        ParkMaintenance
     }
     
     /// <summary>
@@ -54,7 +54,7 @@ namespace VehicleController.Systems
         private EntityQuery m_ServiceBuildingQuery;
         private static List<string> m_Clipboard = new();
         private EndFrameBarrier m_Barrier;
-        private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
+        private Dictionary<ServiceType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
         private ValueBinding<bool> m_Minimized;
         private ValueBinding<string> m_ClipboardData;
@@ -66,7 +66,7 @@ namespace VehicleController.Systems
         private readonly struct ServiceDescriptor
         {
             public ServiceDescriptor(
-                ServiceVehicleType serviceType,
+                ServiceType serviceType,
                 IEnumerable<ComponentType> vehicleComponents,
                 IEnumerable<ComponentType> buildingComponents,
                 IEnumerable<ComponentType>? vehiclePrefabComponents = null)
@@ -77,7 +77,7 @@ namespace VehicleController.Systems
                 VehiclePrefabComponents = vehiclePrefabComponents?.ToArray() ?? Array.Empty<ComponentType>();
             }
 
-            public ServiceVehicleType ServiceType { get; }
+            public ServiceType ServiceType { get; }
             public ComponentType[] VehicleComponents { get; }
             public ComponentType[] BuildingComponents { get; }
             public ComponentType[] VehiclePrefabComponents { get; }
@@ -112,37 +112,37 @@ namespace VehicleController.Systems
         private static readonly ServiceDescriptor[] s_ServiceDescriptors =
         {
             new ServiceDescriptor(
-                ServiceVehicleType.Ambulance,
+                ServiceType.Healthcare,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.Ambulance>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.Hospital>() },
                 new[] { ComponentType.ReadOnly<AmbulanceData>() }),
             new ServiceDescriptor(
-                ServiceVehicleType.FireEngine,
+                ServiceType.Fire,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.FireEngine>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.FireStation>() },
                 new[] { ComponentType.ReadOnly<FireEngineData>() }),
             new ServiceDescriptor(
-                ServiceVehicleType.PoliceCar,
+                ServiceType.Police,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.PoliceCar>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.PoliceStation>() },
                 new[] { ComponentType.ReadOnly<PoliceCarData>() }),
             new ServiceDescriptor(
-                ServiceVehicleType.GarbageTruck,
+                ServiceType.Garbage,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.GarbageTruck>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.GarbageFacility>() },
                 new[] { ComponentType.ReadOnly<GarbageTruckData>() }),
             new ServiceDescriptor(
-                ServiceVehicleType.Hearse,
+                ServiceType.Deathcare,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.Hearse>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.DeathcareFacility>() },
                 new[] { ComponentType.ReadOnly<HearseData>() }),
             new ServiceDescriptor(
-                ServiceVehicleType.PostVan,
+                ServiceType.Postal,
                 new[] { ComponentType.ReadOnly<Game.Vehicles.PostVan>() },
                 new[] { ComponentType.ReadOnly<Game.Buildings.PostFacility>() },
                 new[] { ComponentType.ReadOnly<PostVanData>() }),
             new ServiceDescriptor(
-                ServiceVehicleType.RoadMaintenanceVehicle,
+                ServiceType.RoadMaintenance,
                 new[]
                 {
                     ComponentType.ReadOnly<Game.Vehicles.MaintenanceVehicle>(),
@@ -150,7 +150,7 @@ namespace VehicleController.Systems
                 },
                 new[] { ComponentType.ReadOnly<Game.Buildings.MaintenanceDepot>() }),
             new ServiceDescriptor(
-                ServiceVehicleType.TransportVehicle,
+                ServiceType.Transport,
                 new[]
                 {
                     ComponentType.ReadOnly<Game.Vehicles.Taxi>(),
@@ -397,7 +397,7 @@ namespace VehicleController.Systems
             log.Verbose("PasteSameServiceTypeClicked");
             if (m_Clipboard.Count == 0)
                 return;
-            var selectedTypes = new HashSet<ServiceVehicleType>(GetServiceVehicleTypes());
+            var selectedTypes = new HashSet<ServiceType>(GetServiceTypes());
             if (selectedTypes.Count == 0)
             {
                 return;
@@ -408,7 +408,7 @@ namespace VehicleController.Systems
             {
                 foreach (var entity in entities)
                 {
-                    if (TryGetServiceTypeForBuilding(entity, out ServiceVehicleType serviceType) && selectedTypes.Contains(serviceType))
+                    if (TryGetServiceTypeForBuilding(entity, out ServiceType serviceType) && selectedTypes.Contains(serviceType))
                     {
                         ApplyClipboardToEntity(entity);
                     }
@@ -601,7 +601,7 @@ namespace VehicleController.Systems
 
         }
 
-        private List<SelectableVehiclePrefab> GetPrefabsForType(ServiceVehicleType type, NativeArray<Entity> entities)
+        private List<SelectableVehiclePrefab> GetPrefabsForType(ServiceType type, NativeArray<Entity> entities)
         {
             List<SelectableVehiclePrefab> vehiclePrefabs = new List<SelectableVehiclePrefab>();
             foreach (var entity in entities)
@@ -744,9 +744,9 @@ namespace VehicleController.Systems
             }
         }
 
-        private List<ServiceVehicleType> GetServiceVehicleTypes()
+        private List<ServiceType> GetServiceTypes()
         {
-            List<ServiceVehicleType> types = new List<ServiceVehicleType>();
+            List<ServiceType> types = new List<ServiceType>();
             foreach (var descriptor in s_ServiceDescriptors)
             {
                 if (descriptor.MatchesBuilding(EntityManager, selectedEntity))
@@ -758,7 +758,7 @@ namespace VehicleController.Systems
             return types;
         }
 
-        private bool TryGetServiceTypeForBuilding(Entity entity, out ServiceVehicleType serviceType)
+        private bool TryGetServiceTypeForBuilding(Entity entity, out ServiceType serviceType)
         {
             foreach (var descriptor in s_ServiceDescriptors)
             {
@@ -769,11 +769,11 @@ namespace VehicleController.Systems
                 }
             }
 
-            serviceType = ServiceVehicleType.None;
+            serviceType = ServiceType.None;
             return false;
         }
 
-        private bool TryGetServiceTypeForVehicle(Entity entity, out ServiceVehicleType serviceType)
+        private bool TryGetServiceTypeForVehicle(Entity entity, out ServiceType serviceType)
         {
             foreach (var descriptor in s_ServiceDescriptors)
             {
@@ -784,11 +784,11 @@ namespace VehicleController.Systems
                 }
             }
 
-            serviceType = ServiceVehicleType.None;
+            serviceType = ServiceType.None;
             return false;
         }
 
-        private bool TryGetServiceType(Entity entity, out ServiceVehicleType serviceType)
+        private bool TryGetServiceType(Entity entity, out ServiceType serviceType)
         {
             if (TryGetServiceTypeForBuilding(entity, out serviceType))
             {
@@ -800,7 +800,7 @@ namespace VehicleController.Systems
                 return true;
             }
 
-            serviceType = ServiceVehicleType.None;
+            serviceType = ServiceType.None;
             return false;
         }
 
@@ -810,7 +810,7 @@ namespace VehicleController.Systems
             {
                 return false;
             }
-            var types = GetServiceVehicleTypes();
+            var types = GetServiceTypes();
             serviceName = EntityManager.GetName(selectedEntity); // Police Car, etc.. -> Not exactly serviceName. TODO: Fix, service name and prefab name are wrong
             prefabName = m_PrefabSystem.GetPrefabName(selectedEntity);
             districtName = null;
@@ -908,7 +908,7 @@ namespace VehicleController.Systems
                 return;
             }
             
-            var types = GetServiceVehicleTypes();
+            var types = GetServiceTypes();
             var prefabs = new List<SelectableVehiclePrefab>(); // Collect all available vehicle prefabs for the selected building
             PopulateAvailableVehicles();
             int selectedVehicleCount = 0; // Count of selected vehicles
