@@ -27,18 +27,18 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
   // Define service vehicle types
   // Matches Query in CreatedServiceVehicleModifierSystem.cs
-  enum ServiceVehicleType
+  enum ServiceType
   {
     None,
-    Ambulance,
-    FireEngine,
-    PoliceCar,
-    GarbageTruck,
-    Hearse,
-    PostVan,
-    TransportVehicle, // Taxi, Bus
-    RoadMaintenanceVehicle,
-    ParkMaintenanceVehicle
+    Healthcare,
+    Fire,
+    Police,
+    Garbage,
+    Deathcare,
+    Postal,
+    Transport,
+    RoadMaintenance,
+    ParkMaintenance
   }
 
   // Define props for change vehicle section.
@@ -46,7 +46,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
   interface ChangeVehicleSection extends SelectedInfoSectionBase
   {
     prefabName: string,
-    serviceType: ServiceVehicleType,
+    serviceType: ServiceType,
     serviceName: string,
     districtName: string | null,
     availableVehicles: SelectableVehiclePrefab[],

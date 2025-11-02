@@ -25,20 +25,6 @@ using VehicleController.Data;
 
 namespace VehicleController.Systems
 {
-    enum ServiceVehicleType
-    {
-        None,
-        Ambulance,
-        FireEngine,
-        PoliceCar,
-        GarbageTruck,
-        Hearse,
-        PostVan,
-        TransportVehicle, // Taxi, Bus
-        RoadMaintenanceVehicle,
-        ParkMaintenanceVehicle
-    }
-    
     /// <summary>
     /// Info UI section that allows service vehicle prefabs to be swapped at runtime.
     /// </summary>
@@ -54,7 +40,7 @@ namespace VehicleController.Systems
         private EntityQuery m_ServiceBuildingQuery;
         private static List<string> m_Clipboard = new();
         private EndFrameBarrier m_Barrier;
-        private Dictionary<ServiceVehicleType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
+        private Dictionary<ServiceType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
         private ValueBinding<bool> m_Minimized;
         private ValueBinding<string> m_ClipboardData;
@@ -62,6 +48,21 @@ namespace VehicleController.Systems
         private string serviceName;
         private string? districtName;
         private string prefabName;
+
+        private static readonly IReadOnlyList<ServiceDescriptor> s_ServiceDescriptors = ServiceCatalog.Descriptors;
+
+        private static readonly ComponentType[] s_ServiceVehicleComponentTypes = ServiceCatalog.VehicleComponentTypes;
+
+        private static readonly ComponentType[] s_ServiceBuildingComponentTypes = ServiceCatalog.BuildingComponentTypes;
+
+        private static readonly ComponentType[] s_ServiceVehicleExcludedComponents =
+        {
+            ComponentType.ReadOnly<Deleted>(),
+            ComponentType.ReadOnly<Game.Tools.Temp>()
+        };
+
+        private static readonly ComponentType s_CarDataComponent = ComponentType.ReadOnly<CarData>();
+        
         
         // <inheritdoc/>
         /// <summary>
@@ -115,86 +116,42 @@ namespace VehicleController.Systems
             AddBinding(m_ClipboardData);
             m_ClipboardData.Update(string.Empty);
             
-            m_CreatedServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                All = new[]
-                {
-                    ComponentType.ReadOnly<Game.Common.Owner>(),
-                    ComponentType.ReadOnly<Car>(), // Don't affect aircraft
-                    ComponentType.ReadOnly<Created>(),
-                },
-                Any = new[]
-                {
-                    ComponentType.ReadOnly<Game.Vehicles.Ambulance>(),
-                    ComponentType.ReadOnly<Game.Vehicles.FireEngine>(),
-                    ComponentType.ReadOnly<Game.Vehicles.PoliceCar>(),
-                    ComponentType.ReadOnly<Game.Vehicles.GarbageTruck>(),
-                    ComponentType.ReadOnly<Game.Vehicles.Hearse>(),
-                    ComponentType.ReadOnly<Game.Vehicles.MaintenanceVehicle>(),
-                    ComponentType.ReadOnly<Game.Vehicles.PostVan>(),
-                    ComponentType.ReadOnly<Game.Vehicles.RoadMaintenanceVehicle>(),
-                    ComponentType.ReadOnly<Game.Vehicles.Taxi>(),
-                    ComponentType.ReadOnly<Game.Vehicles.ParkMaintenanceVehicle>(),
-                    ComponentType.ReadOnly<Game.Vehicles.WorkVehicle>(),
-                },
-                None = new[]
-                {
-                    ComponentType.ReadOnly<Deleted>(),
-                    ComponentType.ReadOnly<Game.Tools.Temp>(),
-                },
-            });
-            
-            m_ExistingServiceVehicleQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                All = new[]
-                {
-                    ComponentType.ReadOnly<Game.Common.Owner>(),
-                    ComponentType.ReadOnly<Car>()  // Don't affect aircraft
-                },
-                Any = new[]
-                {
-                    ComponentType.ReadOnly<Game.Vehicles.Ambulance>(),
-                    ComponentType.ReadOnly<Game.Vehicles.FireEngine>(),
-                    ComponentType.ReadOnly<Game.Vehicles.PoliceCar>(),
-                    ComponentType.ReadOnly<Game.Vehicles.GarbageTruck>(),
-                    ComponentType.ReadOnly<Game.Vehicles.Hearse>(),
-                    ComponentType.ReadOnly<Game.Vehicles.MaintenanceVehicle>(),
-                    ComponentType.ReadOnly<Game.Vehicles.PostVan>(),
-                    ComponentType.ReadOnly<Game.Vehicles.RoadMaintenanceVehicle>(),
-                    ComponentType.ReadOnly<Game.Vehicles.Taxi>(),
-                    ComponentType.ReadOnly<Game.Vehicles.ParkMaintenanceVehicle>(),
-                    ComponentType.ReadOnly<Game.Vehicles.WorkVehicle>(),
-                },
-                None = new[]
-                {
-                    ComponentType.ReadOnly<Deleted>(),
-                    ComponentType.ReadOnly<Game.Tools.Temp>(),
-                },
-            });
-
+            m_CreatedServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: true);
+            m_ExistingServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: false);
             m_ServiceBuildingQuery = GetEntityQuery(new EntityQueryDesc
             {
                 All = new[]
                 {
                     ComponentType.ReadOnly<PrefabRef>()
                 },
-                Any = new[]
-                {
-                    ComponentType.ReadOnly<Game.Buildings.Hospital>(),
-                    ComponentType.ReadOnly<Game.Buildings.FireStation>(),
-                    ComponentType.ReadOnly<Game.Buildings.PoliceStation>(),
-                    ComponentType.ReadOnly<Game.Buildings.GarbageFacility>(),
-                    ComponentType.ReadOnly<Game.Buildings.DeathcareFacility>(),
-                    ComponentType.ReadOnly<Game.Buildings.PostFacility>(),
-                    ComponentType.ReadOnly<Game.Buildings.MaintenanceDepot>(),
-                    ComponentType.ReadOnly<Game.Buildings.TransportDepot>()
-                }
+                Any = s_ServiceBuildingComponentTypes
             });
             
             RequireForUpdate(m_CreatedServiceVehicleQuery);
 
             //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
             log.Info("ChangeVehicleSection created.");
+        }
+
+        private EntityQuery CreateServiceVehicleQuery(bool requireCreatedComponent)
+        {
+            List<ComponentType> allComponents = new List<ComponentType>
+            {
+                ComponentType.ReadOnly<Game.Common.Owner>(),
+                ComponentType.ReadOnly<Car>()
+            };
+
+            if (requireCreatedComponent)
+            {
+                allComponents.Add(ComponentType.ReadOnly<Created>());
+            }
+
+            return GetEntityQuery(new EntityQueryDesc
+            {
+                All = allComponents.ToArray(),
+                Any = s_ServiceVehicleComponentTypes,
+                None = s_ServiceVehicleExcludedComponents
+            });
         }
 
         private void DeleteOwnedVehiclesClicked()
@@ -295,13 +252,20 @@ namespace VehicleController.Systems
                 return;
             if (!EntityManager.TryGetComponent(selectedEntity, out PrefabRef selectedPrefab))
                 return;
-            var entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
+            NativeArray<Entity> entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
+            try
             {
-                if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && prefabRef.m_Prefab == selectedPrefab.m_Prefab)
+                foreach (var entity in entities)
                 {
-                    ApplyClipboardToEntity(entity);
+                    if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && prefabRef.m_Prefab == selectedPrefab.m_Prefab)
+                    {
+                        ApplyClipboardToEntity(entity);
+                    }
                 }
+            }
+            finally
+            {
+                entities.Dispose();
             }
         }
         
@@ -318,54 +282,26 @@ namespace VehicleController.Systems
             log.Verbose("PasteSameServiceTypeClicked");
             if (m_Clipboard.Count == 0)
                 return;
-            var selectedTypes = GetServiceVehicleTypes();
-            var entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
+            var selectedTypes = new HashSet<ServiceType>(GetServiceTypes());
+            if (selectedTypes.Count == 0)
             {
-                foreach (var type in selectedTypes)
+                return;
+            }
+
+            NativeArray<Entity> entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
+            try
+            {
+                foreach (var entity in entities)
                 {
-                    // TODO: Refactor to use a mapping
-                    if (type == ServiceVehicleType.Ambulance && EntityManager.HasComponent<Game.Buildings.Hospital>(entity))
+                    if (TryGetServiceTypeForBuilding(entity, out ServiceType serviceType) && selectedTypes.Contains(serviceType))
                     {
                         ApplyClipboardToEntity(entity);
-                        break;
-                    }
-                    if (type == ServiceVehicleType.FireEngine && EntityManager.HasComponent<Game.Buildings.FireStation>(entity))
-                    {
-                        ApplyClipboardToEntity(entity);
-                        break;
-                    }
-                    if (type == ServiceVehicleType.PoliceCar && EntityManager.HasComponent<Game.Buildings.PoliceStation>(entity))
-                    {
-                        ApplyClipboardToEntity(entity);
-                        break;
-                    }
-                    if (type == ServiceVehicleType.GarbageTruck && EntityManager.HasComponent<Game.Buildings.GarbageFacility>(entity))
-                    {
-                        ApplyClipboardToEntity(entity);
-                        break;
-                    }
-                    if (type == ServiceVehicleType.Hearse && EntityManager.HasComponent<Game.Buildings.DeathcareFacility>(entity))
-                    {
-                        ApplyClipboardToEntity(entity);
-                        break;
-                    }
-                    if (type == ServiceVehicleType.PostVan && EntityManager.HasComponent<Game.Buildings.PostFacility>(entity))
-                    {
-                        ApplyClipboardToEntity(entity);
-                        break;
-                    }
-                    if (type == ServiceVehicleType.RoadMaintenanceVehicle && EntityManager.HasComponent<Game.Buildings.MaintenanceDepot>(entity))
-                    {
-                        ApplyClipboardToEntity(entity);
-                        break;
-                    }
-                    if (type == ServiceVehicleType.TransportVehicle && EntityManager.HasComponent<Game.Buildings.TransportDepot>(entity))
-                    {
-                        ApplyClipboardToEntity(entity);
-                        break;
                     }
                 }
+            }
+            finally
+            {
+                entities.Dispose();
             }
         }
 
@@ -517,32 +453,40 @@ namespace VehicleController.Systems
         private void PopulateAvailableVehicles()
         {
             _availableVehiclePrefabs.Clear();
-            
-            var policeCars = SystemAPI.QueryBuilder().WithAll<PoliceCarData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.PoliceCar, GetPrefabsForType(ServiceVehicleType.PoliceCar, policeCars));
-            //Logger.Info("Available Police Vehicles: " + _availableVehiclePrefabs[ServiceVehicleType.PoliceCar].Count);
-            
-            var ambulances = SystemAPI.QueryBuilder().WithAll<AmbulanceData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.Ambulance, GetPrefabsForType(ServiceVehicleType.Ambulance, ambulances));
-            
-            var fireEngines = SystemAPI.QueryBuilder().WithAll<FireEngineData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.FireEngine, GetPrefabsForType(ServiceVehicleType.FireEngine, fireEngines));
-            
-            var garbageTrucks = SystemAPI.QueryBuilder().WithAll<GarbageTruckData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.GarbageTruck, GetPrefabsForType(ServiceVehicleType.GarbageTruck, garbageTrucks));
-            
-            var hearses = SystemAPI.QueryBuilder().WithAll<HearseData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.Hearse, GetPrefabsForType(ServiceVehicleType.Hearse, hearses));
-            
-            var postVans = SystemAPI.QueryBuilder().WithAll<PostVanData>().WithAll<CarData>().Build().ToEntityArray(Allocator.Temp);
-            _availableVehiclePrefabs.Add(ServiceVehicleType.PostVan, GetPrefabsForType(ServiceVehicleType.PostVan, postVans));
-            
-            // TODO: Add support for road/park maintenance vehicles
-            // TODO: Add support for transport vehicles
-            
+
+            foreach (var descriptor in s_ServiceDescriptors)
+            {
+                if (descriptor.VehiclePrefabComponents.Length == 0)
+                {
+                    continue;
+                }
+
+                List<ComponentType> prefabComponents = new List<ComponentType>(descriptor.VehiclePrefabComponents.Length + 1)
+                {
+                    s_CarDataComponent
+                };
+                prefabComponents.AddRange(descriptor.VehiclePrefabComponents);
+
+                EntityQuery query = GetEntityQuery(new EntityQueryDesc
+                {
+                    All = prefabComponents.ToArray()
+                });
+
+                NativeArray<Entity> prefabEntities = query.ToEntityArray(Allocator.Temp);
+                try
+                {
+                    _availableVehiclePrefabs[descriptor.ServiceType] =
+                        GetPrefabsForType(descriptor.ServiceType, prefabEntities);
+                }
+                finally
+                {
+                    prefabEntities.Dispose();
+                }
+            }
+
         }
 
-        private List<SelectableVehiclePrefab> GetPrefabsForType(ServiceVehicleType type, NativeArray<Entity> entities)
+        private List<SelectableVehiclePrefab> GetPrefabsForType(ServiceType type, NativeArray<Entity> entities)
         {
             List<SelectableVehiclePrefab> vehiclePrefabs = new List<SelectableVehiclePrefab>();
             foreach (var entity in entities)
@@ -685,31 +629,86 @@ namespace VehicleController.Systems
             }
         }
 
-        private List<ServiceVehicleType> GetServiceVehicleTypes()
+        private List<ServiceType> GetServiceTypes()
         {
-            List<ServiceVehicleType> types = new List<ServiceVehicleType>();
-            if (EntityManager.HasComponent<Game.Buildings.Hospital>(selectedEntity))
-                types.Add(ServiceVehicleType.Ambulance);
-            if (EntityManager.HasComponent<Game.Buildings.FireStation>(selectedEntity))
-                types.Add(ServiceVehicleType.FireEngine);
-            if (EntityManager.HasComponent<Game.Buildings.PoliceStation>(selectedEntity))
-                types.Add(ServiceVehicleType.PoliceCar);
-            if (EntityManager.HasComponent<Game.Buildings.GarbageFacility>(selectedEntity))
-                types.Add(ServiceVehicleType.GarbageTruck);
-            if (EntityManager.HasComponent<Game.Buildings.DeathcareFacility>(selectedEntity))
-                types.Add(ServiceVehicleType.Hearse);
-            if (EntityManager.HasComponent<Game.Buildings.PostFacility>(selectedEntity))
-                types.Add(ServiceVehicleType.PostVan);
-            if (EntityManager.TryGetComponent<Game.Buildings.MaintenanceDepot>(selectedEntity, out var maintenanceDepot))
+            List<ServiceType> types = new List<ServiceType>();
+            foreach (var descriptor in s_ServiceDescriptors)
             {
-                // TODO: Differentiate between road and park maintenance vehicles
-                types.Add(ServiceVehicleType.RoadMaintenanceVehicle);
+                if (descriptor.IsSupportedBuilding(EntityManager, selectedEntity))
+                {
+                    types.Add(descriptor.ServiceType);
+                }
             }
-            if (EntityManager.HasComponent<Game.Buildings.TransportDepot>(selectedEntity))
-                types.Add(ServiceVehicleType.TransportVehicle); // Taxi, Bus
-            
 
             return types;
+        }
+
+        private bool TryGetServiceTypeForBuilding(Entity entity, out ServiceType serviceType)
+        {
+            foreach (var descriptor in s_ServiceDescriptors)
+            {
+                if (descriptor.IsSupportedBuilding(EntityManager, entity))
+                {
+                    serviceType = descriptor.ServiceType;
+                    return true;
+                }
+            }
+
+            serviceType = ServiceType.None;
+            return false;
+        }
+
+        private string GetServiceTypeNameForBuilding(Entity entity)
+        {
+            if (TryGetServiceTypeForBuilding(entity, out ServiceType serviceType))
+            {
+                return serviceType.ToString();
+            }
+            return "Unknown ServiceType";
+        }
+
+        private bool TryGetServiceTypeForVehicle(Entity entity, out ServiceType serviceType)
+        {
+            foreach (var descriptor in s_ServiceDescriptors)
+            {
+                if (descriptor.IsSupportedVehicle(EntityManager, entity))
+                {
+                    serviceType = descriptor.ServiceType;
+                    return true;
+                }
+            }
+
+            serviceType = ServiceType.None;
+            return false;
+        }
+
+        private bool TryGetServiceType(Entity entity, out ServiceType serviceType)
+        {
+            if (TryGetServiceTypeForBuilding(entity, out serviceType))
+            {
+                return true;
+            }
+
+            if (TryGetServiceTypeForVehicle(entity, out serviceType))
+            {
+                return true;
+            }
+
+            serviceType = ServiceType.None;
+            return false;
+        }
+
+        private string GetLocalizedPrefabName(Entity entity)
+        {
+            if (EntityManager.TryGetComponent<PrefabRef>(entity, out var prefabRef))
+            {
+                if (m_PrefabSystem.TryGetPrefab(prefabRef, out PrefabBase prefab))
+                {
+                    var localizedName = prefab.name; // TODO: Actual localization logic
+                    return localizedName;
+                }
+            }
+            return "Unknown Prefab";
         }
 
         private bool Visible()
@@ -718,9 +717,9 @@ namespace VehicleController.Systems
             {
                 return false;
             }
-            var types = GetServiceVehicleTypes();
-            serviceName = EntityManager.GetName(selectedEntity); // Police Car, etc.. -> Not exactly serviceName. TODO: Fix, service name and prefab name are wrong
-            prefabName = m_PrefabSystem.GetPrefabName(selectedEntity);
+            var types = GetServiceTypes();
+            serviceName = GetServiceTypeNameForBuilding(selectedEntity);
+            prefabName = GetLocalizedPrefabName(selectedEntity);
             districtName = null;
             log.Info($"Service name for selected entity: {serviceName}, prefab: {prefabName}");
             if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var district))
@@ -816,7 +815,7 @@ namespace VehicleController.Systems
                 return;
             }
             
-            var types = GetServiceVehicleTypes();
+            var types = GetServiceTypes();
             var prefabs = new List<SelectableVehiclePrefab>(); // Collect all available vehicle prefabs for the selected building
             PopulateAvailableVehicles();
             int selectedVehicleCount = 0; // Count of selected vehicles
