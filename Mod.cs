@@ -30,6 +30,7 @@ namespace VehicleController
         public static bool EnablePropertySystem = true;
         public static bool EnableVehicleCounterSystem = false;
         public static bool EnableChangeVehicleSection = true;
+        public static bool EnableRoadSpeedLimitSystem = true;
 
         /// <summary>
         /// Called by the game when the mod is loaded.
@@ -63,6 +64,8 @@ namespace VehicleController
             
             if (EnableVehicleCounterSystem)
                 updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
+            if (EnableRoadSpeedLimitSystem)
+                updateSystem.UpdateAt<RoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop);
             if (EnableChangeVehicleSection)
                 updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
             
@@ -79,6 +82,8 @@ namespace VehicleController
 
             AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
+            
+            log.Info("VehicleController mod loaded successfully");
         }
         
         /// <summary>

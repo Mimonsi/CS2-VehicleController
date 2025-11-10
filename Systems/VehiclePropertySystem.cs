@@ -144,7 +144,7 @@ namespace VehicleController.Systems
             log.Info($"Property pack {pack.Name} loaded with {pack.Entries?.Count ?? 0} entries.");
             Instance.UpdateSavegameComponent();
             var success = UpdateProperties();
-            log.Verbose("UpdateProperties returned " + success);
+            log.Trace("UpdateProperties returned " + success);
         }
 
         protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
@@ -286,7 +286,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateProperties()
         {
-            if (UpdateCarProperties() && UpdateTrainProperties())
+            if (UpdateVehicleProperties() && UpdateTrainProperties())
             {
                 return true;
             }
@@ -332,41 +332,52 @@ namespace VehicleController.Systems
             return true;
         }
 
+        
+        /*
+        Findings:
+        Police car has max speed of 20 (m/s), and speed is displayed as 36 km/h, which is 10 m/s actually.
+        Vehicle drives 500 meters in 20 seconds, so is actually travelling 20 m/s.
+        */
+        
         /// <summary>
         /// Applies property changes to all personal car entities.
         /// </summary>
-        private bool UpdateCarProperties()
+        private bool UpdateVehicleProperties()
         {
-            log.Debug("Updating Car Properties");
+            log.Debug("Updating Vehicle Properties");
             var entities = vehicleQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
             {
                 var prefabName = prefabSystem.GetPrefabName(entity);
-                log.Verbose("Prefab name: " + prefabName);
-                if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                log.Trace("Prefab name: " + prefabName);
+                var entry = _currentPropertyPack.GetEntry(prefabName);
+                log.Trace("Entry found: " + (entry != null));
+                if (entry != null)
                 {
-                    log.Verbose("Has CarData component");
-                    if (carData is { m_Acceleration: 0, m_Braking: 0, m_MaxSpeed: 0 })
+                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                     {
-                        log.Info("CarData not initialized, retrying later");
-                        return false;
-                    }
-
-                    var entry = _currentPropertyPack.GetEntry(prefabName);
-                    log.Verbose("Entry found: " + (entry != null));
-                    if (entry != null)
-                    {
+                        log.Trace("Has CarData component");
                         carData.m_MaxSpeed = entry.MaxSpeed;
                         carData.m_Acceleration = entry.Acceleration;
                         carData.m_Braking = entry.Braking;
                         EntityManager.SetComponentData(entity, carData);
                         count++;
                     }
-                }
-                else
-                {
-                    log.Error("CarData component not found on entity " + prefabName);
+                    else if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
+                    {
+                        log.Trace("Has TrainData component");
+                        trainData.m_MaxSpeed = entry.MaxSpeed;
+                        trainData.m_Acceleration = entry.Acceleration;
+                        trainData.m_Braking = entry.Braking;
+                        EntityManager.SetComponentData(entity, trainData);
+                        count++;
+                    }
+                    else
+                    {
+                        // Disabled for now to reduce log spam
+                        //log.Error("CarData component not found on entity " + prefabName);
+                    }
                 }
             }
             
@@ -391,7 +402,7 @@ namespace VehicleController.Systems
         /// </summary>
         public void ApplySettings()
         {
-            UpdateCarProperties();
+            UpdateVehicleProperties();
         }
     }
 

@@ -156,7 +156,7 @@ namespace VehicleController.Systems
 
         private void DeleteOwnedVehiclesClicked()
         {
-            log.Verbose("DeleteVehicles clicked");
+            log.Trace("DeleteVehicles clicked");
             NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             
             // Filter by owner = selectedEntity
@@ -174,7 +174,7 @@ namespace VehicleController.Systems
 
         private void ClearBufferClicked()
         {
-            log.Verbose("ClearBufferClicked");
+            log.Trace("ClearBufferClicked");
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 EntityManager.RemoveComponent<AllowedVehiclePrefab>(selectedEntity);
@@ -185,7 +185,7 @@ namespace VehicleController.Systems
 
         private void CopySelectionClicked()
         {
-            log.Verbose("CopySelectionClicked");
+            log.Trace("CopySelectionClicked");
             try
             {
                 m_Clipboard.Clear();
@@ -208,7 +208,7 @@ namespace VehicleController.Systems
         
         private void PasteSelectionClicked()
         {
-            log.Verbose("PasteSelectionClicked");
+            log.Trace("PasteSelectionClicked");
             if (selectedEntity == Entity.Null)
             {
                 log.Error("Selected entity is null, cannot paste vehicles");
@@ -229,7 +229,7 @@ namespace VehicleController.Systems
         /// <param name="entity"></param>
         private void ApplyClipboardToEntity(Entity entity)
         {
-            log.Verbose("Applying clipboard to entity: " + entity);
+            log.Trace("Applying clipboard to entity: " + entity);
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(entity))
             {
                 EntityManager.RemoveComponent<AllowedVehiclePrefab>(entity);
@@ -248,7 +248,7 @@ namespace VehicleController.Systems
         /// </summary>
         private void PasteSamePrefabClicked()
         {
-            log.Verbose("PasteSamePrefabClicked");
+            log.Trace("PasteSamePrefabClicked");
             PasteSamePrefabWithinDistrict();
         }
 
@@ -289,7 +289,7 @@ namespace VehicleController.Systems
         /// </summary>
         private void PasteSamePrefabDistrictClicked()
         {
-            log.Verbose("PasteSamePrefabDistrictClicked");
+            log.Trace("PasteSamePrefabDistrictClicked");
             if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var buildingDistrict))
             {
                 PasteSamePrefabWithinDistrict(buildingDistrict.m_District);
@@ -299,7 +299,7 @@ namespace VehicleController.Systems
 
         private void PasteSameServiceTypeClicked()
         {
-            log.Verbose("PasteSameServiceTypeClicked");
+            log.Trace("PasteSameServiceTypeClicked");
             PasteSameServiceWithinDistrict();
         }
 

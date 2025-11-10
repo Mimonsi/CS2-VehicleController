@@ -24,6 +24,14 @@ namespace VehicleController
         Disabled
     }
     
+    public enum SpeedLimitOverride
+    {
+        None,
+        Half,
+        Double,
+        Speed // x10
+    }
+    
     /// <summary>
     /// Stores all mod settings and exposes them to the game UI.
     /// </summary>
@@ -33,7 +41,7 @@ namespace VehicleController
     [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup)]
     public class Setting : ModSetting
     {
-        public static Setting Instance;
+        public static Setting? Instance;
         
         public const string MainSection = "Settings";
         public const string MainGroup = "General Settings";
@@ -251,54 +259,6 @@ namespace VehicleController
         #endregion
         
         #region VehicleProperties
-        
-        /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        public bool EnableImprovedTrainBehavior { get; set; } = true;
-        
-        private string _currentVehicleClass = "Sedan";
-        private static int CurrentVehicleClassVersion { get; set; }
-
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIValueVersion(typeof(Setting), nameof(CurrentVehicleClassVersion))]
-        [SettingsUIDropdown(typeof(Setting), nameof(GetVehicleClassDropdownItems))]
-        public string CurrentVehicleClass
-        {
-            get => _currentVehicleClass;
-            set
-            {
-                _currentVehicleClass = value;
-                Mod.log.Info("Current vehicle class set to: " + value);
-            }
-        }
-
-        /// <summary>
-        /// Builds the dropdown list showing all available vehicle classes.
-        /// </summary>
-        public DropdownItem<string>[] GetVehicleClassDropdownItems()
-        {
-            var items = new List<DropdownItem<string>>();
-            foreach (var vehicleClass in VehicleClass.GetNames())
-            {
-                items.Add(new DropdownItem<string>()
-                {
-                    displayName = vehicleClass,
-                    value = vehicleClass,
-                });
-                Mod.log.Info("Added vehicle class: " + vehicleClass);
-            }
-
-            if (items.Count == 0)
-            {
-                Mod.log.Info("No vehicle classes found, adding dummy classes");
-                items.Add(new DropdownItem<string>()
-                {
-                    displayName = "Dummy Sedan",
-                    value = "Sedan",
-                });
-            }
-            
-            return items.ToArray();
-        }*/
 
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUIAdvanced]
@@ -376,6 +336,36 @@ namespace VehicleController
         {
             set => VehiclePropertySystem.Instance.SaveVanillaPack();
         }
+
+        /*private bool enableRealisticSpeedLimits = false;
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        public bool EnableRealisticSpeedLimits
+        {
+            get => enableRealisticSpeedLimits;
+            set
+            {
+                enableRealisticSpeedLimits = value;
+                RoadSpeedLimitSystem.TriggerSpeedLimitUpdate();
+            }
+        }*/
+        
+        
+
+        private SpeedLimitOverride speedLimitOverride = SpeedLimitOverride.None;
+        
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        public SpeedLimitOverride SpeedLimitOverride
+        {
+            get => speedLimitOverride;
+            set
+            {
+                speedLimitOverride = value;
+                RoadSpeedLimitSystem.TriggerSpeedLimitUpdate();
+            }
+        }
+
+        
+        
 
         /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUITextInput]

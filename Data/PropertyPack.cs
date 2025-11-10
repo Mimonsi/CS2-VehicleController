@@ -63,13 +63,13 @@ namespace VehicleController.Data
             Mod.log.Info($"Loading property pack {name}");
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
                 "property", name + ".json");
-            Mod.log.Verbose($"Loading path: {path}");
+            Mod.log.Trace($"Loading path: {path}");
             if (!File.Exists(path))
             {
                 throw new FileNotFoundException($"Could not load property pack {path}, because the file doesn't exist");
             }
             var json = File.ReadAllText(path);
-            //Mod.log.Verbose($"Pack file content: {json}");
+            //Mod.log.Trace($"Pack file content: {json}");
             return JsonConvert.DeserializeObject<PropertyPack>(json) ?? throw new InvalidDataException($"Failed to deserialize property pack {name}");
         }
         
