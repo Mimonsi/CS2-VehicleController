@@ -44,8 +44,8 @@
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ExportVanillaPack]": "Export Vanilla Pack",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ExportVanillaPack]": "Activate currently active properties as Vanilla Pack. This will overwrite the existing Vanilla Pack.",
   
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enable Change Vehicles",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enabled vehicle prefabs from service buildings automatically changing to the selected vehicles.",   
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enable Auto Change Vehicles",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enabled vehicle prefabs from service buildings automatically changing to the selected vehicles. If disabled, vehicle spawning is not changed, unless you manually update the existing spawned vehicled",   
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllModComponents]": "Remove All Mod Components",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllModComponents]": "Removes all custom vehicle selections from your current savegame.",
   

@@ -5,6 +5,7 @@ using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Colossal.PSI.Environment;
 using Game;
+using Game.Citizens;
 using Game.Modding;
 using Game.SceneFlow;
 using Unity.Entities;

@@ -351,19 +351,18 @@ namespace VehicleController
         
         
 
-        private SpeedLimitOverride speedLimitOverride = SpeedLimitOverride.None;
+        private SpeedLimitOverride _speedLimitOverride = SpeedLimitOverride.None;
         
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         public SpeedLimitOverride SpeedLimitOverride
         {
-            get => speedLimitOverride;
+            get => _speedLimitOverride;
             set
             {
-                speedLimitOverride = value;
+                _speedLimitOverride = value;
                 RoadSpeedLimitSystem.TriggerSpeedLimitUpdate();
             }
         }
-
         
         
 
@@ -402,9 +401,9 @@ namespace VehicleController
         
         #region VehicleSelection
 
-        
+
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
-        public bool EnableChangeVehicles { get; set; }
+        public bool EnableChangeVehicles { get; set; } = true;
         
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
         public bool RemoveAllModComponents 

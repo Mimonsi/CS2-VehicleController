@@ -28,3 +28,8 @@ In the default game, most personal cars have the same Acceleration, Top Speed an
 ## Compatibility & Notes
 - Works with existing saves; just load the save and configure your preferred packs
 - The mod stores vanilla probability and property data so you can revert at any time
+
+## Suggestions & Feedback
+
+- Include possibility to alter helicopter and airplane flying altitude, so they don't clip through buildings [Link](https://discord.com/channels/1024242828114673724/1330910837397000234/1437577389713657927)
+- Incorrect Siren when using EU vehicle on NA Theme [Link](https://discord.com/channels/1024242828114673724/1330910837397000234/1437589691460354210)
