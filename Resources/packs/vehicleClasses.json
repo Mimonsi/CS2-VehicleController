@@ -1,0 +1,77 @@
+﻿[
+  {
+    "Name": "Motorbike",
+    "VanillaProbability": 100,
+    "Prefabs": ["Motorbike01", "Motorbike02"]
+  },
+  {
+    "Name": "Scooter",
+    "VanillaProbability": 100,
+    "Prefabs": ["Scooter01"]
+  },
+  {
+    "Name": "City Car",
+    "VanillaProbability": 100,
+    "Prefabs": ["Car01"]
+  },
+  {
+    "Name": "Hatchback",
+    "VanillaProbability": 100,
+    "Prefabs": ["Car02", "Car03"]
+  },
+  {
+    "Name": "Minivan",
+    "VanillaProbability": 100,
+    "Prefabs": ["Car04"]
+  },
+  {
+    "Name": "Sedan",
+    "VanillaProbability": 100,
+    "Prefabs": ["Car05", "Car06"]
+  },
+  {
+    "Name": "Sports Car",
+    "VanillaProbability": 100,
+    "Prefabs": ["Car07"]
+  },
+  {
+    "Name": "Pickup",
+    "VanillaProbability": 100,
+    "Prefabs": ["Car08"]
+  },
+  {
+    "Name": "SUV",
+    "VanillaProbability": 100,
+    "Prefabs": ["Car09", "Car10"]
+  },
+  {
+    "Name": "Muscle Car",
+    "VanillaProbability": 100,
+    "Prefabs": ["MuscleCar01", "MuscleCar02", "MuscleCar03", "MuscleCar04", "MuscleCar05"]
+  },
+  {
+    "Name": "Van",
+    "VanillaProbability": 100,
+    "Prefabs": ["Van01"]
+  },
+  {
+      "Name": "Bicycle",
+      "VanillaProbability": 100,
+      "Prefabs": ["Bicycle01", "Bicycle02", "Bicycle03", "ElectricScooter01"]
+  },
+  {
+    "Name": "Bus",
+    "VanillaProbability": 100,
+    "Prefabs": ["Bus01", "BusCO01", "Bus02", "BusCO02", "Bus03"]
+  },
+  {
+    "Name": "Airplane",
+    "VanillaProbability": 100,
+    "Prefabs": ["AirplanePassenger01", "AirplanePassenger02", "AirplanePassengerCO01", "AirplaneCargo01"]
+  },
+  {
+      "Name": "Helicopter",
+      "VanillaProbability": 100,
+      "Prefabs": ["HelicopterFire01", "HelicopterHealthcare01", "HelicopterPassenger01", "HelicopterPolice01"]
+  }
+]

@@ -18,90 +18,16 @@ namespace VehicleController.Data
     public class VehicleClass
     {
         public string Name;
-        public int VanillaProbability;
+        public int? VanillaProbability;
         public string[] Prefabs;
 
-        private static Dictionary<string, VehicleClass> _vehicleClasses;
+        private static Dictionary<string, VehicleClass> _vehicleClasses = null!;
 
         /// <summary>
-        /// Initializes the static list of vehicle classes with builtin values. TODO: Load from json file
+        /// Initializes the static list of vehicle classes with shipped default values
         /// </summary>
         static VehicleClass()
         {
-            /*var vehicleClasses = new[]
-            {
-                new VehicleClass()
-                {
-                    Name = "Motorbike",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Motorbike01"}
-                },
-                new VehicleClass()
-                {
-                    Name = "Scooter",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Scooter01"}
-                },
-                new VehicleClass()
-                {
-                    Name = "City Car",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Car01"}
-                },
-                new VehicleClass()
-                {
-                    Name = "Hatchback",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Car02", "Car03"}
-                },
-                new VehicleClass()
-                {
-                    Name = "Minivan",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Car04"}
-                },
-                new VehicleClass()
-                {
-                    Name = "Sedan",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Car05", "Car06"}
-                },
-                new VehicleClass()
-                {
-                    Name = "Sports Car",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Car07"}
-                },
-                new VehicleClass()
-                {
-                    Name = "Pickup",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Car08"}
-                },
-                new VehicleClass()
-                {
-                    Name = "SUV",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Car09"}
-                },
-                new VehicleClass()
-                {
-                    Name = "Muscle Car",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"MuscleCar01", "MuscleCar02", "MuscleCar03", "MuscleCar04", "MuscleCar05"},
-                },
-                new VehicleClass()
-                {
-                    Name = "Van",
-                    VanillaProbability = 100,
-                    Prefabs = new[] {"Van01"}
-                }
-            };
-            _vehicleClasses = new Dictionary<string, VehicleClass>();
-            foreach (var vehicleClass in vehicleClasses)
-            {
-                _vehicleClasses.Add(vehicleClass.Name, vehicleClass);
-            }*/
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "vehicleClasses.json");
             LoadFromFile(path);
         }
