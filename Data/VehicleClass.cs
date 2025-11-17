@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Colossal.PSI.Environment;
+using Newtonsoft.Json;
 
 namespace VehicleController.Data
 {
 
     /// <summary>
-    /// Defines default properties and probabilities for a logical vehicle class.
+    /// Groups vehicle prefabs into classes
+    /// Can be used instead of per-prefab settings for probability and property packs
+    /// Planned: Maybe allow subclasses in the future
+    /// Planned: Allow player customization of classes
+    /// TODO: Find out what other classes exist
     /// </summary>
     public class VehicleClass
     {
@@ -14,14 +21,14 @@ namespace VehicleController.Data
         public int VanillaProbability;
         public string[] Prefabs;
 
-        private static Dictionary<string, VehicleClass> VehicleClasses;
+        private static Dictionary<string, VehicleClass> _vehicleClasses;
 
         /// <summary>
-        /// Initializes the static list of vehicle classes with built in values.
+        /// Initializes the static list of vehicle classes with builtin values. TODO: Load from json file
         /// </summary>
         static VehicleClass()
         {
-            var vehicleClasses = new[]
+            /*var vehicleClasses = new[]
             {
                 new VehicleClass()
                 {
@@ -90,10 +97,23 @@ namespace VehicleController.Data
                     Prefabs = new[] {"Van01"}
                 }
             };
-            VehicleClasses = new Dictionary<string, VehicleClass>();
+            _vehicleClasses = new Dictionary<string, VehicleClass>();
             foreach (var vehicleClass in vehicleClasses)
             {
-                VehicleClasses.Add(vehicleClass.Name, vehicleClass);
+                _vehicleClasses.Add(vehicleClass.Name, vehicleClass);
+            }*/
+            var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "vehicleClasses.json");
+            LoadFromFile(path);
+        }
+
+        private static void LoadFromFile(string path)
+        {
+            var json = File.ReadAllText(path);
+            var x = JsonConvert.DeserializeObject<VehicleClass[]>(json) ?? throw new InvalidDataException($"Failed to deserialize vehicle classes from {path}");
+            _vehicleClasses = new Dictionary<string, VehicleClass>();
+            foreach (var vehicleClass in x)
+            {
+                _vehicleClasses.Add(vehicleClass.Name, vehicleClass);
             }
         }
         
@@ -102,7 +122,7 @@ namespace VehicleController.Data
         /// </summary>
         public static string[] GetNames()
         {
-            return VehicleClasses.Keys.ToArray();
+            return _vehicleClasses.Keys.ToArray();
         }
 
         /// <summary>
@@ -110,7 +130,7 @@ namespace VehicleController.Data
         /// </summary>
         public static void SetVanillaProbability(string className, int vanillaProbability)
         {
-            if (VehicleClasses.TryGetValue(className, out var vehicleClass))
+            if (_vehicleClasses.TryGetValue(className, out var vehicleClass))
             {
                 vehicleClass.VanillaProbability = vanillaProbability;
             }
@@ -121,7 +141,7 @@ namespace VehicleController.Data
         /// </summary>
         public static VehicleClass GetVehicleClass(string prefabName)
         {
-            foreach (var vehicleClass in VehicleClasses.Values)
+            foreach (var vehicleClass in _vehicleClasses.Values)
             {
                 if (vehicleClass.Prefabs.Contains(prefabName))
                 {
@@ -130,7 +150,7 @@ namespace VehicleController.Data
             }
 
             Mod.log.Info($"Vehicle class for vehicle {prefabName} not found, using Sedan class as default");
-            return VehicleClasses["Sedan"];
+            return _vehicleClasses["Sedan"];
         }
 
         /// <summary>
@@ -139,7 +159,7 @@ namespace VehicleController.Data
         public static (string, string)[] GetSettingClassNames()
         {
             // Replace spaces with empty string
-            return VehicleClasses.Keys.Select(name => (name.Replace(" ", ""), name)).ToArray();
+            return _vehicleClasses.Keys.Select(name => (name.Replace(" ", ""), name)).ToArray();
         }
 
         /// <summary>
@@ -148,7 +168,7 @@ namespace VehicleController.Data
         public static List<string> GetClassesForPrefab(string name)
         {
             var classes = new List<string>();
-            foreach (var vehicleClass in VehicleClasses.Values)
+            foreach (var vehicleClass in _vehicleClasses.Values)
             {
                 if (vehicleClass.Prefabs.Contains(name))
                 {
