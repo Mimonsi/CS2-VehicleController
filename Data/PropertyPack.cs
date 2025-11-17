@@ -10,25 +10,18 @@ namespace VehicleController.Data
     /// </summary>
     public record PropertyPackEntry
     {
-        public string PrefabName;
+        public string? ClassName;
+        public string? PrefabName;
         public float MaxSpeed;
         public float Acceleration;
         public float Braking;
-
-        /// <summary>
-        /// Creates a new entry for the given prefab.
-        /// </summary>
-        public PropertyPackEntry(string prefabName)
-        {
-            PrefabName = prefabName;
-        }
         
         /// <summary>
         /// Returns a placeholder entry containing default values.
         /// </summary>
         public static PropertyPackEntry Default()
         {
-            return new PropertyPackEntry("default")
+            return new PropertyPackEntry
             {
                 PrefabName = "Default",
             };

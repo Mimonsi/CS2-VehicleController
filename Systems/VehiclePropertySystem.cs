@@ -24,7 +24,7 @@ namespace VehicleController.Systems
     public partial class VehiclePropertySystem : GameSystemBase
     {
         private static ILog log;
-        /// <summary> Whether or not the player is in a savegame</summary>
+        /// <summary> Whether the player is in a savegame</summary>
         public static bool IsIngame;
 
         private EntityQuery carQuery;
@@ -109,8 +109,9 @@ namespace VehicleController.Systems
                 var prefabName = prefabSystem.GetPrefabName(entity);
                 if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                 {
-                    var entry = new PropertyPackEntry(prefabName)
+                    var entry = new PropertyPackEntry()
                     {
+                        PrefabName = prefabName,
                         MaxSpeed = carData.m_MaxSpeed,
                         Acceleration = carData.m_Acceleration,
                         Braking = carData.m_Braking
@@ -119,8 +120,9 @@ namespace VehicleController.Systems
                 }
                 if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
                 {
-                    var entry = new PropertyPackEntry(prefabName)
+                    var entry = new PropertyPackEntry()
                     {
+                        PrefabName = prefabName,
                         MaxSpeed = trainData.m_MaxSpeed,
                         Acceleration = trainData.m_Acceleration,
                         Braking = trainData.m_Braking
