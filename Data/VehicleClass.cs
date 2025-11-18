@@ -13,7 +13,6 @@ namespace VehicleController.Data
     /// Can be used instead of per-prefab settings for probability and property packs
     /// Planned: Maybe allow subclasses in the future
     /// Planned: Allow player customization of classes
-    /// TODO: Find out what other classes exist
     /// </summary>
     public class VehicleClass
     {
