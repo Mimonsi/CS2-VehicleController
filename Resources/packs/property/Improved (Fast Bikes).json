@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Name": "Improved",
+  "Name": "Improved (Fast Bikes)",
   "Entries": {
     "AdministrationVehicle01": {
       "PrefabName": "AdministrationVehicle01",
@@ -10,19 +10,19 @@
     },
     "Bicycle01": {
       "PrefabName": "Bicycle01",
-      "MaxSpeed": 9.722222,
+      "MaxSpeed": 16.666667,
       "Acceleration": 8,
       "Braking": 15
     },
     "Bicycle02": {
       "PrefabName": "Bicycle02",
-      "MaxSpeed": 9.722222,
+      "MaxSpeed": 16.666667,
       "Acceleration": 8,
       "Braking": 15
     },
     "Bicycle03": {
       "PrefabName": "Bicycle03",
-      "MaxSpeed": 9.722222,
+      "MaxSpeed": 16.666667,
       "Acceleration": 8,
       "Braking": 15
     },
