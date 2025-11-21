@@ -50,6 +50,8 @@
             <button id="resetBtn" class="btn" disabled>Reset changes</button>
             <label class="pill"><b>Name:</b> <input id="setName" type="text" placeholder="Name" /></label>
             <label class="pill"><b>Version:</b> <input id="setVersion" type="number" min="0" /></label>
+            <label class="pill"><b>Modifier:</b> <input id="multiplier" type="number" step="0.1" placeholder="1" /></label>
+            <button id="applyMultiplierBtn" class="btn" disabled>Apply to all values</button>
             <label class="pill">
                 <input id="search" type="search" placeholder="Search prefab…" />
             </label>
@@ -86,6 +88,8 @@
     const tbody = document.getElementById('tbody');
     const downloadBtn = document.getElementById('downloadBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const multiplierInput = document.getElementById('multiplier');
+    const applyMultiplierBtn = document.getElementById('applyMultiplierBtn');
     const searchInput = document.getElementById('search');
     const editedOnly = document.getElementById('editedOnly');
     const rangeMin = document.getElementById('rangeMin');
@@ -114,6 +118,7 @@
         updateMeta();
         downloadBtn.disabled = false;
         resetBtn.disabled = false;
+        applyMultiplierBtn.disabled = false;
     }
 
     // Re-hook dynamic filters/search listeners (were missing)
@@ -181,6 +186,30 @@
 
     setName.addEventListener('input', ()=> working.Name = setName.value);
     setVersion.addEventListener('input', ()=> working.Version = parseInt(setVersion.value)||0);
+
+    applyMultiplierBtn.addEventListener('click', ()=>{
+        if(!working || !working.Entries){
+            alert('Load a JSON file before applying a modifier.');
+            return;
+        }
+        const raw = (multiplierInput.value || '').trim();
+        const factor = Number(raw);
+        if(raw === ''){
+            alert('Enter a modifier value.');
+            return;
+        }
+        if(Number.isNaN(factor)){
+            alert('Modifier must be a valid number.');
+            return;
+        }
+        for (const entry of Object.values(working.Entries)){
+            if(typeof entry.MaxSpeed === 'number') entry.MaxSpeed *= factor;
+            if(typeof entry.Acceleration === 'number') entry.Acceleration *= factor;
+            if(typeof entry.Braking === 'number') entry.Braking *= factor;
+        }
+        renderTable();
+        updateMeta();
+    });
 
     resetBtn.addEventListener('click', ()=>{ if(!original) return; working = deepClone(original); renderTable(); updateMeta(); });
 
