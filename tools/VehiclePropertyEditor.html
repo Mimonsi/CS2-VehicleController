@@ -50,6 +50,8 @@
             <button id="resetBtn" class="btn" disabled>Reset changes</button>
             <label class="pill"><b>Name:</b> <input id="setName" type="text" placeholder="Name" /></label>
             <label class="pill"><b>Version:</b> <input id="setVersion" type="number" min="0" /></label>
+            <label class="pill"><b>Modifier:</b> <input id="modifier" type="number" step="0.1" value="1" /></label>
+            <button id="applyModifierBtn" class="btn" disabled>Apply to all values</button>
             <label class="pill">
                 <input id="search" type="search" placeholder="Search prefab…" />
             </label>
@@ -94,6 +96,8 @@
     const setName = document.getElementById('setName');
     const setVersion = document.getElementById('setVersion');
     const addPrefabBtn = document.getElementById('addPrefabBtn');
+    const modifierInput = document.getElementById('modifier');
+    const applyModifierBtn = document.getElementById('applyModifierBtn');
 
     let original = null;
     let working = null;
@@ -114,6 +118,7 @@
         updateMeta();
         downloadBtn.disabled = false;
         resetBtn.disabled = false;
+        applyModifierBtn.disabled = false;
     }
 
     // Re-hook dynamic filters/search listeners (were missing)
@@ -190,6 +195,24 @@
         working.Entries[name] = { PrefabName: name, MaxSpeed: kmhToMs(100), Acceleration: 10, Braking: 10 };
         renderTable();
         updateMeta();
+    });
+
+    applyModifierBtn.addEventListener('click', ()=>{
+        const modifier = parseFloat(modifierInput.value);
+        if(!Number.isFinite(modifier)){
+            alert('Please enter a valid number to use as a modifier.');
+            return;
+        }
+        if(!working || !working.Entries){
+            alert('Load a JSON pack before applying a modifier.');
+            return;
+        }
+        Object.values(working.Entries).forEach((entry)=>{
+            if(typeof entry.MaxSpeed === 'number') entry.MaxSpeed *= modifier;
+            if(typeof entry.Acceleration === 'number') entry.Acceleration *= modifier;
+            if(typeof entry.Braking === 'number') entry.Braking *= modifier;
+        });
+        renderTable();
     });
 
     downloadBtn.addEventListener('click', ()=>{
