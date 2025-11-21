@@ -89,17 +89,31 @@ namespace VehicleController
                 var destPath = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController));
                 if (!Directory.Exists(destPath))
                     Directory.CreateDirectory(destPath);
-                foreach (var file in Directory.GetFiles(srcPath))
-                {
-                    var destFile = Path.Combine(destPath, Path.GetFileName(file));
-                    if (!File.Exists(destFile))
-                        File.Copy(file, destFile);
-                }
-                log.Debug("Copied embedded files");
+                CopyRecursively(srcPath, destPath);
+
+                log.Debug($"Copied embedded files");
             }
             catch (Exception x)
             {
                 log.Error("Error copying embedded files: " + x.Message);
+            }
+        }
+
+        private void CopyRecursively(string sourcePath, string destinationPath)
+        {
+            foreach( var directory in Directory.GetDirectories(sourcePath))
+            {
+                var destDir = Path.Combine(destinationPath, Path.GetFileName(directory));
+                if (!Directory.Exists(destDir))
+                    Directory.CreateDirectory(destDir);
+                CopyRecursively(directory, destDir);
+            }
+            foreach (var file in Directory.GetFiles(sourcePath))
+            {
+                var destFile = Path.Combine(destinationPath, Path.GetFileName(file));
+                //if (!File.Exists(destFile))
+                File.Copy(file, destFile, true);
+                log.Debug($"Copied {file} to  {destFile}");
             }
         }
 
