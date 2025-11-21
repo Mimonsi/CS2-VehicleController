@@ -99,7 +99,7 @@ namespace VehicleController.Systems
         /// <summary>
         /// Placeholder for saving vanilla property values.
         /// </summary>
-        public bool SaveVanillaPack()
+        public bool SaveVanillaPack(string name="Vanilla")
         {
             // Read values from game
             var entities = vehicleQuery.ToEntityArray(Allocator.Temp);
@@ -130,8 +130,10 @@ namespace VehicleController.Systems
                     entries.Add(prefabName, entry);
                 }
             }
-            log.Info($"Saving vanilla property pack with {entries.Count} entries.");
-            PropertyPack.SaveEntriesToFile(entries, "Exported Vanilla", 1);
+            // Sort entries
+            entries = entries.OrderBy(e => e.Key).ToDictionary(e => e.Key, e => e.Value);
+            log.Info($"Saving vanilla property pack with {entries.Count} entries under name {name}.");
+            PropertyPack.SaveEntriesToFile(entries, name, 1);
             return true;
         }
 
@@ -157,6 +159,7 @@ namespace VehicleController.Systems
 
             if (IsIngame)
             {
+                SaveVanillaPack();
                 LoadSelectedPropertyPack();
             }
         }

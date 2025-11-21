@@ -2,6 +2,54 @@
   "Version": 1,
   "Name": "Vanilla",
   "Entries": {
+    "AdministrationVehicle01": {
+      "PrefabName": "AdministrationVehicle01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 10.0,
+      "Braking": 20.0
+    },
+    "Bicycle01": {
+      "PrefabName": "Bicycle01",
+      "MaxSpeed": 16.6666679,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Bicycle02": {
+      "PrefabName": "Bicycle02",
+      "MaxSpeed": 16.6666679,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Bicycle03": {
+      "PrefabName": "Bicycle03",
+      "MaxSpeed": 16.6666679,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "BlastholeDrillingRig01": {
+      "PrefabName": "BlastholeDrillingRig01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "Bus01": {
+      "PrefabName": "Bus01",
+      "MaxSpeed": 41.6666679,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "Bus02": {
+      "PrefabName": "Bus02",
+      "MaxSpeed": 41.6666679,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "Bus03": {
+      "PrefabName": "Bus03",
+      "MaxSpeed": 41.6666679,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
     "BusCO01": {
       "PrefabName": "BusCO01",
       "MaxSpeed": 41.6666679,
@@ -14,194 +62,14 @@
       "Acceleration": 6.0,
       "Braking": 12.0
     },
-    "ReachStacker01": {
-      "PrefabName": "ReachStacker01",
-      "MaxSpeed": 13.8888893,
-      "Acceleration": 2.0,
-      "Braking": 5.0
-    },
-    "TruckTrailer02": {
-      "PrefabName": "TruckTrailer02",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "TruckTrailer03": {
-      "PrefabName": "TruckTrailer03",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "TruckTrailer01": {
-      "PrefabName": "TruckTrailer01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "TruckTrailer04": {
-      "PrefabName": "TruckTrailer04",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "TractorTrailer02": {
-      "PrefabName": "TractorTrailer02",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "TractorTrailer01": {
-      "PrefabName": "TractorTrailer01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "TractorTrailer03": {
-      "PrefabName": "TractorTrailer03",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "Taxi01": {
-      "PrefabName": "Taxi01",
-      "MaxSpeed": 55.5555573,
+    "CamperTrailer01": {
+      "PrefabName": "CamperTrailer01",
+      "MaxSpeed": 69.44444,
       "Acceleration": 8.0,
       "Braking": 15.0
     },
-    "Taxi02": {
-      "PrefabName": "Taxi02",
-      "MaxSpeed": 55.5555573,
-      "Acceleration": 8.0,
-      "Braking": 15.0
-    },
-    "RoadMaintenanceVehicle01": {
-      "PrefabName": "RoadMaintenanceVehicle01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "PrisonVan01": {
-      "PrefabName": "PrisonVan01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "ParkMaintenanceVehicle01": {
-      "PrefabName": "ParkMaintenanceVehicle01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "OreMiningTruck01": {
-      "PrefabName": "OreMiningTruck01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "OilTruck01": {
-      "PrefabName": "OilTruck01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "MotorbikeDelivery01": {
-      "PrefabName": "MotorbikeDelivery01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "Hearse01": {
-      "PrefabName": "Hearse01",
-      "MaxSpeed": 41.6666679,
-      "Acceleration": 5.0,
-      "Braking": 9.0
-    },
-    "FrontendLoaderTrailer01": {
-      "PrefabName": "FrontendLoaderTrailer01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "OreMiningTractorTrailer01": {
-      "PrefabName": "OreMiningTractorTrailer01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "ForestHarvesterTrailer01": {
-      "PrefabName": "ForestHarvesterTrailer01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "TractorFertilizerSpreader01": {
-      "PrefabName": "TractorFertilizerSpreader01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "TractorPlough01": {
-      "PrefabName": "TractorPlough01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "TractorSowingMachine01": {
-      "PrefabName": "TractorSowingMachine01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "TractorSprayer01": {
-      "PrefabName": "TractorSprayer01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "ForestForwarderTrailer01": {
-      "PrefabName": "ForestForwarderTrailer01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "ForestForwarder01": {
-      "PrefabName": "ForestForwarder01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "ForestHarvester01": {
-      "PrefabName": "ForestHarvester01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "FrontendLoader01": {
-      "PrefabName": "FrontendLoader01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "OreMiningTractor01": {
-      "PrefabName": "OreMiningTractor01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "Tractor01": {
-      "PrefabName": "Tractor01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "CoalTruck01": {
-      "PrefabName": "CoalTruck01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "CarTrailer01": {
-      "PrefabName": "CarTrailer01",
+    "Car01": {
+      "PrefabName": "Car01",
       "MaxSpeed": 69.44444,
       "Acceleration": 8.0,
       "Braking": 15.0
@@ -248,65 +116,29 @@
       "Acceleration": 8.0,
       "Braking": 15.0
     },
-    "Van01": {
-      "PrefabName": "Van01",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 8.0,
-      "Braking": 15.0
-    },
     "Car09": {
       "PrefabName": "Car09",
       "MaxSpeed": 69.44444,
       "Acceleration": 8.0,
       "Braking": 15.0
     },
-    "Car01": {
-      "PrefabName": "Car01",
+    "Car10": {
+      "PrefabName": "Car10",
       "MaxSpeed": 69.44444,
       "Acceleration": 8.0,
       "Braking": 15.0
     },
-    "Motorbike01": {
-      "PrefabName": "Motorbike01",
+    "CarTrailer01": {
+      "PrefabName": "CarTrailer01",
       "MaxSpeed": 69.44444,
       "Acceleration": 8.0,
       "Braking": 15.0
     },
-    "Scooter01": {
-      "PrefabName": "Scooter01",
-      "MaxSpeed": 16.6666679,
-      "Acceleration": 8.0,
-      "Braking": 15.0
-    },
-    "CamperTrailer01": {
-      "PrefabName": "CamperTrailer01",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 8.0,
-      "Braking": 15.0
-    },
-    "Bus01": {
-      "PrefabName": "Bus01",
-      "MaxSpeed": 41.6666679,
-      "Acceleration": 6.0,
-      "Braking": 12.0
-    },
-    "Bus02": {
-      "PrefabName": "Bus02",
-      "MaxSpeed": 41.6666679,
-      "Acceleration": 6.0,
-      "Braking": 12.0
-    },
-    "Bus03": {
-      "PrefabName": "Bus03",
-      "MaxSpeed": 41.6666679,
-      "Acceleration": 6.0,
-      "Braking": 12.0
-    },
-    "BlastholeDrillingRig01": {
-      "PrefabName": "BlastholeDrillingRig01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
+    "CoalTruck01": {
+      "PrefabName": "CoalTruck01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
     },
     "CombineHarvester01": {
       "PrefabName": "CombineHarvester01",
@@ -314,98 +146,14 @@
       "Acceleration": 1.0,
       "Braking": 1.0
     },
-    "MiningExcavator01": {
-      "PrefabName": "MiningExcavator01",
-      "MaxSpeed": 2.777778,
-      "Acceleration": 1.0,
-      "Braking": 1.0
-    },
-    "AdministrationVehicle01": {
-      "PrefabName": "AdministrationVehicle01",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 10.0,
-      "Braking": 20.0
-    },
-    "EU_Snowplow01": {
-      "PrefabName": "EU_Snowplow01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "NA_Snowplow01": {
-      "PrefabName": "NA_Snowplow01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "EU_GarbageTruck01": {
-      "PrefabName": "EU_GarbageTruck01",
-      "MaxSpeed": 38.88889,
-      "Acceleration": 6.0,
-      "Braking": 12.0
-    },
-    "NA_GarbageTruck01": {
-      "PrefabName": "NA_GarbageTruck01",
-      "MaxSpeed": 38.88889,
-      "Acceleration": 6.0,
-      "Braking": 12.0
-    },
-    "EU_TruckTractor01": {
-      "PrefabName": "EU_TruckTractor01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "NA_TruckTractor01": {
-      "PrefabName": "NA_TruckTractor01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "EU_PostVan01": {
-      "PrefabName": "EU_PostVan01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "NA_PostVan01": {
-      "PrefabName": "NA_PostVan01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "EU_PoliceVehicle01": {
-      "PrefabName": "EU_PoliceVehicle01",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 10.0,
-      "Braking": 20.0
-    },
-    "NA_PoliceVehicle01": {
-      "PrefabName": "NA_PoliceVehicle01",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 10.0,
-      "Braking": 20.0
-    },
-    "EU_FireTruck01": {
-      "PrefabName": "EU_FireTruck01",
-      "MaxSpeed": 38.88889,
-      "Acceleration": 6.0,
-      "Braking": 12.0
-    },
-    "NA_FireTruck01": {
-      "PrefabName": "NA_FireTruck01",
-      "MaxSpeed": 38.88889,
-      "Acceleration": 6.0,
-      "Braking": 12.0
+    "ElectricScooter01": {
+      "PrefabName": "ElectricScooter01",
+      "MaxSpeed": 16.6666679,
+      "Acceleration": 8.0,
+      "Braking": 15.0
     },
     "EU_Ambulance01": {
       "PrefabName": "EU_Ambulance01",
-      "MaxSpeed": 50.0,
-      "Acceleration": 7.0,
-      "Braking": 13.0
-    },
-    "NA_Ambulance01": {
-      "PrefabName": "NA_Ambulance01",
       "MaxSpeed": 50.0,
       "Acceleration": 7.0,
       "Braking": 13.0
@@ -416,41 +164,131 @@
       "Acceleration": 7.0,
       "Braking": 13.0
     },
-    "NA_DeliveryVan01": {
-      "PrefabName": "NA_DeliveryVan01",
+    "EU_FireTruck01": {
+      "PrefabName": "EU_FireTruck01",
+      "MaxSpeed": 38.88889,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "EU_GarbageTruck01": {
+      "PrefabName": "EU_GarbageTruck01",
+      "MaxSpeed": 38.88889,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "EU_PoliceVehicle01": {
+      "PrefabName": "EU_PoliceVehicle01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 10.0,
+      "Braking": 20.0
+    },
+    "EU_PoliceVehicle02": {
+      "PrefabName": "EU_PoliceVehicle02",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 10.0,
+      "Braking": 20.0
+    },
+    "EU_PostVan01": {
+      "PrefabName": "EU_PostVan01",
       "MaxSpeed": 50.0,
       "Acceleration": 7.0,
       "Braking": 13.0
     },
-    "Dome SUV01": {
-      "PrefabName": "Dome SUV01",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 10.0,
-      "Braking": 20.0
+    "EU_Snowplow01": {
+      "PrefabName": "EU_Snowplow01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
     },
-    "Dome Uber01": {
-      "PrefabName": "Dome Uber01",
+    "EU_TrainCargoEngine01": {
+      "PrefabName": "EU_TrainCargoEngine01",
+      "MaxSpeed": 66.66667,
+      "Acceleration": 4.0,
+      "Braking": 8.0
+    },
+    "EU_TrainPassengerCar01": {
+      "PrefabName": "EU_TrainPassengerCar01",
+      "MaxSpeed": 88.88889,
+      "Acceleration": 5.0,
+      "Braking": 10.0
+    },
+    "EU_TrainPassengerEngine01": {
+      "PrefabName": "EU_TrainPassengerEngine01",
+      "MaxSpeed": 88.88889,
+      "Acceleration": 5.0,
+      "Braking": 10.0
+    },
+    "EU_TruckTractor01": {
+      "PrefabName": "EU_TruckTractor01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "ForestForwarder01": {
+      "PrefabName": "ForestForwarder01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "ForestForwarderTrailer01": {
+      "PrefabName": "ForestForwarderTrailer01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "ForestHarvester01": {
+      "PrefabName": "ForestHarvester01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "ForestHarvesterTrailer01": {
+      "PrefabName": "ForestHarvesterTrailer01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "FrontendLoader01": {
+      "PrefabName": "FrontendLoader01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "FrontendLoaderTrailer01": {
+      "PrefabName": "FrontendLoaderTrailer01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "Hearse01": {
+      "PrefabName": "Hearse01",
+      "MaxSpeed": 41.6666679,
+      "Acceleration": 5.0,
+      "Braking": 9.0
+    },
+    "MiningExcavator01": {
+      "PrefabName": "MiningExcavator01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "Motorbike01": {
+      "PrefabName": "Motorbike01",
       "MaxSpeed": 69.44444,
       "Acceleration": 8.0,
       "Braking": 15.0
     },
-    "Dome NA_PoliceVehicle12": {
-      "PrefabName": "Dome NA_PoliceVehicle12",
+    "Motorbike02": {
+      "PrefabName": "Motorbike02",
       "MaxSpeed": 69.44444,
-      "Acceleration": 10.0,
-      "Braking": 20.0
+      "Acceleration": 8.0,
+      "Braking": 15.0
     },
-    "NA_PoliceVehicle02": {
-      "PrefabName": "NA_PoliceVehicle02",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 10.0,
-      "Braking": 20.0
-    },
-    "Dome General Lee": {
-      "PrefabName": "Dome General Lee",
-      "MaxSpeed": 83.3333359,
-      "Acceleration": 10.0,
-      "Braking": 16.0
+    "MotorbikeDelivery01": {
+      "PrefabName": "MotorbikeDelivery01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
     },
     "MuscleCar01": {
       "PrefabName": "MuscleCar01",
@@ -482,44 +320,62 @@
       "Acceleration": 10.0,
       "Braking": 16.0
     },
-    "StarQ MotorbikeDelivery01AsPersonal": {
-      "PrefabName": "StarQ MotorbikeDelivery01AsPersonal",
+    "NA_Ambulance01": {
+      "PrefabName": "NA_Ambulance01",
       "MaxSpeed": 50.0,
       "Acceleration": 7.0,
       "Braking": 13.0
     },
-    "Dome NA_PoliceVehicle11": {
-      "PrefabName": "Dome NA_PoliceVehicle11",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 8.0,
-      "Braking": 16.0
+    "NA_DeliveryVan01": {
+      "PrefabName": "NA_DeliveryVan01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
     },
-    "Dome NA_PoliceVehicle10": {
-      "PrefabName": "Dome NA_PoliceVehicle10",
-      "MaxSpeed": 69.44444,
-      "Acceleration": 9.0,
-      "Braking": 18.0
+    "NA_FireTruck01": {
+      "PrefabName": "NA_FireTruck01",
+      "MaxSpeed": 38.88889,
+      "Acceleration": 6.0,
+      "Braking": 12.0
     },
-    "NA_PoliceVehicle03": {
-      "PrefabName": "NA_PoliceVehicle03",
+    "NA_GarbageTruck01": {
+      "PrefabName": "NA_GarbageTruck01",
+      "MaxSpeed": 38.88889,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "NA_PoliceVehicle01": {
+      "PrefabName": "NA_PoliceVehicle01",
       "MaxSpeed": 69.44444,
       "Acceleration": 10.0,
       "Braking": 20.0
     },
-    "TramEngineCO01": {
-      "PrefabName": "TramEngineCO01",
-      "MaxSpeed": 41.6666679,
-      "Acceleration": 6.0,
-      "Braking": 12.0
+    "NA_PoliceVehicle02": {
+      "PrefabName": "NA_PoliceVehicle02",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 10.0,
+      "Braking": 20.0
     },
-    "TramCarCO01": {
-      "PrefabName": "TramCarCO01",
-      "MaxSpeed": 41.6666679,
-      "Acceleration": 6.0,
-      "Braking": 12.0
+    "NA_PostVan01": {
+      "PrefabName": "NA_PostVan01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
     },
-    "EU_TrainPassengerEngine01": {
-      "PrefabName": "EU_TrainPassengerEngine01",
+    "NA_Snowplow01": {
+      "PrefabName": "NA_Snowplow01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "NA_TrainCargoEngine01": {
+      "PrefabName": "NA_TrainCargoEngine01",
+      "MaxSpeed": 66.66667,
+      "Acceleration": 4.0,
+      "Braking": 8.0
+    },
+    "NA_TrainPassengerCar01": {
+      "PrefabName": "NA_TrainPassengerCar01",
       "MaxSpeed": 88.88889,
       "Acceleration": 5.0,
       "Braking": 10.0
@@ -530,35 +386,143 @@
       "Acceleration": 5.0,
       "Braking": 10.0
     },
-    "EU_TrainPassengerCar01": {
-      "PrefabName": "EU_TrainPassengerCar01",
-      "MaxSpeed": 88.88889,
-      "Acceleration": 5.0,
-      "Braking": 10.0
+    "NA_TruckTractor01": {
+      "PrefabName": "NA_TruckTractor01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
     },
-    "NA_TrainPassengerCar01": {
-      "PrefabName": "NA_TrainPassengerCar01",
-      "MaxSpeed": 88.88889,
-      "Acceleration": 5.0,
-      "Braking": 10.0
+    "OilTruck01": {
+      "PrefabName": "OilTruck01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
     },
-    "TrainForestryCar01": {
-      "PrefabName": "TrainForestryCar01",
+    "OreMiningTractor01": {
+      "PrefabName": "OreMiningTractor01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "OreMiningTractorTrailer01": {
+      "PrefabName": "OreMiningTractorTrailer01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "OreMiningTruck01": {
+      "PrefabName": "OreMiningTruck01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "ParkMaintenanceVehicle01": {
+      "PrefabName": "ParkMaintenanceVehicle01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "PrisonVan01": {
+      "PrefabName": "PrisonVan01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "ReachStacker01": {
+      "PrefabName": "ReachStacker01",
+      "MaxSpeed": 13.8888893,
+      "Acceleration": 2.0,
+      "Braking": 5.0
+    },
+    "RoadMaintenanceVehicle01": {
+      "PrefabName": "RoadMaintenanceVehicle01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "Scooter01": {
+      "PrefabName": "Scooter01",
+      "MaxSpeed": 16.6666679,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "SubwayCar01": {
+      "PrefabName": "SubwayCar01",
+      "MaxSpeed": 66.66667,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "SubwayEngine01": {
+      "PrefabName": "SubwayEngine01",
+      "MaxSpeed": 66.66667,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "Taxi01": {
+      "PrefabName": "Taxi01",
+      "MaxSpeed": 55.5555573,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Taxi02": {
+      "PrefabName": "Taxi02",
+      "MaxSpeed": 55.5555573,
+      "Acceleration": 8.0,
+      "Braking": 15.0
+    },
+    "Tractor01": {
+      "PrefabName": "Tractor01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TractorFertilizerSpreader01": {
+      "PrefabName": "TractorFertilizerSpreader01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TractorPlough01": {
+      "PrefabName": "TractorPlough01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TractorSowingMachine01": {
+      "PrefabName": "TractorSowingMachine01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TractorSprayer01": {
+      "PrefabName": "TractorSprayer01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TractorTrailer01": {
+      "PrefabName": "TractorTrailer01",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TractorTrailer02": {
+      "PrefabName": "TractorTrailer02",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TractorTrailer03": {
+      "PrefabName": "TractorTrailer03",
+      "MaxSpeed": 2.777778,
+      "Acceleration": 1.0,
+      "Braking": 1.0
+    },
+    "TrainAgricultureCar01": {
+      "PrefabName": "TrainAgricultureCar01",
       "MaxSpeed": 44.4444466,
       "Acceleration": 3.0,
       "Braking": 5.0
-    },
-    "NA_TrainCargoEngine01": {
-      "PrefabName": "NA_TrainCargoEngine01",
-      "MaxSpeed": 66.66667,
-      "Acceleration": 4.0,
-      "Braking": 8.0
-    },
-    "EU_TrainCargoEngine01": {
-      "PrefabName": "EU_TrainCargoEngine01",
-      "MaxSpeed": 66.66667,
-      "Acceleration": 4.0,
-      "Braking": 8.0
     },
     "TrainCargoCar01": {
       "PrefabName": "TrainCargoCar01",
@@ -566,14 +530,8 @@
       "Acceleration": 3.0,
       "Braking": 5.0
     },
-    "TrainOreCar01": {
-      "PrefabName": "TrainOreCar01",
-      "MaxSpeed": 44.4444466,
-      "Acceleration": 3.0,
-      "Braking": 5.0
-    },
-    "TrainAgricultureCar01": {
-      "PrefabName": "TrainAgricultureCar01",
+    "TrainForestryCar01": {
+      "PrefabName": "TrainForestryCar01",
       "MaxSpeed": 44.4444466,
       "Acceleration": 3.0,
       "Braking": 5.0
@@ -584,9 +542,21 @@
       "Acceleration": 3.0,
       "Braking": 5.0
     },
-    "SubwayEngine01": {
-      "PrefabName": "SubwayEngine01",
-      "MaxSpeed": 66.66667,
+    "TrainOreCar01": {
+      "PrefabName": "TrainOreCar01",
+      "MaxSpeed": 44.4444466,
+      "Acceleration": 3.0,
+      "Braking": 5.0
+    },
+    "TramCar01": {
+      "PrefabName": "TramCar01",
+      "MaxSpeed": 41.6666679,
+      "Acceleration": 6.0,
+      "Braking": 12.0
+    },
+    "TramCarCO01": {
+      "PrefabName": "TramCarCO01",
+      "MaxSpeed": 41.6666679,
       "Acceleration": 6.0,
       "Braking": 12.0
     },
@@ -596,17 +566,41 @@
       "Acceleration": 6.0,
       "Braking": 12.0
     },
-    "SubwayCar01": {
-      "PrefabName": "SubwayCar01",
-      "MaxSpeed": 66.66667,
-      "Acceleration": 6.0,
-      "Braking": 12.0
-    },
-    "TramCar01": {
-      "PrefabName": "TramCar01",
+    "TramEngineCO01": {
+      "PrefabName": "TramEngineCO01",
       "MaxSpeed": 41.6666679,
       "Acceleration": 6.0,
       "Braking": 12.0
+    },
+    "TruckTrailer01": {
+      "PrefabName": "TruckTrailer01",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "TruckTrailer02": {
+      "PrefabName": "TruckTrailer02",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "TruckTrailer03": {
+      "PrefabName": "TruckTrailer03",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "TruckTrailer04": {
+      "PrefabName": "TruckTrailer04",
+      "MaxSpeed": 50.0,
+      "Acceleration": 7.0,
+      "Braking": 13.0
+    },
+    "Van01": {
+      "PrefabName": "Van01",
+      "MaxSpeed": 69.44444,
+      "Acceleration": 8.0,
+      "Braking": 15.0
     }
   }
 }

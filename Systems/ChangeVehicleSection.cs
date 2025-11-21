@@ -888,7 +888,7 @@ namespace VehicleController.Systems
 
         protected override string group => nameof(ChangeVehicleSection);
 
-        public static void RemoveAllModComponents()
+        public static void RemoveAllowedVehiclePrefabs()
         {
             var componentQuery = Instance.GetEntityQuery(new EntityQueryDesc
             {

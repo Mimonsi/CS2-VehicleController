@@ -10,7 +10,10 @@ namespace VehicleController.Data
     /// </summary>
     public record PropertyPackEntry
     {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string? ClassName;
+        
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string? PrefabName;
         public float MaxSpeed;
         public float Acceleration;

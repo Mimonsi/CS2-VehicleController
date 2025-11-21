@@ -7,11 +7,11 @@ namespace VehicleController.Data
     /// <summary>
     /// Component to display Vehicle Controller has halved the speed limit for a road
     /// </summary>
-    public struct SpeedLimitModified : IComponentData//, ISerializable
+    public struct LaneSpeedLimitModified : IComponentData, ISerializable
     {
         public float VanillaSpeedLimit;
         
-        /*/// <summary>
+        /// <summary>
         /// Writes the prefab name to the save file.
         /// </summary>
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
@@ -26,6 +26,6 @@ namespace VehicleController.Data
         {
             reader.Read(out float vanillaSpeedLimit);
             VanillaSpeedLimit = vanillaSpeedLimit;
-        }*/
+        }
     }
 }

@@ -1,17 +1,14 @@
 ﻿<Publish>
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="125228" />
+	<ModId Value="104781" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="Vehicle Controller (preview)" />
+	<DisplayName Value="Vehicle Controller" />
 	<!--Short description of the mod-->
 	<ShortDescription Value="Adjust vehicle spawn rates, acceleration, braking, max speed, etc." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="This is a long description" /-->
 	<LongDescription>
 # Vehicle Controller
-		
-## Please only use this mod for testing and feedback purposes
-
 Vehicle Controller lets you adjust the spawn rate of vehicle types. If you want your city to have many pickup cars and just a few SUVs and Motorcycles, this mod is for you!
 This mod also offers more realistic values for vehicle behaviour. In the base game almost all vehicles have the same acceleration and top speed, this mods adds more realism to the game.
 
@@ -26,29 +23,26 @@ This mod also offers more realistic values for vehicle behaviour. In the base ga
 - Options for service buildings to select vehicles that can be spawned by that building
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/VehicleController_Preview.png" />
+	<Thumbnail Value="Properties/VehicleController.png" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/VehicleController_Preview.png" />
+	<Screenshot Value="Properties/VehicleController.png" />
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
-	<ForumLink Value="" />
+	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/vehicle-controller.1732375/" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.0.2" />
+	<ModVersion Value="0.3.0" />
 	<!--Recommended version of the base game to use the mod-->
-	<GameVersion Value="1.4.2*" />
+	<GameVersion Value="1.3.*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-- Add working road speed limit
-- Property packs now include new Prefabs Car10, Bicycles and Motorcycle
+- Add Settings to Enable/Disable improved vehicle behaviour (requires restart)
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />
 	<ExternalLink Type="discord" Url="https://discord.gg/vd7HXnpPJf" />
 	<ExternalLink Type="paypal" Url="https://www.paypal.com/paypalme/KonstantinSchwarze" />
 	<ExternalLink Type="ko-fi" Url="https://ko-fi.com/mimonsi" />
-	<!--Supported values Public, Private, Unlisted-->
-	<AccessLevel Value="Unlisted" />
 </Publish>

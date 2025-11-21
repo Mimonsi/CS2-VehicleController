@@ -3,6 +3,8 @@
   
     "Options.TAB[VehicleController.VehicleController.Mod.Settings]": "Settings",
     "Options.GROUP[VehicleController.VehicleController.Mod.General Settings]": "General Settings",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.LoggingLevel]": "Logging Level",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.LoggingLevel]": "Sets the logging level for the mod. Higher levels log more information, but might impact performance. Recommended is 'Info' for normal operation, 'Debug' for detailed information, and 'Verbose' for full debug output. Please use 'Verbose' when reporting bugs.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetSettings]": "Reset settings to default",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ResetSettings]": "Reset settings to default mod values.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetSettingsVanilla]": "Reset settings to vanilla",
@@ -37,7 +39,7 @@
 
 
 
-  "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
+    "Options.TAB[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Selection]": "Vehicle Selection",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "Delete Vehicle Instances",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "When activated, delete incorrectly spawned vehicles. The default behavior is changing the vehicle on spawn to the correct one.",
@@ -61,5 +63,21 @@
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.KofiLink]": "Buy Me a Coffee (Ko-Fi)",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.KofiLink]": "Support the author.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.Discord]": "Discord",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.Discord]": "Feedback/Suggestions for the mod in the Cities: Skylines Modding Server."
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.Discord]": "Feedback/Suggestions for the mod in the Cities: Skylines Modding Server.",
+  
+    "Options.TAB[VehicleController.VehicleController.Mod.Debug]": "Debug",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Debug General]": "General Debug Tools",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Debug Components]": "Debug Components",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.CreateExamplePack]": "Create Example Pack",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.CreateExamplePack]": "Create an example probability pack with some default values. This will create a file in the ModsData folder of VehicleController.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.CountPrefabInstances]": "Count Prefab Instances",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.CountPrefabInstances]": "Counts occurrences of each prefab in the game and logs them to the console. Useful for debugging and understanding how many instances of each prefab are present in the game.",
+    
+    
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetAllSpeedLimits]": "Reset All Speed Limit Modifications",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ResetAllSpeedLimits]": "Tries to reset all speed limits to their vanilla values by taking the prefab values",    
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllowedVehiclePrefab]": "Remove AllowedVehiclePrefab Components",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllowedVehiclePrefab]": "Removes all AllowedVehiclePrefab components from your current savegame. These are used to control which vehicles can spawn for each building.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitModified]": "Remove SpeedLimitModified Components",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitModified]": "Removes all SpeedLimitModified components from your current savegame. WARNING: This will NOT revert any speed limit changes made to roads by the mod."
 }

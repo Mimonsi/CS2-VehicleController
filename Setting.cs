@@ -37,8 +37,8 @@ namespace VehicleController
     /// </summary>
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
-    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup)]
-    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup)]
+    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
     public class Setting : ModSetting
     {
         public static Setting? Instance;
@@ -62,7 +62,8 @@ namespace VehicleController
         public const string InfoGroup = "Info";
         
         public const string DebugSection = "Debug";
-        public const string DebugGroup = "Debug";
+        public const string DebugGeneralGroup = "Debug General";
+        public const string DebugComponentsGroup = "Debug Components";
         
         /// <summary>
         /// Constructs the setting container for the specified mod instance.
@@ -81,7 +82,6 @@ namespace VehicleController
         
         private Level _loggingLevel = Level.Info;
         
-        // TODO: Add Localization
         [SettingsUISection(MainSection, MainGroup)]
         public LogLevel LoggingLevel
         {
@@ -334,7 +334,7 @@ namespace VehicleController
         [SettingsUIAdvanced]
         public bool ExportVanillaPack
         {
-            set => VehiclePropertySystem.Instance.SaveVanillaPack();
+            set => VehiclePropertySystem.Instance.SaveVanillaPack("Exported Vanilla");
         }
 
         /*private bool enableRealisticSpeedLimits = false;
@@ -405,12 +405,6 @@ namespace VehicleController
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
         public bool EnableChangeVehicles { get; set; } = true;
         
-        [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
-        public bool RemoveAllModComponents 
-        {
-            set => ChangeVehicleSection.RemoveAllModComponents();
-        }
-        
         #endregion
         
         #region About
@@ -463,18 +457,39 @@ namespace VehicleController
         
         #region Debug Options
         
-        [SettingsUISection(DebugSection, DebugGroup)]
+        [SettingsUISection(DebugSection, DebugGeneralGroup)]
         [SettingsUIAdvanced]
         public bool CreateExamplePack
         {
             set => ProbabilityPack.Example().SaveToFile();
         }
         
-        [SettingsUISection(DebugSection, DebugGroup)]
+        [SettingsUISection(DebugSection, DebugGeneralGroup)]
         [SettingsUIAdvanced]
         public bool CountPrefabInstances
         {
             set => VehicleCounterSystem.Instance.CountPrefabInstances();
+        }
+        
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        [SettingsUIAdvanced]
+        public bool ResetAllSpeedLimits 
+        {
+            set => RoadSpeedLimitSystem.Instance?.ResetAllSpeedLimits();
+        }
+        
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        [SettingsUIAdvanced]
+        public bool RemoveAllowedVehiclePrefab 
+        {
+            set => ChangeVehicleSection.RemoveAllowedVehiclePrefabs();
+        }
+        
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        [SettingsUIAdvanced]
+        public bool RemoveSpeedLimitModified 
+        {
+            set => RoadSpeedLimitSystem.Instance?.RemoveSpeedLimitModified();
         }
         
         #endregion
@@ -536,6 +551,23 @@ namespace VehicleController
             
             VanProbability = 100;
         }
+
+        public static float GetSpeedLimitModifier()
+        {
+            switch (Instance?.SpeedLimitOverride)
+            {
+                case SpeedLimitOverride.None:
+                    return 1f;
+                case SpeedLimitOverride.Half:
+                    return 0.5f;
+                case SpeedLimitOverride.Double:
+                    return 2f;
+                case SpeedLimitOverride.Speed:
+                    return 10f;
+                default:
+                    return 1f;
+            }
+        }
     }
 
     /// <summary>
@@ -575,22 +607,14 @@ namespace VehicleController
             values.Add(m_Setting.GetOptionDescLocaleID($"VehicleBraking"), $"Braking for vehicles of this class. Impacts how fast the vehicle can stop.");
 
             // TODO: Values for planes and other vehicle types
-
-
-            values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.CreateExamplePack)), "Create Example Pack");
-            values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CreateExamplePack)), "Create an example probability pack with some default values. This will create a file in the ModsData folder of VehicleController.");
-            values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.CountPrefabInstances)), "Count Prefab Instances");
-            values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.CountPrefabInstances)), "Counts occurrences of each prefab in the game and logs them to the console. Useful for debugging and understanding how many instances of each prefab are present in the game.");
-            values.Add(m_Setting.GetOptionLabelLocaleID(nameof(Setting.LoggingLevel)), "Logging Level");
-            values.Add(m_Setting.GetOptionDescLocaleID(nameof(Setting.LoggingLevel)), "Sets the logging level for the mod. Higher levels log more information, but might impact performance. Recommended is 'Info' for normal operation, 'Debug' for detailed information, and 'Verbose' for full debug output. Please use 'Verbose' when reporting bugs");
+            
+            // TODO: Move to Locale.json
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Verbose), "Verbose (Log EVERYTHING)");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Debug), "Debug");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Info), "Info (Recommended)");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Warning), "Warning");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Error), "Error");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Disabled), "Disabled (No Logging)");
-            values.Add(m_Setting.GetOptionTabLocaleID(nameof(Setting.DebugSection)), "Debug");
-            values.Add(m_Setting.GetOptionGroupLocaleID(nameof(Setting.DebugGroup)), "Debugging Tools");
             
             return values;
         }

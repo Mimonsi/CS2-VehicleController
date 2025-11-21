@@ -46,23 +46,13 @@ namespace VehicleController
             
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
+
+            CopyEmbeddedFiles();
             
             if (EnableProbabilitySystem)
-            {
-                if (CopyEmbeddedPacks("probability"))
-                    updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
-                else
-                    log.Info("Disabled VehicleProbabilitySystem due to error when copying embedded packs");
-            }
-
+                updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
             if (EnablePropertySystem)
-            {
-                if (CopyEmbeddedPacks("property"))
-                    updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
-                else
-                    log.Info("Disabled VehiclePropertySystem due to error when copying embedded packs");
-            }
-            
+                updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
             if (EnableVehicleCounterSystem)
                 updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             if (EnableRoadSpeedLimitSystem)
@@ -90,14 +80,13 @@ namespace VehicleController
         /// <summary>
         /// Copies embedded packs from the mod directory into the user data folder.
         /// </summary>
-        private bool CopyEmbeddedPacks(string subPath)
+        private void CopyEmbeddedFiles()
         {
             try
             {
                 var modPath = Path.GetDirectoryName(path);
-                var srcPath = Path.Combine(modPath, "packs", subPath);
-                var destPath = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
-                    subPath);
+                var srcPath = Path.Combine(modPath, "Resources");
+                var destPath = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController));
                 if (!Directory.Exists(destPath))
                     Directory.CreateDirectory(destPath);
                 foreach (var file in Directory.GetFiles(srcPath))
@@ -106,13 +95,11 @@ namespace VehicleController
                     if (!File.Exists(destFile))
                         File.Copy(file, destFile);
                 }
-                log.Debug("Copied embedded packs for " + subPath);
-                return true;
+                log.Debug("Copied embedded files");
             }
             catch (Exception x)
             {
-                log.Error("Error copying embedded packs: " + x.Message);
-                return false;
+                log.Error("Error copying embedded files: " + x.Message);
             }
         }
 
