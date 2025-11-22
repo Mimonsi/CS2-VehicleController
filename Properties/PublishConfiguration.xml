@@ -34,27 +34,15 @@ This mod also offers more realistic values for vehicle behaviour. In the base ga
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.0.2" />
+	<ModVersion Value="0.0.3" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.2*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-When Updating to this version, please do the following after loading your save:
-1. Go to Vehicle Controller Settings
-2. Click on "Advanced" in the Top Right
-3. Go to the "Debug" tab
-4. Click on "Remove SpeedLimitModified Components"
-5. Click on "Reset All Speed Limit Modifications"
-This should clean up the mess caused by previous versions
-		
-## Changes
-- Add working road speed limit
-- Add option to reset all speed limits to their default prefab values
-- Property packs now include new Prefabs Car10, Bicycles and Motorcycle
-- Update Improved Pack
-- Add x10 Packs for Super Speed Limit
+- Fixed Speed Limit being modified incorrectly (stacking)
+
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />

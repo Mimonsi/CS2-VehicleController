@@ -128,26 +128,26 @@ namespace VehicleController.Systems
             
             if (EntityManager.TryGetComponent(laneEntity, out CarLane carLane) && (carLane.m_Flags & ignoreFlags) != ignoreFlags)
             {
-                float speedLimit = carLane.m_DefaultSpeedLimit;
                 if (EntityManager.TryGetComponent(laneEntity, out LaneSpeedLimitModified speedLimitModified))
                 {
-                    //log.Trace("LaneSpeedLimit already exists, using as start value");
+                    //log.Trace($"LaneSpeedLimit already exists, using {speedLimitModified.VanillaSpeedLimit} as start value");
                 }
                 else
                 {
                     speedLimitModified = new LaneSpeedLimitModified
                     {
-                        VanillaSpeedLimit = speedLimit
+                        VanillaSpeedLimit = carLane.m_DefaultSpeedLimit
                     };
                     EntityManager.AddComponentData(laneEntity, speedLimitModified); // Save old speed
-                    //log.Trace("Added LaneSpeedLimitModified component to lane.");
+                    //log.Trace($"Added LaneSpeedLimitModified component to lane., using {FormatSpeedLimit(speedLimitModified.VanillaSpeedLimit)} as start value");
                 }
                 //carLane.m_DefaultSpeedLimit = speed;
-                carLane.m_SpeedLimit = speedLimit * modifier;
-                carLane.m_DefaultSpeedLimit = speedLimit * modifier;
+                carLane.m_SpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
+                carLane.m_DefaultSpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
+                //log.Trace($"After modification by {modifier}, speed limit is " + FormatSpeedLimit(carLane.m_SpeedLimit));
                 EntityManager.SetComponentData(laneEntity, carLane);
 
-                return speedLimit;
+                return speedLimitModified.VanillaSpeedLimit;
 
             }
 

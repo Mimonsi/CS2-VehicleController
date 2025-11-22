@@ -14,4 +14,4 @@ Game.Prefabs.HealthcareVehicleSelectData.cs, etc.
 - CarLane.m_SpeedLimit is changed by "Speed Bumps"-policy, and reverted back to m_DefaultSpeedLimit when policy is removed
 - CarLane.m_AccessRestrictions looks interesting
 
-TODO: Scooter01 as Private Vehicle for Probability Packs~~~~
+TODO: Scooter01 as Private Vehicle for Probability Packs
