@@ -42,7 +42,7 @@ This mod also offers more realistic values for vehicle behaviour. In the base ga
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
 - Fixed Speed Limit being modified incorrectly (stacking)
-
+- Tracks now also support Speed Limit modification
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />
