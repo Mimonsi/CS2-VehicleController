@@ -18,8 +18,12 @@ Vehicle Controller gives you full control over how service and personal vehicles
 ### Vehicle Property Packs
 In the default game, most personal cars have the same Acceleration, Top Speed and Braking. Vehicle Property Packs are the way to change this
 - Swap between preset packs that tweak max speed, acceleration, and braking for personal cars and trains
-- Choose from options like *Vanilla Rebalance*, *Realistic*, or export the vanilla values as a starting point for custom packs
+- Choose from options like *Improved*
 - Property choices are persisted per save to ensure a consistent look and feel
+
+## Speed Limits
+- Choose Speed Limit Override for Realistic (0.5x), Vanilla (1x), Double (2x) or Super Speed (10x)
+- Works for Roads, Train Tracks, Subway Tracks, Tram Tracks and Waterways
 
 ### Quality-of-Life Settings
 - Integrated settings tab with logging controls, reset buttons, and quick actions to apply probability or property changes
