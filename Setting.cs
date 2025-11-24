@@ -26,8 +26,8 @@ namespace VehicleController
     
     public enum SpeedLimitOverride
     {
-        None,
         Half,
+        None,
         Double,
         Speed // x10
     }

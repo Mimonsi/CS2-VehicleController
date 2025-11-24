@@ -50,7 +50,7 @@ namespace VehicleController.Systems
             
             carQuery = SystemAPI.QueryBuilder().WithAll<PersonalCarData>().Build();
             trainQuery = SystemAPI.QueryBuilder().WithAll<TrainData>().Build();
-            vehicleQuery = SystemAPI.QueryBuilder().WithAll<CarData, TrainData>().Build();
+            vehicleQuery = SystemAPI.QueryBuilder().WithAny<CarData, TrainData>().Build();
             savegamePackQuery = SystemAPI.QueryBuilder().WithAll<SavegamePropertyPack>().Build();
             savegameHostEntityQuery = SystemAPI.QueryBuilder().WithAll<EconomyParameterData>().Build();
             

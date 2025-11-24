@@ -15,3 +15,7 @@ Game.Prefabs.HealthcareVehicleSelectData.cs, etc.
 - CarLane.m_AccessRestrictions looks interesting
 
 TODO: Scooter01 as Private Vehicle for Probability Packs
+
+## TODO
+- Make probability packs savegame-persistent
+- Make Road Speed Limit savegame-persistent
