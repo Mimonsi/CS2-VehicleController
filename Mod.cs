@@ -32,6 +32,7 @@ namespace VehicleController
         public static bool EnableVehicleCounterSystem = false;
         public static bool EnableChangeVehicleSection = true;
         public static bool EnableRoadSpeedLimitSystem = true;
+        public static bool EnableVehicleStiffnessSystem = true;
 
         /// <summary>
         /// Called by the game when the mod is loaded.
@@ -59,6 +60,8 @@ namespace VehicleController
                 updateSystem.UpdateAt<RoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop);
             if (EnableChangeVehicleSection)
                 updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
+            if (EnableVehicleStiffnessSystem)
+                updateSystem.UpdateAt<VehicleStiffnessSystem>(SystemUpdatePhase.MainLoop);
             
             //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ChangeVehicleSection>();
             //updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);

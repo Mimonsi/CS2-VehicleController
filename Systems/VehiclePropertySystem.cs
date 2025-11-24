@@ -87,7 +87,7 @@ namespace VehicleController.Systems
                     new []{
                         ComponentType.ReadOnly<EconomyParameterData>(),
                     }
-            });
+            }); // TODO: Update query format
 
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();

@@ -37,8 +37,8 @@ namespace VehicleController
     /// </summary>
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
-    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
-    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
     public class Setting : ModSetting
     {
         public static Setting? Instance;
@@ -52,6 +52,7 @@ namespace VehicleController
         
         public const string VehiclePropertiesSection = "Vehicle Properties";
         public const string VehiclePropertiesGroup = "Vehicle Properties";
+        public const string VehicleStiffnessGroup = "Vehicle Stiffness";
         public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
         
         public const string VehicleSelectionSection = "Vehicle Selection";
@@ -260,6 +261,47 @@ namespace VehicleController
         
         #region VehicleProperties
 
+        private float _stiffnessModifier = 3f;
+        [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        [SettingsUISlider(min = 0.00f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
+        public float StiffnessModifier
+        {
+            get => _stiffnessModifier;
+            set
+            {
+                _stiffnessModifier = value;
+                if (VehicleStiffnessSystem.Instance != null)
+                    VehicleStiffnessSystem.Instance.SettingsUpdated();
+            }
+        }
+
+        private float _dampingModifier = 2f;
+        [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        [SettingsUISlider(min = 0.00f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
+        public float DampingModifier
+        {
+            get => _dampingModifier;
+            set
+            {
+                _dampingModifier = value;
+                if (VehicleStiffnessSystem.Instance != null)
+                    VehicleStiffnessSystem.Instance.SettingsUpdated();
+            }
+        }
+        
+        [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        public bool ResetStiffnessToDefault
+        {
+            set => VehicleStiffnessSystem.Instance?.ResetSettingsToDefault();
+        }
+
+        [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        public bool ResetStiffnessToVanilla
+        {
+            set => VehicleStiffnessSystem.Instance?.ResetSettingsToVanilla();
+        }
+        
+        
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUIAdvanced]
         public bool IncreasePropertyPackItemsVersion
