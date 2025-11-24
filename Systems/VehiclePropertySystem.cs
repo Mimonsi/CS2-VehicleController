@@ -48,47 +48,11 @@ namespace VehicleController.Systems
             Enabled = true;
             log = Mod.log;
             
-            carQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                new []
-                    {ComponentType.ReadOnly<PersonalCarData>(),
-                }
-            });
-            
-            trainQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                new []{
-                    ComponentType.ReadOnly<TrainData>(),
-                }
-            });
-            
-            vehicleQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                    new []{
-                        ComponentType.ReadOnly<TrainData>(),
-                        ComponentType.ReadOnly<CarData>(),
-                    }
-            });
-            
-            savegamePackQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                    new []{
-                        ComponentType.ReadOnly<SavegamePropertyPack>(),
-                    }
-            });
-            
-            savegameHostEntityQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                    new []{
-                        ComponentType.ReadOnly<EconomyParameterData>(),
-                    }
-            }); // TODO: Update query format
-
+            carQuery = SystemAPI.QueryBuilder().WithAll<PersonalCarData>().Build();
+            trainQuery = SystemAPI.QueryBuilder().WithAll<TrainData>().Build();
+            vehicleQuery = SystemAPI.QueryBuilder().WithAll<CarData, TrainData>().Build();
+            savegamePackQuery = SystemAPI.QueryBuilder().WithAll<SavegamePropertyPack>().Build();
+            savegameHostEntityQuery = SystemAPI.QueryBuilder().WithAll<EconomyParameterData>().Build();
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             //GameManager.instance.RegisterUpdater(SaveVanillaPack);

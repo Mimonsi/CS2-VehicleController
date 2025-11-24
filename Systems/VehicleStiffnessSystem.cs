@@ -44,11 +44,7 @@ namespace VehicleController.Systems
             base.OnGameLoadingComplete(purpose, mode);
 
             if (mode == GameMode.Game)
-            {
-                log.Info("Game loaded in gamemode Game");
                 IsIngame = true;
-
-            }
         }
 
         protected override void OnUpdate()
@@ -77,8 +73,8 @@ namespace VehicleController.Systems
             Setting.Instance.DampingModifier = 2;
             Setting.Instance.StiffnessModifier = 3;
         }
-        
-        public void UpdateEntities(NativeArray<Entity> entities)
+
+        private void UpdateEntities(NativeArray<Entity> entities)
         {
             log.Info($"Updating {entities.Length} Entities for Vehicle Stiffness System.");
             foreach (var entity in entities)

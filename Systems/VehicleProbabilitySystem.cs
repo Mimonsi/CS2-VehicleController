@@ -39,13 +39,7 @@ namespace VehicleController.Systems
             Enabled = true;
             log = Mod.log;
             
-            carQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                new []
-                    {ComponentType.ReadOnly<PersonalCarData>(),
-                }
-            });
+            carQuery = SystemAPI.QueryBuilder().WithAll<PersonalCarData>().Build();
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             GameManager.instance.RegisterUpdater(SaveVanillaPack);

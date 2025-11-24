@@ -36,16 +36,8 @@ namespace VehicleController.Systems
             log = Mod.log;
             Enabled = true;
             
-            carQuery = GetEntityQuery(new EntityQueryDesc
-            {
-                Any =
-                    new []
-                    {ComponentType.ReadOnly<PersonalCarData>(),
-                    }
-            });
-            
+            carQuery = SystemAPI.QueryBuilder().WithAll<PersonalCarData>().Build();
             instanceQuery = SystemAPI.QueryBuilder().WithAny<Game.Vehicles.PersonalCar>().Build();
-            
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             log.Info("VehicleCounterSystem created.");
