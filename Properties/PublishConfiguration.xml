@@ -41,7 +41,9 @@ This mod also offers more realistic values for vehicle behaviour. In the base ga
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-- Integrated Stiffer Vehicles Mod into Vehicle Controller, with various improvements
+## Updated improved pack
+- All truck speed limits changed from 140 km/h to 90 km/h
+- Smart Car speed limit changed from 100 km/h to 120 km/h
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />

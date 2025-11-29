@@ -70,7 +70,7 @@
     },
     "Car01": {
       "PrefabName": "Car01",
-      "MaxSpeed": 27.7778,
+      "MaxSpeed": 33.333333,
       "Acceleration": 12,
       "Braking": 10
     },
@@ -136,7 +136,7 @@
     },
     "CoalTruck01": {
       "PrefabName": "CoalTruck01",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
@@ -148,7 +148,7 @@
     },
     "ElectricScooter01": {
       "PrefabName": "ElectricScooter01",
-      "MaxSpeed": 9.722222,
+      "MaxSpeed": 16.666667,
       "Acceleration": 8,
       "Braking": 15
     },
@@ -160,7 +160,7 @@
     },
     "EU_DeliveryVan01": {
       "PrefabName": "EU_DeliveryVan01",
-      "MaxSpeed": 38.888889,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
@@ -172,7 +172,7 @@
     },
     "EU_GarbageTruck01": {
       "PrefabName": "EU_GarbageTruck01",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 6,
       "Braking": 12
     },
@@ -220,7 +220,7 @@
     },
     "EU_TruckTractor01": {
       "PrefabName": "EU_TruckTractor01",
-      "MaxSpeed": 30.555556,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
@@ -328,7 +328,7 @@
     },
     "NA_DeliveryVan01": {
       "PrefabName": "NA_DeliveryVan01",
-      "MaxSpeed": 38.888889,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
@@ -340,7 +340,7 @@
     },
     "NA_GarbageTruck01": {
       "PrefabName": "NA_GarbageTruck01",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 6,
       "Braking": 12
     },
@@ -388,13 +388,13 @@
     },
     "NA_TruckTractor01": {
       "PrefabName": "NA_TruckTractor01",
-      "MaxSpeed": 30.555556,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
     "OilTruck01": {
       "PrefabName": "OilTruck01",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
@@ -574,25 +574,25 @@
     },
     "TruckTrailer01": {
       "PrefabName": "TruckTrailer01",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
     "TruckTrailer02": {
       "PrefabName": "TruckTrailer02",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
     "TruckTrailer03": {
       "PrefabName": "TruckTrailer03",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },
     "TruckTrailer04": {
       "PrefabName": "TruckTrailer04",
-      "MaxSpeed": 33.333333,
+      "MaxSpeed": 25,
       "Acceleration": 7,
       "Braking": 13
     },

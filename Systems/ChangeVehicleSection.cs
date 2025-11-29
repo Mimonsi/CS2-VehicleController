@@ -208,6 +208,7 @@ namespace VehicleController.Systems
         
         private void PasteSelectionClicked()
         {
+            // TODO: Fix
             log.Trace("PasteSelectionClicked");
             if (selectedEntity == Entity.Null)
             {
