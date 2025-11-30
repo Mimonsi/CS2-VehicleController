@@ -56,7 +56,7 @@ namespace VehicleController.Data
         /// </summary>
         public static PropertyPack LoadFromFile(string name)
         {
-            Mod.log.Info($"Loading property pack {name}");
+            Mod.log.Debug($"Loading property pack {name}");
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs",
                 "property", name + ".json");
             Mod.log.Trace($"Loading path: {path}");
@@ -123,7 +123,7 @@ namespace VehicleController.Data
         /// <summary>
         /// Lists available property pack names in the ModsData folder.
         /// </summary>
-        public static IEnumerable<string> GetPackNames()
+        public static List<string> GetPackNames()
         {
             var path = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController), "packs", "property");
             if (!Directory.Exists(path))

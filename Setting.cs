@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Colossal;
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
+using Colossal.PSI.Environment;
 using Game.Modding;
 using Game.Settings;
 using Game.UI;
@@ -304,9 +308,26 @@ namespace VehicleController
         
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         [SettingsUIAdvanced]
-        public bool IncreasePropertyPackItemsVersion
+        public bool ReloadPropertyPacks
         {
             set => PropertyPackDropdownItemsVersion++;
+        }
+        
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIAdvanced]
+        public bool OpenPropertyPacksFolder
+        {
+            set
+            {
+                Process.Start(Path.Combine(EnvPath.kUserDataPath, "ModsData", "VehicleController", "packs", "property"));
+            }
+        }
+        
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIAdvanced]
+        public bool ExportVanillaPack
+        {
+            set => VehiclePropertySystem.Instance.SaveVanillaPack("Exported Vanilla");
         }
         
         private int PropertyPackDropdownItemsVersion { get; set; }
@@ -320,6 +341,18 @@ namespace VehicleController
             get => _defaultPropertyPackDropdown;
             set
             {
+                var packNames = PropertyPack.GetPackNames();
+                if (!packNames.Contains(value))
+                {
+                    Mod.log.Info("Selected default property pack not found, reverting to Vanilla.json");
+                    if (!packNames.Contains("Vanilla"))
+                    {
+                        Mod.log.Error("Vanilla property pack not found! Reverting to first available pack.");
+                        DefaultPropertyPackDropdown = packNames.First();
+                    }
+                    else
+                        DefaultPropertyPackDropdown = "Vanilla";
+                }
                 _defaultPropertyPackDropdown = value;
                 VehiclePropertySystem.DefaultPackSettingChanged();
             }
@@ -350,6 +383,11 @@ namespace VehicleController
             get => _savegamePropertyPackDropdown;
             set
             {
+                if (!PropertyPack.GetPackNames().Contains(value))
+                {
+                    Mod.log.Info($"Selected savegame property pack not found, reverting to Default ({DefaultPropertyPackDropdown})"); // TODO: Revisit fallback to check for existence of default pack
+                    value = DefaultPropertyPackDropdown;
+                }
                 _savegamePropertyPackDropdown = value;
                 VehiclePropertySystem.SavegamePackSettingChanged();
             }
@@ -370,13 +408,6 @@ namespace VehicleController
             }
 
             return extendedItems;
-        }
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIAdvanced]
-        public bool ExportVanillaPack
-        {
-            set => VehiclePropertySystem.Instance.SaveVanillaPack("Exported Vanilla");
         }
 
         /*private bool enableRealisticSpeedLimits = false;

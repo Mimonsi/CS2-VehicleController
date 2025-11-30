@@ -34,13 +34,17 @@ This mod also offers more realistic values for vehicle behaviour. In the base ga
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.0.4" />
+	<ModVersion Value="0.0.5" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.4.2*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
+- Reworked property pack savegame saving
+- Add fallbacks for missing packs
+- Cleaned up logging
+- Added "Open Property Packs" and "Reload Property Packs" buttons in settings
 ## Updated improved pack
 - All truck speed limits changed from 140 km/h to 90 km/h
 - Smart Car speed limit changed from 100 km/h to 120 km/h

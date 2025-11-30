@@ -30,9 +30,9 @@ namespace VehicleController
         public static bool EnableProbabilitySystem = false;
         public static bool EnablePropertySystem = true;
         public static bool EnableVehicleCounterSystem = false;
-        public static bool EnableChangeVehicleSection = true;
-        public static bool EnableRoadSpeedLimitSystem = true;
-        public static bool EnableVehicleStiffnessSystem = true;
+        public static bool EnableChangeVehicleSection = false;
+        public static bool EnableRoadSpeedLimitSystem = false;
+        public static bool EnableVehicleStiffnessSystem = false;
 
         /// <summary>
         /// Called by the game when the mod is loaded.

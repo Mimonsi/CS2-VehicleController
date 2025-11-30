@@ -21,7 +21,7 @@ namespace VehicleController.Systems
     /// <summary>
     /// Modifies speed and handling parameters of vehicles based on selected packs.
     /// </summary>
-    public partial class VehiclePropertySystem : GameSystemBase
+    public partial class VehiclePropertySystem : GameSystemBase, IDefaultSerializable
     {
         private static ILog log;
         /// <summary> Whether the player is in a savegame</summary>
@@ -31,8 +31,6 @@ namespace VehicleController.Systems
         private EntityQuery vehicleQuery;
         private EntityQuery trainQuery;
         private EntityQuery instanceQuery;
-        private EntityQuery savegamePackQuery;
-        private EntityQuery savegameHostEntityQuery;
 
         private PrefabSystem prefabSystem;
         private PropertyPack _currentPropertyPack;
@@ -51,13 +49,44 @@ namespace VehicleController.Systems
             carQuery = SystemAPI.QueryBuilder().WithAll<PersonalCarData>().Build();
             trainQuery = SystemAPI.QueryBuilder().WithAll<TrainData>().Build();
             vehicleQuery = SystemAPI.QueryBuilder().WithAny<CarData, TrainData>().Build();
-            savegamePackQuery = SystemAPI.QueryBuilder().WithAll<SavegamePropertyPack>().Build();
-            savegameHostEntityQuery = SystemAPI.QueryBuilder().WithAll<EconomyParameterData>().Build();
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             //GameManager.instance.RegisterUpdater(SaveVanillaPack);
             //GameManager.instance.RegisterUpdater(UpdateProperties);
             log.Info("VehiclePropertySystem created and updater registered.");
+        }
+        
+
+        /// <inheritdoc/>
+        public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
+        {
+            var _settingPackName = Setting.Instance.SavegamePropertyPackDropdown;
+            log.Debug("Serializing (saving) VehiclePropertySystem with pack " + _settingPackName);
+            if (_settingPackName == "Default")
+                _settingPackName = "";
+            writer.Write(_settingPackName);
+        }
+        
+        /// <inheritdoc/>
+        public void Deserialize<TReader>(TReader reader) where TReader : IReader
+        {
+            reader.Read(out string packName);
+            // try
+            // {
+            log.Debug("Deserialized (loaded) VehiclePropertySystem with pack " + packName);
+            Setting.Instance.SavegamePropertyPackDropdown = packName;
+            // }
+            // catch (Exception x)
+            // {
+            //     log.Error($"Error loading savegame property pack with name {packName}: {x.Message}");
+            // }
+
+
+        }
+
+        public void SetDefaults(Context context)
+        {
+            // No implementation necessary, default pack will be used automatically
         }
 
         /// <summary>
@@ -102,15 +131,14 @@ namespace VehicleController.Systems
         }
 
         /// <summary>
-        /// Loads the given property pack and immediately updates entities.
+        /// Activates the given property pack and immediately updates entities.
         /// </summary>
-        public void LoadPropertyPack(PropertyPack pack)
+        public void ActivatePropertyPack(PropertyPack pack)
         {
             if (!Enabled)
                 return;
             _currentPropertyPack = pack;
-            log.Info($"Property pack {pack.Name} loaded with {pack.Entries?.Count ?? 0} entries.");
-            Instance.UpdateSavegameComponent();
+            log.Info($"Property pack {pack.Name} activated with {pack.Entries?.Count ?? 0} entries.");
             var success = UpdateProperties();
             log.Trace("UpdateProperties returned " + success);
         }
@@ -130,21 +158,13 @@ namespace VehicleController.Systems
 
         private string? GetSavegamePack()
         {
-            var entities = savegamePackQuery.ToEntityArray(Allocator.Temp);
-            if (entities.Length == 0)
-                return null;
-            if (entities.Length == 1)
+            var savegameSetting = Setting.Instance.SavegamePropertyPackDropdown;
+            var defaultSetting = Setting.Instance.DefaultPropertyPackDropdown;
+            if (string.IsNullOrEmpty(savegameSetting) || savegameSetting == "Default")
             {
-                if (EntityManager.TryGetComponent<SavegamePropertyPack>(entities[0], out var savegamePack))
-                {
-                    // Set the setting to the loaded pack for persistence
-                    Setting.Instance.SavegamePropertyPackDropdown = savegamePack.PackName.ToString();
-                    return savegamePack.PackName.ToString();
-                }
-                return null;
+                return defaultSetting;
             }
-            log.Error("Multiple SavegamePropertyPack entities found! Using default pack instead.");
-            return null;
+            return savegameSetting;
         }
 
         private string GetDefaultPack()
@@ -167,7 +187,7 @@ namespace VehicleController.Systems
             try
             {
                 var pack = PropertyPack.LoadFromFile(packName);
-                LoadPropertyPack(pack);
+                ActivatePropertyPack(pack);
                 
             }
             catch (Exception x)
@@ -183,70 +203,25 @@ namespace VehicleController.Systems
             if (Setting.Instance.SavegamePropertyPackDropdown == "Default")
             {
                 var pack = PropertyPack.LoadFromFile(Setting.Instance.DefaultPropertyPackDropdown);
-                Instance.LoadPropertyPack(pack);
+                Instance.ActivatePropertyPack(pack);
             }
         }
         
         public static void SavegamePackSettingChanged()
         {
+            //Mod.log.Verbose("SavegamePackSettingChanged called");
             if (!IsIngame)
                 return;
             // When savegame pack is changed, only update when not using default
             if (Setting.Instance.SavegamePropertyPackDropdown == "Default")
             {
                 var pack = PropertyPack.LoadFromFile(Setting.Instance.DefaultPropertyPackDropdown);
-                Instance.LoadPropertyPack(pack);
+                Instance.ActivatePropertyPack(pack);
             }
             else
             {
                 var pack = PropertyPack.LoadFromFile(Setting.Instance.SavegamePropertyPackDropdown);
-                Instance.LoadPropertyPack(pack);
-            }
-        }
-
-        /// <summary>
-        /// Adds or updates the SavegamePropertyPack component in the savegame to reflect the current pack.
-        /// </summary>
-        private void UpdateSavegameComponent()
-        {
-            var entities = savegamePackQuery.ToEntityArray(Allocator.Temp);
-            if (entities.Length == 0)
-            {
-                var hostEntities = savegameHostEntityQuery.ToEntityArray(Allocator.Temp);
-                if (hostEntities.Length == 0)
-                {
-                    log.Error("No host entity found to add SavegamePropertyPack component to.");
-                    return;
-                }
-                if (hostEntities.Length == 1)
-                {
-                    var savegamePackName = Setting.Instance.SavegamePropertyPackDropdown;
-                    var hostEntity = hostEntities.First();
-                    EntityManager.AddComponent<SavegamePropertyPack>(hostEntity);
-                    if (EntityManager.TryGetComponent<SavegamePropertyPack>(hostEntity, out var savegamePack))
-                    {
-                        savegamePack.PackName = Setting.Instance.SavegamePropertyPackDropdown;
-                        EntityManager.SetComponentData(hostEntity, savegamePack);
-                    }
-                    log.Info("SavegamePropertyPack component created with pack " + savegamePackName);
-                }
-                else
-                {
-                    log.Error("Too many host entities found to add SavegamePropertyPack component to. (" + hostEntities.Length + ")");
-                }
-            }
-            else if (entities.Length == 1)
-            {
-                if (EntityManager.TryGetComponent<SavegamePropertyPack>(entities.First(), out var savegamePack))
-                {
-                    savegamePack.PackName = Setting.Instance.SavegamePropertyPackDropdown;
-                    EntityManager.SetComponentData(entities.First(), savegamePack);
-                    log.Info("SavegamePropertyPack component updated to " + savegamePack.PackName);
-                }
-            }
-            else
-            {
-                log.Error("Multiple SavegamePropertyPack entities found! This should not happen.");
+                Instance.ActivatePropertyPack(pack);
             }
         }
 
@@ -313,7 +288,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateVehicleProperties()
         {
-            log.Debug("Updating Vehicle Properties");
+            //log.Debug("Updating Vehicle Properties"); TODO: Re-enable
             var entities = vehicleQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
@@ -356,14 +331,14 @@ namespace VehicleController.Systems
                 return false;
             }
             
-            log.Info($"Updated properties for {count}/{entities.Length} car entities.");
+            //log.Info($"Updated properties for {count}/{entities.Length} car entities."); TODO: Re-enable
             return true;
         }
 
         /// <inheritdoc />
         protected override void OnUpdate()
         {
-
+            
         }
 
         /// <summary>
