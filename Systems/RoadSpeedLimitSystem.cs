@@ -212,18 +212,20 @@ namespace VehicleController.Systems
             
         }
         
-        public void RemoveSpeedLimitModified()
+        public void RemoveSpeedLimitComponents()
         {
-            var query = SystemAPI.QueryBuilder().WithAny<OriginalLaneSpeedLimit>().Build();
+            var query = SystemAPI.QueryBuilder().WithAny<OriginalLaneSpeedLimit, LaneSpeedLimitChecked>().Build();
             var entities = query.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
             {
                 if (EntityManager.HasComponent<OriginalLaneSpeedLimit>(entity))
                     EntityManager.RemoveComponent<OriginalLaneSpeedLimit>(entity);
+                if (EntityManager.HasComponent<LaneSpeedLimitChecked>(entity))
+                    EntityManager.RemoveComponent<LaneSpeedLimitChecked>(entity);
                 count++;
             }
-            log.Info($"Removed SpeedLimitModified component from {count} entities.");
+            log.Info($"Removed Speed Limit Components from {count} entities.");
         }
 
         public void ResetAllSpeedLimits()

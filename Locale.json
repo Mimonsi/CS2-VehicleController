@@ -92,6 +92,6 @@
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ResetAllSpeedLimits]": "Tries to reset all speed limits to their vanilla values by taking the prefab values",    
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllowedVehiclePrefab]": "Remove AllowedVehiclePrefab Components",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllowedVehiclePrefab]": "Removes all AllowedVehiclePrefab components from your current savegame. These are used to control which vehicles can spawn for each building.",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitModified]": "Remove SpeedLimitModified Components",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitModified]": "Removes all SpeedLimitModified components from your current savegame. WARNING: This will NOT revert any speed limit changes made to roads by the mod."
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitComponents]": "Remove Speed Limit Components",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitComponents]": "Removes all Speed Limit components from your current savegame. WARNING: This will NOT revert any speed limit changes made to roads by the mod."
 }

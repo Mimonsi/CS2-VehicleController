@@ -560,9 +560,9 @@ namespace VehicleController
         
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
         [SettingsUIAdvanced]
-        public bool RemoveSpeedLimitModified 
+        public bool RemoveSpeedLimitComponents 
         {
-            set => RoadSpeedLimitSystem.Instance?.RemoveSpeedLimitModified();
+            set => RoadSpeedLimitSystem.Instance?.RemoveSpeedLimitComponents();
         }
         
         #endregion
