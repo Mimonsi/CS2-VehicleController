@@ -1,9 +1,7 @@
-﻿using Colossal.Serialization.Entities;
-using Game.Prefabs;
-using Unity.Collections;
+﻿using Game.Prefabs;
 using Unity.Entities;
 
-namespace VehicleController.Data
+namespace VehicleController.Components
 {
     /// <summary>
     /// Component to display Vehicle Controller has halved the speed limit for a road

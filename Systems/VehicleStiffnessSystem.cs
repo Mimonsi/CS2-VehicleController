@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.Logging;
 using Colossal.Serialization.Entities;
@@ -7,7 +6,7 @@ using Game;
 using Game.Prefabs;
 using Unity.Collections;
 using Unity.Entities;
-using VehicleController.Data;
+using VehicleController.Components;
 
 namespace VehicleController.Systems
 {

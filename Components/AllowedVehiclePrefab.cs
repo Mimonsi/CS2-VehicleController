@@ -3,7 +3,7 @@ using Colossal.Serialization.Entities;
 using Game.Prefabs;
 using Unity.Collections;
 
-namespace VehicleController.Data
+namespace VehicleController.Components
 {
     using Unity.Entities;
 

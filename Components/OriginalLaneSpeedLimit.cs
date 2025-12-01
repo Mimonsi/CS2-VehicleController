@@ -2,12 +2,12 @@
 using Unity.Collections;
 using Unity.Entities;
 
-namespace VehicleController.Data
+namespace VehicleController.Components
 {
     /// <summary>
     /// Component to display Vehicle Controller has halved the speed limit for a road
     /// </summary>
-    public struct LaneSpeedLimitModified : IComponentData, ISerializable
+    public struct OriginalLaneSpeedLimit : IComponentData, ISerializable
     {
         public float VanillaSpeedLimit;
         

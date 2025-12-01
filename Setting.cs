@@ -433,7 +433,7 @@ namespace VehicleController
             set
             {
                 _speedLimitOverride = value;
-                RoadSpeedLimitSystem.TriggerSpeedLimitUpdate();
+                RoadSpeedLimitSystem.UnmarkAllLanes();
             }
         }
         

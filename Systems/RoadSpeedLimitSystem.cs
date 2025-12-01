@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.Logging;
 using Game;
@@ -6,12 +7,14 @@ using Game.Common;
 using Game.Net;
 using Game.Prefabs;
 using Game.SceneFlow;
+using Game.Tools;
 using Unity.Collections;
 using Unity.Entities;
 using VehicleController.Data;
 using CarLane = Game.Net.CarLane;
 using SubLane = Game.Net.SubLane;
 using TrackLane = Game.Net.TrackLane;
+using VehicleController.Components;
 
 namespace VehicleController.Systems
 {
@@ -21,8 +24,8 @@ namespace VehicleController.Systems
     public partial class RoadSpeedLimitSystem : GameSystemBase
     {
         private static ILog log;
-        private EntityQuery _carLaneEntityQuery;
-        private EntityQuery _uneditedCarLaneEntityQuery;
+        private EntityQuery _uneditedLaneEntityQuery;
+        private EntityQuery _checkedLanesQuery;
 
         private PrefabSystem prefabSystem;
         public static RoadSpeedLimitSystem? Instance { get; private set; }
@@ -40,38 +43,48 @@ namespace VehicleController.Systems
             log.SetEffectiveness(Level.Trace);
             Enabled = true;
             
-            _uneditedCarLaneEntityQuery = SystemAPI
+            _uneditedLaneEntityQuery = SystemAPI
                 .QueryBuilder()
                 .WithAny<CarLane, TrackLane>()
-                .WithNone<LaneSpeedLimitModified>()
+                .WithNone<LaneSpeedLimitChecked, Temp>() // Temp is untested, because the to be placed buildings are also recognized
                 .Build();
-            
-            _carLaneEntityQuery = SystemAPI
-                .QueryBuilder()
-                .WithAny<CarLane, TrackLane>()
-                .Build();
+
+            _checkedLanesQuery = SystemAPI.QueryBuilder().WithAny<LaneSpeedLimitChecked>().Build();
             
             //RequireForUpdate(_uneditedRoadPrefabQuery);
-            RequireForUpdate(_uneditedCarLaneEntityQuery);
+            RequireForUpdate(_uneditedLaneEntityQuery);
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             log.Info("RoadSpeedLimitSystem created.");
         }
-
+        
+        
+        private DateTime _lastUpdateTime = DateTime.MinValue;
         /// <inheritdoc />
         protected override void OnUpdate()
         {
-            //UpdateSpeedForLane(_uneditedCarLaneEntityQuery.ToEntityArray(Allocator.Temp), Setting.GetSpeedLimitModifier());
+            // Only update every 30 seconds
+            if ((DateTime.Now - _lastUpdateTime).TotalSeconds < 30)
+            {
+                return;
+            }
+            log.Debug("Updating road speed limits for unedited lanes.");
+            UpdateSpeedForLanes(_uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp), Setting.GetSpeedLimitModifier());
+            _lastUpdateTime = DateTime.Now;
+            
         }
 
-        public static void TriggerSpeedLimitUpdate()
+        public static void UnmarkAllLanes()
         {
             if (Instance == null)
             {
                 Mod.log.Warn("RoadSpeedLimitSystem instance is null, cannot trigger update.");
                 return;
             }
-            log.Debug("Triggering road speed limit update.");
-            Instance.UpdateSpeedForLanes(Instance._carLaneEntityQuery.ToEntityArray(Allocator.Temp), Setting.GetSpeedLimitModifier());
+            log.Debug("Marking all checked lanes as unchecked");
+            foreach(var entity in Instance._checkedLanesQuery.ToEntityArray(Allocator.Temp))
+            {
+                Instance.EntityManager.RemoveComponent<LaneSpeedLimitChecked>(entity);
+            }
         }
 
         /// <summary>
@@ -134,69 +147,80 @@ namespace VehicleController.Systems
         private float SetLaneSpeed(Entity laneEntity, float modifier)
         {
             var ignoreCarFlags = CarLaneFlags.Unsafe | CarLaneFlags.SideConnection;
-            
-            // Car Lane is used for Roads, Waterways
-            if (EntityManager.TryGetComponent(laneEntity, out CarLane carLane) && (carLane.m_Flags & ignoreCarFlags) != ignoreCarFlags)
+
+            try
             {
-                if (EntityManager.TryGetComponent(laneEntity, out LaneSpeedLimitModified speedLimitModified))
+                // Car Lane is used for Roads, Waterways
+                if (EntityManager.TryGetComponent(laneEntity, out CarLane carLane) &&
+                    (carLane.m_Flags & ignoreCarFlags) != ignoreCarFlags)
                 {
-                    //log.Trace($"LaneSpeedLimit already exists, using {speedLimitModified.VanillaSpeedLimit} as start value");
-                }
-                else
-                {
-                    speedLimitModified = new LaneSpeedLimitModified
+                    if (EntityManager.TryGetComponent(laneEntity, out OriginalLaneSpeedLimit speedLimitModified))
                     {
-                        VanillaSpeedLimit = carLane.m_DefaultSpeedLimit
-                    };
-                    EntityManager.AddComponentData(laneEntity, speedLimitModified); // Save old speed
-                    //log.Trace($"Added LaneSpeedLimitModified component to lane., using {FormatSpeedLimit(speedLimitModified.VanillaSpeedLimit)} as start value");
+                        log.Trace(
+                            $"LaneSpeedLimit already exists, using {speedLimitModified.VanillaSpeedLimit} as start value");
+                    }
+                    else
+                    {
+                        speedLimitModified = new OriginalLaneSpeedLimit
+                        {
+                            VanillaSpeedLimit = carLane.m_DefaultSpeedLimit
+                        };
+                        EntityManager.AddComponentData(laneEntity, speedLimitModified); // Save old speed
+                        log.Trace(
+                            $"Added LaneSpeedLimitModified component to lane., using {FormatSpeedLimit(speedLimitModified.VanillaSpeedLimit)} as start value");
+                    }
+
+                    //carLane.m_DefaultSpeedLimit = speed;
+                    carLane.m_SpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
+                    carLane.m_DefaultSpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
+                    log.Trace($"After modification by {modifier}, speed limit is " +
+                              FormatSpeedLimit(carLane.m_SpeedLimit));
+                    EntityManager.SetComponentData(laneEntity, carLane);
+
+                    return speedLimitModified.VanillaSpeedLimit;
+
                 }
-                //carLane.m_DefaultSpeedLimit = speed;
-                carLane.m_SpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
-                carLane.m_DefaultSpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
-                //log.Trace($"After modification by {modifier}, speed limit is " + FormatSpeedLimit(carLane.m_SpeedLimit));
-                EntityManager.SetComponentData(laneEntity, carLane);
 
-                return speedLimitModified.VanillaSpeedLimit;
+                if (EntityManager.TryGetComponent(laneEntity, out TrackLane trackLane))
+                {
+                    if (EntityManager.TryGetComponent(laneEntity, out OriginalLaneSpeedLimit speedLimitModified))
+                    {
+                        //log.Trace($"LaneSpeedLimit already exists, using {speedLimitModified.VanillaSpeedLimit} as start value");
+                    }
+                    else
+                    {
+                        speedLimitModified = new OriginalLaneSpeedLimit
+                        {
+                            VanillaSpeedLimit = trackLane.m_SpeedLimit
+                        };
+                        EntityManager.AddComponentData(laneEntity, speedLimitModified); // Save old speed
+                    }
 
+                    trackLane.m_SpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
+                    EntityManager.SetComponentData(laneEntity, trackLane);
+                    
+                    return speedLimitModified.VanillaSpeedLimit;
+
+                }
+            }
+            finally // Regardless of case, add LaneSpeedLimitChecked to avoid rechecking
+            {
+                EntityManager.AddComponent<LaneSpeedLimitChecked>(laneEntity);
             }
 
-            if (EntityManager.TryGetComponent(laneEntity, out TrackLane trackLane))
-            {
-                if (EntityManager.TryGetComponent(laneEntity, out LaneSpeedLimitModified speedLimitModified))
-                {
-                    //log.Trace($"LaneSpeedLimit already exists, using {speedLimitModified.VanillaSpeedLimit} as start value");
-                }
-                else
-                {
-                    speedLimitModified = new LaneSpeedLimitModified
-                    {
-                        VanillaSpeedLimit = trackLane.m_SpeedLimit
-                    };
-                    EntityManager.AddComponentData(laneEntity, speedLimitModified); // Save old speed
-                }
-                trackLane.m_SpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
-                EntityManager.SetComponentData(laneEntity, trackLane);
-
-                return speedLimitModified.VanillaSpeedLimit;
-
-            }
-            
             return -1;
             
         }
         
         public void RemoveSpeedLimitModified()
         {
-            var query = SystemAPI.QueryBuilder().WithAny<RoadSpeedLimitModified, LaneSpeedLimitModified>().Build();
+            var query = SystemAPI.QueryBuilder().WithAny<OriginalLaneSpeedLimit>().Build();
             var entities = query.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
             {
-                if (EntityManager.HasComponent<RoadSpeedLimitModified>(entity))
-                    EntityManager.RemoveComponent<RoadSpeedLimitModified>(entity);
-                if (EntityManager.HasComponent<LaneSpeedLimitModified>(entity))
-                    EntityManager.RemoveComponent<LaneSpeedLimitModified>(entity);
+                if (EntityManager.HasComponent<OriginalLaneSpeedLimit>(entity))
+                    EntityManager.RemoveComponent<OriginalLaneSpeedLimit>(entity);
                 count++;
             }
             log.Info($"Removed SpeedLimitModified component from {count} entities.");
@@ -206,7 +230,8 @@ namespace VehicleController.Systems
         {
             //log.Debug($"Updated road prefab {prefabSystem.GetPrefabName(entity)} speed limit to {FormatSpeedLimit(carLane.m_SpeedLimit)}).");
             Dictionary<float, int> entityAmountBySpeedLimit = new Dictionary<float, int>();
-            foreach (var entity in _carLaneEntityQuery.ToEntityArray(Allocator.Temp))
+            UnmarkAllLanes();
+            foreach (var entity in _uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp))
             {
                 if (EntityManager.TryGetComponent<CarLane>(entity, out var carLane))
                 {

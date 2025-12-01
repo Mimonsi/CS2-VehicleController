@@ -22,6 +22,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 using VehicleController.Data;
+using VehicleController.Components;
 
 namespace VehicleController.Systems
 {
