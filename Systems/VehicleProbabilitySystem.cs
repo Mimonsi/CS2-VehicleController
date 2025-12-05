@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Colossal.Core;
 using Colossal.Entities;
 using Colossal.Logging;
 using Colossal.Serialization.Entities;
@@ -42,7 +43,7 @@ namespace VehicleController.Systems
             carQuery = SystemAPI.QueryBuilder().WithAll<PersonalCarData>().Build();
             
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
-            GameManager.instance.RegisterUpdater(SaveVanillaPack);
+            MainThreadDispatcher.RegisterUpdater(SaveVanillaPack);
             //GameManager.instance.RegisterUpdater(UpdateProbabilities);
             log.Info("VehicleProbabilitySystem created and updater registered.");
         }
@@ -59,7 +60,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool SaveVanillaPack()
         {
-            log.Info("Saving vanilla probabilities");
+            //log.Info("Saving vanilla probabilities");
             ProbabilityPack pack = new ProbabilityPack("Vanilla");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
@@ -69,7 +70,7 @@ namespace VehicleController.Systems
                 {
                     if (personalCarData.m_Probability == 0)
                     {
-                        log.Info("PersonalCarData not initialized, retrying later");
+                        //log.Info("PersonalCarData not initialized, retrying later");
                         return false;
                     }
                     var prefabName = prefabSystem.GetPrefabName(entity);

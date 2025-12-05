@@ -341,6 +341,7 @@ namespace VehicleController
             get => _defaultPropertyPackDropdown;
             set
             {
+                Mod.log.Warn("Setting default property pack to: " + value);
                 var packNames = PropertyPack.GetPackNames();
                 if (!packNames.Contains(value))
                 {

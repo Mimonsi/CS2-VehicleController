@@ -40,7 +40,6 @@ namespace VehicleController.Systems
             //log = Mod.log;
             log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(RoadSpeedLimitSystem)}")
                 .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Error);
-            log.SetEffectiveness(Level.Trace);
             Enabled = true;
             
             _uneditedLaneEntityQuery = SystemAPI

@@ -1,59 +1,76 @@
 ﻿<Publish>
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="125228" />
+	<ModId Value="104781" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="Vehicle Controller (preview)" />
+	<DisplayName Value="Vehicle Controller" />
 	<!--Short description of the mod-->
 	<ShortDescription Value="Adjust vehicle spawn rates, acceleration, braking, max speed, etc." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
 	<!--LongDescription Value="This is a long description" /-->
 	<LongDescription>
 # Vehicle Controller
+Vehicle Controller is a mod changing various aspects of vehicle spawning and behavior in the game. It allows you to select which building spawns which vehicles, adjust spawn probabilities for personal vehicles, and tweak vehicle properties like acceleration, top speed and braking.
+
+## Service Vehicle Selection
+- Choose exactly which prefabs each service building is allowed to spawn
+- Build per-building lineups and copy/paste them across identical buildings, entire districts, or the whole map for quick setup
+- Your selections are saved with the city, ensuring consistent vehicle appearances every time you load
+
+## Vehicle Property Packs
+In the default game, most personal cars have the same Acceleration, Top Speed and Braking. Vehicle Property Packs are the way to change this
+- Swap between preset packs that tweak max speed, acceleration, and braking for personal cars and trains
+- Property choices are persisted per save to ensure a consistent look and feel
+
+## Speed Limits
+The game uses double speed limits for all roads. If a road has a speed limit of 50 km/h, vehicles will actually drive at 100 km/h. This mod allows you to override this behavior for more realistic speeds.
+- Choose Speed Limit Override for Realistic (0.5x), Vanilla (1x), Double (2x) or Super Speed (10x)
+- Works for Roads, Train Tracks, Subway Tracks, Tram Tracks and Waterways
+
+### Vehicle Probability Packs
+- Load curated probability packs or create your own balance by adjusting sliders for every personal vehicle class
+- Probability choices are persisted per save to ensure a consistent look and feel
+- Example: You are tired of seeing Muscle Cars and Pickup Trucks in your small French city? Reduce probability for Muscle Cars and Pickup Trucks, more other vehicles will spawn!
+- Example: You are building a desert city in the US? Heavily increase the probability of Pickup Trucks, SUVs, decrease Hatchbacks!
+
+## Side effects
+- Using speed limit override changes the amount of public transport vehicles on a line (e.g. half speed causes double the vehicles to maintain frequency)
+
+## Misc
+- Integrated Stiffer Vehicles Mod into Vehicle Controller, with various improvements
 		
-## Please only use this mod for testing and feedback purposes
-
-Vehicle Controller lets you adjust the spawn rate of vehicle types. If you want your city to have many pickup cars and just a few SUVs and Motorcycles, this mod is for you!
-This mod also offers more realistic values for vehicle behaviour. In the base game almost all vehicles have the same acceleration and top speed, this mods adds more realism to the game.
-
-## Features
-- Adjustable Percentage of Vanilla spawn rate for Motorbike, Scooters, SUVs, Pickups, Vans and more
-- Adjusted Max Speeds, Acceleration and Braking Power for all Vanilla Vehicles
-- Reduced Acceleration and Braking Power for Trains for more realistic behaviour
-
-## Planned Features
-- Adjustable settings for Car and Train Properties (acceleration, braking, max speed)
-- Behaviour Packs for properties (Realistic, Vanilla, Vanilla Rebalance)
-- Options for service buildings to select vehicles that can be spawned by that building
+## Planned Features/Suggestions
+- Vehicle Selection for more Service Types (e.g. Buses, Trains)
+- Property adjustment for Planes (Airplane Parameter Mod) and Helicopters
+- Better Icons for Vehicle Selection Copy and Paste Buttons
+- More curated Property Packs and Probability Packs from the community
+- Your suggestions?
 	</LongDescription>
 	<!--Thumbnail-->
-	<Thumbnail Value="Properties/VehicleController_Preview.png" />
+	<Thumbnail Value="Properties/VehicleController_Beta.png" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/VehicleController_Preview.png" />
+	<Screenshot Value="Properties/VehicleController.png" />
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
-	<ForumLink Value="" />
+	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/vehicle-controller.1732375/" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.0.5" />
+	<ModVersion Value="0.4.0" />
 	<!--Recommended version of the base game to use the mod-->
-	<GameVersion Value="1.4.2*" />
+	<GameVersion Value="1.5.2*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-- Reworked property pack savegame saving
-- Add fallbacks for missing packs
-- Cleaned up logging
-- Added "Open Property Packs" and "Reload Property Packs" buttons in settings
-## Updated improved pack
-- All truck speed limits changed from 140 km/h to 90 km/h
-- Smart Car speed limit changed from 100 km/h to 120 km/h
+## Vehicle Controller Beta 0.4.0
+Most Major Features of Vehicle Controller are now implemented! Please test and provide feedback.
+
+- Added Vehicle Selection to most service buildings (Police, Fire, Ambulance, Garbage, Postal)
+- Added Vehicle Property Packs feature to change acceleration, braking and max speed for personal vehicles and trains
+- Added Speed Limit Override feature to change speed limit multiplier for all roads and tracks
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />
 	<ExternalLink Type="discord" Url="https://discord.gg/vd7HXnpPJf" />
 	<ExternalLink Type="paypal" Url="https://www.paypal.com/paypalme/KonstantinSchwarze" />
 	<ExternalLink Type="ko-fi" Url="https://ko-fi.com/mimonsi" />
-	<!--Supported values Public, Private, Unlisted-->
-	<AccessLevel Value="Unlisted" />
 </Publish>

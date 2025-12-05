@@ -77,7 +77,7 @@ namespace VehicleController
             AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
             
-            log.Info("VehicleController mod loaded successfully");
+            log.Info("VehicleController mod loaded successfully with pack");
         }
         
         /// <summary>
