@@ -61,11 +61,11 @@ namespace VehicleController.Systems
         /// <inheritdoc />
         protected override void OnUpdate()
         {
-            // Only update every 30 seconds
-            if ((DateTime.Now - _lastUpdateTime).TotalSeconds < 30)
+            // Only update every 5 seconds
+            /*if ((DateTime.Now - _lastUpdateTime).TotalSeconds < 5)
             {
                 return;
-            }
+            }*/
             log.Debug("Updating road speed limits for unedited lanes.");
             UpdateSpeedForLanes(_uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp), Setting.GetSpeedLimitModifier());
             _lastUpdateTime = DateTime.Now;
@@ -176,7 +176,7 @@ namespace VehicleController.Systems
                               FormatSpeedLimit(carLane.m_SpeedLimit));
                     EntityManager.SetComponentData(laneEntity, carLane);
 
-                    return speedLimitModified.VanillaSpeedLimit;
+                    return carLane.m_DefaultSpeedLimit;
 
                 }
 
@@ -198,7 +198,7 @@ namespace VehicleController.Systems
                     trackLane.m_SpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
                     EntityManager.SetComponentData(laneEntity, trackLane);
                     
-                    return speedLimitModified.VanillaSpeedLimit;
+                    return trackLane.m_SpeedLimit;
 
                 }
             }
@@ -231,6 +231,7 @@ namespace VehicleController.Systems
         {
             //log.Debug($"Updated road prefab {prefabSystem.GetPrefabName(entity)} speed limit to {FormatSpeedLimit(carLane.m_SpeedLimit)}).");
             Dictionary<float, int> entityAmountBySpeedLimit = new Dictionary<float, int>();
+            log.Info("Debug Option: Reset all road speed limits to vanilla values.");
             UnmarkAllLanes();
             foreach (var entity in _uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp))
             {
