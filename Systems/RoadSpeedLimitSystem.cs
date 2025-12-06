@@ -37,9 +37,9 @@ namespace VehicleController.Systems
         {
             base.OnCreate();
             Instance = this;
-            //log = Mod.log;
-            log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(RoadSpeedLimitSystem)}")
-                .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Error);
+            log = Mod.log;
+            //log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(RoadSpeedLimitSystem)}")
+            //    .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Error);
             Enabled = true;
             
             _uneditedLaneEntityQuery = SystemAPI
@@ -172,8 +172,8 @@ namespace VehicleController.Systems
                     //carLane.m_DefaultSpeedLimit = speed;
                     carLane.m_SpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
                     carLane.m_DefaultSpeedLimit = speedLimitModified.VanillaSpeedLimit * modifier;
-                    log.Trace($"After modification by {modifier}, speed limit is " +
-                              FormatSpeedLimit(carLane.m_SpeedLimit));
+                    log.Trace($"Entity {laneEntity.ToString()}: After modification by {modifier}, speed limit is {FormatSpeedLimit(carLane.m_SpeedLimit)}"
+                              );
                     EntityManager.SetComponentData(laneEntity, carLane);
 
                     return carLane.m_DefaultSpeedLimit;

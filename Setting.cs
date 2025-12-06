@@ -21,6 +21,7 @@ namespace VehicleController
 {
     public enum LogLevel {
         Verbose,
+        Trace,
         Debug,
         Info,
         Warning,
@@ -94,6 +95,8 @@ namespace VehicleController
             {
                 if (_loggingLevel == Level.Verbose)
                     return LogLevel.Verbose;
+                if (_loggingLevel == Level.Trace)
+                    return LogLevel.Trace;
                 if (_loggingLevel == Level.Debug)
                     return LogLevel.Debug;
                 if (_loggingLevel == Level.Info)
@@ -112,6 +115,9 @@ namespace VehicleController
                 {
                     case LogLevel.Verbose:
                         _loggingLevel = Level.Verbose;
+                        break;
+                    case LogLevel.Trace:
+                        _loggingLevel = Level.Trace;
                         break;
                     case LogLevel.Debug:
                         _loggingLevel = Level.Debug;
@@ -684,6 +690,7 @@ namespace VehicleController
             
             // TODO: Move to Locale.json
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Verbose), "Verbose (Log EVERYTHING)");
+            values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Trace), "Trace (Extended Debug)");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Debug), "Debug");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Info), "Info (Recommended)");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Warning), "Warning");

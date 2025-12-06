@@ -43,7 +43,7 @@ namespace VehicleController
             //Logger.keepStreamOpen = false; // TEST: Solution for logger bug?
             
             log.Info("Loading VehicleController mod");
-            log.effectivenessLevel = Level.Debug;
+            //log.effectivenessLevel = Level.Debug;
             
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
