@@ -117,6 +117,11 @@ namespace VehicleController.Systems
         /// </summary>
         private void UpdateSliders()
         {
+            if (Setting.Instance == null)
+            {
+                log.Warn("Setting.Instance is null, cannot update sliders.");
+                return;
+            }
             if (_currentProbabilityPack.TryGetClassEntry("Motorbike", out var motorbikeEntry))
             {
                 Setting.Instance.MotorbikeProbability = motorbikeEntry.Probability;

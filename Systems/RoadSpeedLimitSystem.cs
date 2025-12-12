@@ -5,6 +5,7 @@ using Colossal.Logging;
 using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
+using Game.Input;
 using Game.Net;
 using Game.Prefabs;
 using Game.SceneFlow;
@@ -16,6 +17,8 @@ using CarLane = Game.Net.CarLane;
 using SubLane = Game.Net.SubLane;
 using TrackLane = Game.Net.TrackLane;
 using VehicleController.Components;
+using Game.Input;
+using UnityEngine.InputSystem;
 
 namespace VehicleController.Systems
 {
@@ -55,6 +58,7 @@ namespace VehicleController.Systems
             //RequireForUpdate(_uneditedRoadPrefabQuery);
             RequireForUpdate(_uneditedLaneEntityQuery);
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
+            
             log.Info("RoadSpeedLimitSystem created.");
         }
 

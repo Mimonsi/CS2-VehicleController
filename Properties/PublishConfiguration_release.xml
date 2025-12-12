@@ -49,6 +49,11 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<Thumbnail Value="Properties/VehicleController_Beta.png" />
 	<!--Screenshot, can be set multiple times-->
 	<Screenshot Value="Properties/VehicleController.png" />
+	<Screenshot Value="Properties/Full1.jpg" />
+	<Screenshot Value="Properties/PoliceAction.jpg" />
+	<Screenshot Value="Properties/Post.jpg" />
+	<Screenshot Value="Properties/Full2.jpg" />
+	<Screenshot Value="Properties/Themes.jpg" />
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
@@ -56,7 +61,7 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<!--Version of the mod-->
 	<ModVersion Value="0.4.0" />
 	<!--Recommended version of the base game to use the mod-->
-	<GameVersion Value="1.5.2*" />
+	<GameVersion Value="1.5.3*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->

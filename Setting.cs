@@ -7,7 +7,9 @@ using Colossal;
 using Colossal.IO.AssetDatabase;
 using Colossal.Logging;
 using Colossal.PSI.Environment;
+using Game.Input;
 using Game.Modding;
+using Game.Net;
 using Game.Settings;
 using Game.UI;
 using Game.UI.Widgets;
@@ -433,6 +435,7 @@ namespace VehicleController
 
         private SpeedLimitOverride _speedLimitOverride = SpeedLimitOverride.None;
         
+        [SettingsUIAdvanced]
         [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
         public SpeedLimitOverride SpeedLimitOverride
         {
@@ -561,6 +564,11 @@ namespace VehicleController
         {
             set => RoadSpeedLimitSystem.Instance?.ResetAllSpeedLimits();
         }
+        
+        [SettingsUIAdvanced]
+        [SettingsUIKeyboardBinding(Mod.ResetSpeedLimitActionName)]
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        public ProxyBinding ResetAllSpeedLimitsBinding { get; set; }
         
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
         [SettingsUIAdvanced]

@@ -6,9 +6,11 @@ using Colossal.Logging;
 using Colossal.PSI.Environment;
 using Game;
 using Game.Citizens;
+using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
 using Unity.Entities;
+using UnityEngine.InputSystem;
 using VehicleController.Systems;
 
 namespace VehicleController
@@ -33,6 +35,9 @@ namespace VehicleController
         public static bool EnableChangeVehicleSection = true;
         public static bool EnableRoadSpeedLimitSystem = true;
         public static bool EnableVehicleStiffnessSystem = true;
+        
+        public static ProxyAction ResetSpeedLimitAction;
+        public const string ResetSpeedLimitActionName = "VehicleController_ResetRoadSpeedLimits";
 
         /// <summary>
         /// Called by the game when the mod is loaded.
@@ -74,8 +79,17 @@ namespace VehicleController
                 GameManager.instance.localizationManager.AddSource(item.LocaleId, item);
             }
 
+            m_Setting.RegisterKeyBindings();
             AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
+            
+            ResetSpeedLimitAction = Setting.Instance.GetAction(ResetSpeedLimitActionName);
+            ResetSpeedLimitAction.shouldBeEnabled = true;
+            ResetSpeedLimitAction.onInteraction += (_, phase) =>
+            {
+                if (phase == InputActionPhase.Performed)
+                    RoadSpeedLimitSystem.Instance.ResetAllSpeedLimits();
+            };
             
             log.Info("VehicleController mod loaded successfully with pack");
         }

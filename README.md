@@ -37,6 +37,7 @@ In the default game, most personal cars have the same Acceleration, Top Speed an
 
 - Include possibility to alter helicopter and airplane flying altitude, so they don't clip through buildings [Link](https://discord.com/channels/1024242828114673724/1330910837397000234/1437577389713657927)
 - Incorrect Siren when using EU vehicle on NA Theme [Link](https://discord.com/channels/1024242828114673724/1330910837397000234/1437589691460354210)
+- Adjust Traffic Spawner (Outside Connection) Vehicle Selection
 
 ## Side effects
 - Using speed limit override changes the amount of public transport vehicles on a line (e.g. half speed causes double the vehicles to maintain frequency)
