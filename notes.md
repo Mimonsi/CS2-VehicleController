@@ -20,3 +20,4 @@ TODO: Scooter01 as Private Vehicle for Probability Packs
 
 - Remove Vehicle Selector from unsupported service buildings
 - Check Interaction with Helicopters
+- Add Hotkey for Speed Limit Recheck
