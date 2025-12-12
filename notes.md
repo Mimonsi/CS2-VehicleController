@@ -16,6 +16,7 @@ Game.Prefabs.HealthcareVehicleSelectData.cs, etc.
 
 TODO: Scooter01 as Private Vehicle for Probability Packs
 
-## TODO
-- Make probability packs savegame-persistent
-- Make Road Speed Limit savegame-persistent
+## TODO before Release:
+
+- Remove Vehicle Selector from unsupported service buildings
+- Check Interaction with Helicopters
