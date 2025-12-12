@@ -443,6 +443,10 @@ namespace VehicleController
                 RoadSpeedLimitSystem.UnmarkAllLanes();
             }
         }
+
+        [SettingsUIAdvanced]
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        public bool DisableSpeedLimitUpdate { get; set; } = false;
         
         
 

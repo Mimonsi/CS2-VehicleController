@@ -48,6 +48,8 @@
 
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SpeedLimitOverride]": "Speed Limit Override (experimental)",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SpeedLimitOverride]": "Override all road speed limits. Note: This setting is persistent and will only be deactivated when turning the setting off. Removing the mod from your playset will NOT return the road speed limits to their vanilla values.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DisableSpeedLimitUpdate]": "Disable Speed Limit Update",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DisableSpeedLimitUpdate]": "Disables the OnUpdate function completely for the system.",
     "Options.VehicleController.VehicleController.Mod.SPEEDLIMITOVERRIDE[None]": "None (Vanilla)",
     "Options.VehicleController.VehicleController.Mod.SPEEDLIMITOVERRIDE[Half]": "Half (Realistic)",
     "Options.VehicleController.VehicleController.Mod.SPEEDLIMITOVERRIDE[Double]": "Double (Speedy!)",

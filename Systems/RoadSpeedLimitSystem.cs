@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Colossal.Entities;
 using Colossal.Logging;
+using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
 using Game.Net;
@@ -29,6 +30,7 @@ namespace VehicleController.Systems
 
         private PrefabSystem prefabSystem;
         public static RoadSpeedLimitSystem? Instance { get; private set; }
+        private GameMode currentGameMode = GameMode.None;
         
         /// <summary>
         /// Creates entity queries and prepares the system.
@@ -55,8 +57,14 @@ namespace VehicleController.Systems
             prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             log.Info("RoadSpeedLimitSystem created.");
         }
-        
-        
+
+        protected override void OnGameLoadingComplete(Purpose purpose, GameMode mode)
+        {
+            base.OnGameLoadingComplete(purpose, mode);
+            currentGameMode = mode;
+        }
+
+
         private DateTime _lastUpdateTime = DateTime.MinValue;
         /// <inheritdoc />
         protected override void OnUpdate()
@@ -66,13 +74,15 @@ namespace VehicleController.Systems
             {
                 return;
             }*/
+            if (currentGameMode != GameMode.Game || Setting.Instance!.DisableSpeedLimitUpdate)
+                return;
             log.Debug("Updating road speed limits for unedited lanes.");
             UpdateSpeedForLanes(_uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp), Setting.GetSpeedLimitModifier());
             _lastUpdateTime = DateTime.Now;
             
         }
 
-        public static void UnmarkAllLanes()
+        public static void UnmarkAllLanes(bool removeOriginalLimit = false)
         {
             if (Instance == null)
             {
@@ -83,6 +93,8 @@ namespace VehicleController.Systems
             foreach(var entity in Instance._checkedLanesQuery.ToEntityArray(Allocator.Temp))
             {
                 Instance.EntityManager.RemoveComponent<LaneSpeedLimitChecked>(entity);
+                if (removeOriginalLimit && Instance.EntityManager.HasComponent<OriginalLaneSpeedLimit>(entity))
+                    Instance.EntityManager.RemoveComponent<OriginalLaneSpeedLimit>(entity);
             }
         }
 
@@ -232,7 +244,7 @@ namespace VehicleController.Systems
             //log.Debug($"Updated road prefab {prefabSystem.GetPrefabName(entity)} speed limit to {FormatSpeedLimit(carLane.m_SpeedLimit)}).");
             Dictionary<float, int> entityAmountBySpeedLimit = new Dictionary<float, int>();
             log.Info("Debug Option: Reset all road speed limits to vanilla values.");
-            UnmarkAllLanes();
+            UnmarkAllLanes(true);
             foreach (var entity in _uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp))
             {
                 if (EntityManager.TryGetComponent<CarLane>(entity, out var carLane))
