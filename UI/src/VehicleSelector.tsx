@@ -9,6 +9,7 @@ import { VehicleLabel } from "./VehicleLabel";
 // Define props for vehicle selector dropdown.
 type VehicleSelectorProps = {
     vehicleTypes: SelectableVehiclePrefab[];
+    displayPrefabNames: boolean
 }
 
 export const VehicleSelector = (props: VehicleSelectorProps) => {
@@ -24,7 +25,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
 
         // Construct dropdown item content.
         const dropdownItemContent = (
-          <VehicleLabel prefabName={prefabName} image={imageUrl}/>
+          <VehicleLabel prefabName={prefabName} image={imageUrl} displayPrefabName={props.displayPrefabNames}/>
         );
 
         return (

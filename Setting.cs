@@ -492,6 +492,9 @@ namespace VehicleController
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
         public bool EnableChangeVehicles { get; set; } = true;
         
+        [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
+        public bool DisplayVehiclePrefabNames { get; set; } = true;
+        
         #endregion
         
         #region About

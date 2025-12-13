@@ -64,6 +64,8 @@
   
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enable Auto Change Vehicles",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enabled vehicle prefabs from service buildings automatically changing to the selected vehicles. If disabled, vehicle spawning is not changed, unless you manually update the existing spawned vehicled",   
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DisplayVehiclePrefabNames]": "Show Vehicle Prefab Names",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DisplayVehiclePrefabNames]": "When disabled, only show localized names. When enabled, also show prefab file names in dropdown.",   
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllModComponents]": "Remove All Mod Components",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllModComponents]": "Removes all custom vehicle selections from your current savegame.",
   

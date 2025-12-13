@@ -749,6 +749,16 @@ namespace VehicleController.Systems
             return "Unknown Prefab";
         }
 
+        private static readonly ServiceType[] SupportedServiceTypes =
+        {
+            ServiceType.Healthcare,
+            ServiceType.Fire,
+            ServiceType.Police,
+            ServiceType.Garbage,
+            ServiceType.Deathcare,
+            ServiceType.Postal,
+        };
+
         private bool Visible()
         {
             if (selectedEntity == Entity.Null)
@@ -759,7 +769,7 @@ namespace VehicleController.Systems
             serviceName = GetServiceTypeNameForBuilding(selectedEntity);
             prefabName = GetLocalizedPrefabName(selectedEntity);
             districtName = null;
-            log.Info($"Service name for selected entity: {serviceName}, prefab: {prefabName}");
+            log.Debug($"Service name for selected entity: {serviceName}, prefab: {prefabName}");
             if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var district))
             {
                 if (district.m_District != Entity.Null)
@@ -770,11 +780,17 @@ namespace VehicleController.Systems
             
             if (types.Count == 0)
             {
-                log.Info($"No service vehicle types available for selected entity of type: {serviceName}");
+                log.Debug($"No service vehicle types available for selected entity of type: {serviceName}");
                 return false;
             }
-            log.Info($"Service vehicle types for entity type {serviceName}: " + string.Join(", ", types));
-            // TODO: Add toggle to disable in settings
+            
+            if (!types.Any(t => SupportedServiceTypes.Contains(t)))
+            {
+                log.Debug($"Service vehicle types for entity type {serviceName} are not supported: " + string.Join(", ", types));
+                return false;
+            }
+            
+            log.Debug($"Service vehicle types for entity type {serviceName}: " + string.Join(", ", types));
             return true;
         }
 
@@ -883,6 +899,8 @@ namespace VehicleController.Systems
             writer.Write(prefabName);
             writer.PropertyName("districtName");
             writer.Write(districtName);
+            writer.PropertyName("displayPrefabNames");
+            writer.Write(Setting.Instance!.DisplayVehiclePrefabNames);
             
             
             //Logger.Debug("ChangeVehicleSection properties written");

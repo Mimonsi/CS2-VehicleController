@@ -26,7 +26,7 @@ const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
 export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
   // Define service vehicle types
-  // Matches Query in CreatedServiceVehicleModifierSystem.cs
+  // Matches Query in ChangeVehicleSection.cs
   enum ServiceType
   {
     None,
@@ -50,7 +50,8 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     serviceName: string,
     districtName: string | null,
     availableVehicles: SelectableVehiclePrefab[],
-    vehiclesSelected: number
+    vehiclesSelected: number,
+    displayPrefabNames: boolean
   }
 
   // Add ChangeVehicleSection to the component list.
@@ -126,7 +127,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
         {!Minimized && (
           <>
             <ModuleResolver.instance.InfoRow
-              left={<VehicleSelector vehicleTypes={modifiedVehicleList}/>}
+              left={<VehicleSelector vehicleTypes={modifiedVehicleList} displayPrefabNames={props.displayPrefabNames}/>}
               tooltip={<FormattedParagraphs>{tooltipText}</FormattedParagraphs>}
               disableFocus={true}
             />

@@ -48,7 +48,6 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<!--Thumbnail-->
 	<Thumbnail Value="Properties/VehicleController_Preview.png" />
 	<!--Screenshot, can be set multiple times-->
-	<Screenshot Value="Properties/VehicleController_Preview.png" />
 	<Screenshot Value="Properties/Full1.jpg" />
 	<Screenshot Value="Properties/PoliceAction.jpg" />
 	<Screenshot Value="Properties/Post.jpg" />
@@ -59,15 +58,16 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.3.7" />
+	<ModVersion Value="0.3.8" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.3*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-- Add hotkey for speed limit reset
-- Fix some issues with road limits not being applied correctly
+## Alpha 8
+- Add setting to not display prefab names for service vehicles
+- Remove service vehicle component from unsupported buildings, as they were empty anyway
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />

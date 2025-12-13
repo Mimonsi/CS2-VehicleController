@@ -6,11 +6,12 @@ interface VehicleLabelProps
 {
     prefabName: string,
     image?: string,
+    displayPrefabName: boolean // TODO: Implement properly, shouldn't be passed to every vehicle label
 }
 
 // Custom component to combine the icon and label for a resource
 // so the game does not split the icon from the label when wrapping in the company selector.
-export const VehicleLabel = ({ prefabName, image }: VehicleLabelProps) =>
+export const VehicleLabel = ({ prefabName, image, displayPrefabName }: VehicleLabelProps) =>
 {
     //console.log("vehicleLabel", prefabName, image);
     // Get game's icon for the vehicle.
@@ -24,6 +25,10 @@ export const VehicleLabel = ({ prefabName, image }: VehicleLabelProps) =>
     //const resourceText: string = (translate("Resources.TITLE[" + resource + "]") || resource);
     const translated = translate("Assets.NAME[" + prefabName + "]");
     let vehicleText: string = (translated && translated !== "null") ? `${translated} (${prefabName})` : prefabName;
+    if (!displayPrefabName)
+    {
+        vehicleText = (translated && translated !== "null") ? translated : prefabName;
+    }
 
     return (
       <div className={ModuleResolver.instance.SIPDropdownClasses.item}>
