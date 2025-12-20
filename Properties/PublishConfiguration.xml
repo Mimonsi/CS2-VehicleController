@@ -58,16 +58,15 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.3.8" />
+	<ModVersion Value="0.3.9" />
 	<!--Recommended version of the base game to use the mod-->
 	<GameVersion Value="1.5.3*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-## Alpha 8
-- Add setting to not display prefab names for service vehicles
-- Remove service vehicle component from unsupported buildings, as they were empty anyway
+## Alpha 9
+- Fix PDX Mods vehicles not being selectable
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />
