@@ -49,6 +49,7 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<Thumbnail Value="Properties/VehicleController.png" />
 	<!--Screenshot, can be set multiple times-->
 	<Screenshot Value="Properties/Full1.jpg" />
+	<Screenshot Value="Properties/Overview.jpg" />
 	<Screenshot Value="Properties/PoliceAction1.jpg" />
 	<Screenshot Value="Properties/Post.jpg" />
 	<Screenshot Value="Properties/Full2.jpg" />
