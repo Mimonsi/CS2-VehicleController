@@ -1,8 +1,8 @@
 ﻿<Publish>
 	<!--Id must be set in order to update existed mod. it is not required for publishing mod for the first time-->
-	<ModId Value="104781" />
+	<ModId Value="125228" />
 	<!--Name of the mod to display to players-->
-	<DisplayName Value="Vehicle Controller" />
+	<DisplayName Value="Vehicle Controller (preview)" />
 	<!--Short description of the mod-->
 	<ShortDescription Value="Adjust vehicle spawn rates, acceleration, braking, max speed, etc." />
 	<!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
@@ -37,7 +37,7 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 
 ## Misc
 - Integrated Stiffer Vehicles Mod into Vehicle Controller, with various improvements
-		
+
 ## Planned Features/Suggestions
 - Vehicle Selection for more Service Types (e.g. Buses, Trains)
 - Property adjustment for Planes (Airplane Parameter Mod) and Helicopters
@@ -58,7 +58,7 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<!--Tag, can be set multiple times-->
 	<Tag Value="Code Mod" />
 	<!--Link to the forum post where the mod can be discussed-->
-	<ForumLink Value="https://forum.paradoxplaza.com/forum/threads/vehicle-controller.1732375/" />
+	<ForumLink Value="" />
 	<!--Version of the mod-->
 	<ModVersion Value="0.4.0" />
 	<!--Recommended version of the base game to use the mod-->
@@ -79,4 +79,6 @@ Most Major Features of Vehicle Controller are now implemented! Please test and p
 	<ExternalLink Type="discord" Url="https://discord.gg/vd7HXnpPJf" />
 	<ExternalLink Type="paypal" Url="https://www.paypal.com/paypalme/KonstantinSchwarze" />
 	<ExternalLink Type="ko-fi" Url="https://ko-fi.com/mimonsi" />
+	<!--Supported values Public, Private, Unlisted-->
+	<AccessLevel Value="Unlisted" />
 </Publish>
