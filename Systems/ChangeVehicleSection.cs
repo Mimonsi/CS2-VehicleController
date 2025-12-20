@@ -457,11 +457,11 @@ namespace VehicleController.Systems
             var prefab = new AllowedVehiclePrefab() { PrefabName = prefabName };
             if (CollectionUtils.TryAddUniqueValue(buffer, prefab))
             {
-                log.Info("Added allowed vehicle prefab: " + prefabName);
+                log.Debug("Added allowed vehicle prefab: " + prefabName);
             }
             else
             { 
-                log.Info($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
+                log.Debug($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
                 CollectionUtils.RemoveValue(buffer, prefab);
             }
             TriggerUpdate();

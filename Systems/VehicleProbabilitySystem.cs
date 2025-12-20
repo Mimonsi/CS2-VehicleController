@@ -174,8 +174,7 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateProbabilities()
         {
-            log.Info("Updating Vehicle Probabilities");
-            log.Info("Loading probability pack: " + _currentProbabilityPack.Name);
+            log.Info($"Updating Vehicle Probabilities from pack {_currentProbabilityPack.Name}");
             var entities = carQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
