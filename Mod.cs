@@ -55,6 +55,7 @@ namespace VehicleController
 
             CopyEmbeddedFiles();
             
+            updateSystem.UpdateAt<PrefabCacheSystem>(SystemUpdatePhase.MainLoop);
             if (EnableProbabilitySystem)
                 updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
             if (EnablePropertySystem)

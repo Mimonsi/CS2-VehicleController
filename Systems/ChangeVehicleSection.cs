@@ -565,10 +565,11 @@ namespace VehicleController.Systems
                 VehicleCreated();
         }
         
-        private void ChangePrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
+        private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
         {
             List<string> allowedVehicleNames = new List<string>();
             
+            // Collect all allowed vehicle prefab names
             foreach (var allowedVehiclePrefab in allowedPrefabs)
             {
                 if (!string.IsNullOrEmpty(allowedVehiclePrefab.PrefabName.ToString()))
@@ -588,41 +589,52 @@ namespace VehicleController.Systems
                 return; // No allowed vehicles, nothing to change
             }
 
-            if (m_PrefabSystem.TryGetPrefab(prefabRef, out VehiclePrefab currentPrefab))
+            // Check if current prefab exists
+            /*if (allowedVehicleNames.Count == 0 || allowedVehicleNames.Contains(currentPrefabName.name))
             {
-                /*if (allowedVehicleNames.Count == 0 || allowedVehicleNames.Contains(currentPrefabName.name))
-                {
-                    Logger.Debug($"Not changing prefab {currentPrefabName}, as it's allowed.");
-                    return null; // No change needed, prefab is already allowed
-                }*/
-            
-                // If the prefab is not allowed, we need to change it
-                // Select random allowed prefab
-                int index = UnityEngine.Random.Range(0, allowedVehicleNames.Count);
-                var newPrefabName = allowedVehicleNames[index];
-            
+                Logger.Debug($"Not changing prefab {currentPrefabName}, as it's allowed.");
+                return null; // No change needed, prefab is already allowed
+            }*/
+        
+            // If the prefab is not allowed, we need to change it
+            // Select random allowed prefab
+            int index = UnityEngine.Random.Range(0, allowedVehicleNames.Count);
+            var newPrefabName = allowedVehicleNames[index];
+        
+            if (m_PrefabSystem.TryGetPrefab(prefabRef, out VehiclePrefab currentPrefab))
                 log.Debug($"Changing {currentPrefab} Prefab to {newPrefabName}");
-                if (m_PrefabSystem.TryGetPrefab(
-                        new PrefabID("CarPrefab", newPrefabName),
-                        out PrefabBase newPrefab))
+            else
+                log.Debug($"Changing UNKNOWN Prefab to {newPrefabName}");
+            // Since 1.5.3 we need to check internal assets separately from PDXMods assets (PrefabCacheSystem)
+            PrefabBase newPrefab;
+            if (!m_PrefabSystem.TryGetPrefab(
+                    new PrefabID("CarPrefab", newPrefabName),
+                    out newPrefab))
+            {
+                var prefabId = PrefabCacheSystem.GetPrefabIDByName(newPrefabName);
+                if (prefabId != null)
                 {
-                    log.Debug("New Prefab: " + newPrefab!.name);
-                    if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity)) // Get entity for prefab
+                    PrefabID id = prefabId.Value;
+                    if (!m_PrefabSystem.TryGetPrefab(
+                            id,
+                            out newPrefab))
                     {
-                        prefabRef.m_Prefab = prefabEntity;
-                        log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
-                        EntityManager.SetComponentData(vehicleEntity, prefabRef);
-                        EntityManager.AddComponent<Updated>(vehicleEntity);
-                        log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
+                        log.Warn($"Could not get prefab for name: {newPrefabName}. Aborting change.");
                         return;
                     }
-                    log.Warn("Could not find entity for new prefab: " + newPrefab.name);
-                    return;
                 }
-                log.Warn("Could not get prefab for name: " + newPrefabName);
+            }
+            log.Debug("New Prefab: " + newPrefab!.name);
+            if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity)) // Get entity for prefab
+            {
+                prefabRef.m_Prefab = prefabEntity;
+                log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
+                EntityManager.SetComponentData(vehicleEntity, prefabRef);
+                EntityManager.AddComponent<Updated>(vehicleEntity);
+                log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
                 return;
             }
-            log.Error("Could not get prefab for prefabRef: " + prefabRef.m_Prefab);
+            log.Warn("Could not find entity for new prefab: " + newPrefab.name);
         }
 
         /// <summary>
@@ -661,7 +673,7 @@ namespace VehicleController.Systems
                     {
                         if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
                         {
-                            ChangePrefab(entity, prefabRef, allowedVehicles);
+                            ChangePrefabToRandomAllowedPrefab(entity, prefabRef, allowedVehicles);
                         }
                     }
                 }
@@ -843,7 +855,7 @@ namespace VehicleController.Systems
                 }
                 catch (Exception x)
                 {
-                    log.Warn("No thumbnail found for prefab: " + prefab.prefabName + ", " + x.Message);
+                    log.Trace("No thumbnail found for prefab: " + prefab.prefabName + ", " + x.Message);
                 }
                 if (!allowedVehicles.IsEmpty)
                 {
