@@ -44,8 +44,8 @@ namespace VehicleController
     /// </summary>
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
-    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
-    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSpeedLimitGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSpeedLimitGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
     public class Setting : ModSetting
     {
         public static Setting? Instance;
@@ -61,6 +61,7 @@ namespace VehicleController
         public const string VehiclePropertiesGroup = "Vehicle Properties";
         public const string VehicleStiffnessGroup = "Vehicle Stiffness";
         public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
+        public const string VehicleSpeedLimitGroup = "Vehicle Speed Limits";
         
         public const string VehicleSelectionSection = "Vehicle Selection";
         public const string VehicleSelectionGroup = "Vehicle Selection";
@@ -418,37 +419,55 @@ namespace VehicleController
 
             return extendedItems;
         }
-
-        /*private bool enableRealisticSpeedLimits = false;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        public bool EnableRealisticSpeedLimits
+        
+        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+        public bool SetSpeedLimitFactorRealistic
         {
-            get => enableRealisticSpeedLimits;
+            set => SpeedLimitFactor = 0.5f;
+        }
+        
+        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+        public bool SetSpeedLimitFactorVanilla
+        {
+            set => SpeedLimitFactor = 1f;
+        }
+        
+        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+        public bool SetSpeedLimitFactorDouble
+        {
+            set => SpeedLimitFactor = 2f;
+        }
+        
+        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+        public bool SetSpeedLimitFactorSuperSpeed
+        {
+            set => SpeedLimitFactor = 10f;
+        }
+        
+        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+        public bool CustomSpeedLimitFactor { get; set; }= false;
+        
+        private float _speedLimitFactor = 1f;
+        
+        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+        [SettingsUISlider(min=0.5f, max=10f, step=0.5f, unit=Unit.kFloatSingleFraction)]
+        [SettingsUIDisableByCondition(typeof(Setting), nameof(CustomSpeedLimitFactor), true)]
+        public float SpeedLimitFactor
+        {
+            get => _speedLimitFactor;
             set
             {
-                enableRealisticSpeedLimits = value;
-                RoadSpeedLimitSystem.TriggerSpeedLimitUpdate();
-            }
-        }*/
-        
-        
-
-        private SpeedLimitOverride _speedLimitOverride = SpeedLimitOverride.None;
-        
-        [SettingsUIAdvanced]
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        public SpeedLimitOverride SpeedLimitOverride
-        {
-            get => _speedLimitOverride;
-            set
-            {
-                _speedLimitOverride = value;
+                _speedLimitFactor = value;
                 RoadSpeedLimitSystem.UnmarkAllLanes();
             }
         }
 
         [SettingsUIAdvanced]
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
         public bool DisableSpeedLimitUpdate { get; set; } = false;
         
         
@@ -647,22 +666,7 @@ namespace VehicleController
             VanProbability = 100;
         }
 
-        public static float GetSpeedLimitModifier()
-        {
-            switch (Instance?.SpeedLimitOverride)
-            {
-                case SpeedLimitOverride.None:
-                    return 1f;
-                case SpeedLimitOverride.Half:
-                    return 0.5f;
-                case SpeedLimitOverride.Double:
-                    return 2f;
-                case SpeedLimitOverride.Speed:
-                    return 10f;
-                default:
-                    return 1f;
-            }
-        }
+        public static float GetSpeedLimitModifier() => Instance!.SpeedLimitFactor;
     }
 
     /// <summary>

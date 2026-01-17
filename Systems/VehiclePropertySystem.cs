@@ -242,7 +242,6 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateTrainProperties()
         {
-            return true;
             log.Debug("Updating Train Properties");
             var entities = trainQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
@@ -280,7 +279,7 @@ namespace VehicleController.Systems
         /*
         Findings:
         Police car has max speed of 20 (m/s), and speed is displayed as 36 km/h, which is 10 m/s actually.
-        Vehicle drives 500 meters in 20 seconds, so is actually travelling 20 m/s.
+        Vehicle drives 500 meters in 20 seconds, so is actually traveling 20 m/s.
         */
         
         /// <summary>
@@ -288,40 +287,51 @@ namespace VehicleController.Systems
         /// </summary>
         private bool UpdateVehicleProperties()
         {
-            //log.Debug("Updating Vehicle Properties"); TODO: Re-enable
+            log.Debug("Updating Vehicle Properties");
             var entities = vehicleQuery.ToEntityArray(Allocator.Temp);
             int count = 0;
             foreach (var entity in entities)
             {
-                var prefabName = prefabSystem.GetPrefabName(entity);
-                log.Trace("Prefab name: " + prefabName);
-                var entry = _currentPropertyPack.GetEntry(prefabName);
-                log.Trace("Entry found: " + (entry != null));
-                if (entry != null)
+                try
                 {
-                    if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+
+
+                    log.Trace("Processing entity " + entity);
+                    var prefabName = prefabSystem.GetPrefabName(entity);
+                    log.Trace("Prefab name: " + prefabName);
+                    var entry = _currentPropertyPack.GetEntry(prefabName);
+                    log.Trace("Entry found: " + (entry != null));
+                    if (entry != null)
                     {
-                        log.Trace("Has CarData component");
-                        carData.m_MaxSpeed = entry.MaxSpeed;
-                        carData.m_Acceleration = entry.Acceleration;
-                        carData.m_Braking = entry.Braking;
-                        EntityManager.SetComponentData(entity, carData);
-                        count++;
+                        if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
+                        {
+                            log.Trace("Has CarData component");
+                            carData.m_MaxSpeed = entry.MaxSpeed;
+                            carData.m_Acceleration = entry.Acceleration;
+                            carData.m_Braking = entry.Braking;
+                            EntityManager.SetComponentData(entity, carData);
+                            count++;
+                        }
+                        else if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
+                        {
+                            log.Trace("Has TrainData component");
+                            trainData.m_MaxSpeed = entry.MaxSpeed;
+                            trainData.m_Acceleration = entry.Acceleration;
+                            trainData.m_Braking = entry.Braking;
+                            EntityManager.SetComponentData(entity, trainData);
+                            count++;
+                        }
+                        else
+                        {
+                            // Disabled for now to reduce log spam
+                            //log.Error("CarData component not found on entity " + prefabName);
+                        }
                     }
-                    else if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
-                    {
-                        log.Trace("Has TrainData component");
-                        trainData.m_MaxSpeed = entry.MaxSpeed;
-                        trainData.m_Acceleration = entry.Acceleration;
-                        trainData.m_Braking = entry.Braking;
-                        EntityManager.SetComponentData(entity, trainData);
-                        count++;
-                    }
-                    else
-                    {
-                        // Disabled for now to reduce log spam
-                        //log.Error("CarData component not found on entity " + prefabName);
-                    }
+                }
+                catch (Exception e)
+                {
+                    log.Error($"Error updating vehicle properties for entity {entity}: " + e.Message);
+                    throw;
                 }
             }
             

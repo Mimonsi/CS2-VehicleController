@@ -624,9 +624,10 @@ namespace VehicleController.Systems
                     }
                 }
             }
-            log.Debug("New Prefab: " + newPrefab!.name);
+
             if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity)) // Get entity for prefab
             {
+                log.Debug("New Prefab: " + newPrefab.name);
                 prefabRef.m_Prefab = prefabEntity;
                 log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
                 EntityManager.SetComponentData(vehicleEntity, prefabRef);
