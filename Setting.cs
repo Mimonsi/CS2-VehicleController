@@ -48,7 +48,7 @@ namespace VehicleController
     [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSpeedLimitGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
     public class Setting : ModSetting
     {
-        public static Setting? Instance;
+        public static Setting Instance;
         
         public const string MainSection = "Settings";
         public const string MainGroup = "General Settings";
@@ -273,9 +273,24 @@ namespace VehicleController
         #endregion
         
         #region VehicleProperties
+        
+        private bool _useImprovedStiffnessValues = true;
+        
+        [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        public bool UseImprovedStiffnessValues 
+        { 
+            get => _useImprovedStiffnessValues;
+            set
+            {
+                StiffnessModifier = 3f;
+                DampingModifier = 2f;
+                _useImprovedStiffnessValues = value;
+            }
+        }
 
         private float _stiffnessModifier = 3f;
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(UseImprovedStiffnessValues), false)]
         [SettingsUISlider(min = 0.00f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
         public float StiffnessModifier
         {
@@ -290,6 +305,7 @@ namespace VehicleController
 
         private float _dampingModifier = 2f;
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(UseImprovedStiffnessValues), false)]
         [SettingsUISlider(min = 0.00f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
         public float DampingModifier
         {
@@ -303,12 +319,14 @@ namespace VehicleController
         }
         
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(UseImprovedStiffnessValues), false)]
         public bool ResetStiffnessToDefault
         {
             set => VehicleStiffnessSystem.Instance?.ResetSettingsToDefault();
         }
 
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(UseImprovedStiffnessValues), false)]
         public bool ResetStiffnessToVanilla
         {
             set => VehicleStiffnessSystem.Instance?.ResetSettingsToVanilla();
@@ -350,11 +368,11 @@ namespace VehicleController
             get => _defaultPropertyPackDropdown;
             set
             {
-                Mod.log.Warn("Setting default property pack to: " + value);
+                Mod.log.Info("Setting default property pack to: " + value);
                 var packNames = PropertyPack.GetPackNames();
                 if (!packNames.Contains(value))
                 {
-                    Mod.log.Info("Selected default property pack not found, reverting to Vanilla.json");
+                    Mod.log.Warn("Selected default property pack not found, reverting to Vanilla.json");
                     if (!packNames.Contains("Vanilla"))
                     {
                         Mod.log.Error("Vanilla property pack not found! Reverting to first available pack.");
@@ -399,6 +417,21 @@ namespace VehicleController
                     value = DefaultPropertyPackDropdown;
                 }
                 _savegamePropertyPackDropdown = value;
+                VehiclePropertySystem.SavegamePackSettingChanged();
+            }
+        }
+
+        private float _savegamePropertyPackFactor = 1f;
+
+        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(IsIngame), true)]
+        [SettingsUISlider(min = 0.5f, max = 10f, step = 0.5f, unit = Unit.kFloatSingleFraction)]
+        public float SavegamePropertyPackFactor
+        {
+            get => _savegamePropertyPackFactor;
+            set
+            {
+                _savegamePropertyPackFactor = value;
                 VehiclePropertySystem.SavegamePackSettingChanged();
             }
         }

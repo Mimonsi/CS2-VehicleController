@@ -1,0 +1,72 @@
+{
+  "Version": 1,
+  "Name": "Improved Trains",
+  "Entries": {
+    "EU_TrainCargoEngine01": {
+      "PrefabName": "EU_TrainCargoEngine01",
+      "MaxSpeed": 66.66667,
+      "Acceleration": 2,
+      "Braking": 3
+    },
+    "EU_TrainPassengerCar01": {
+      "PrefabName": "EU_TrainPassengerCar01",
+      "MaxSpeed": 88.88889,
+      "Acceleration": 5,
+      "Braking": 10
+    },
+    "EU_TrainPassengerEngine01": {
+      "PrefabName": "EU_TrainPassengerEngine01",
+      "MaxSpeed": 88.88889,
+      "Acceleration": 2,
+      "Braking": 3
+    },
+    "NA_TrainCargoEngine01": {
+      "PrefabName": "NA_TrainCargoEngine01",
+      "MaxSpeed": 66.66667,
+      "Acceleration": 2,
+      "Braking": 3
+    },
+    "NA_TrainPassengerCar01": {
+      "PrefabName": "NA_TrainPassengerCar01",
+      "MaxSpeed": 88.88889,
+      "Acceleration": 5,
+      "Braking": 10
+    },
+    "NA_TrainPassengerEngine01": {
+      "PrefabName": "NA_TrainPassengerEngine01",
+      "MaxSpeed": 88.88889,
+      "Acceleration": 2,
+      "Braking": 3
+    },
+    "TrainAgricultureCar01": {
+      "PrefabName": "TrainAgricultureCar01",
+      "MaxSpeed": 44.444447,
+      "Acceleration": 3,
+      "Braking": 5
+    },
+    "TrainCargoCar01": {
+      "PrefabName": "TrainCargoCar01",
+      "MaxSpeed": 44.444447,
+      "Acceleration": 3,
+      "Braking": 5
+    },
+    "TrainForestryCar01": {
+      "PrefabName": "TrainForestryCar01",
+      "MaxSpeed": 44.444447,
+      "Acceleration": 3,
+      "Braking": 5
+    },
+    "TrainOilCar01": {
+      "PrefabName": "TrainOilCar01",
+      "MaxSpeed": 44.444447,
+      "Acceleration": 3,
+      "Braking": 5
+    },
+    "TrainOreCar01": {
+      "PrefabName": "TrainOreCar01",
+      "MaxSpeed": 44.444447,
+      "Acceleration": 3,
+      "Braking": 5
+    }
+  }
+}

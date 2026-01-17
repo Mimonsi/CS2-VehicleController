@@ -61,27 +61,32 @@ namespace VehicleController.Systems
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
             var _settingPackName = Setting.Instance.SavegamePropertyPackDropdown;
-            log.Debug("Serializing (saving) VehiclePropertySystem with pack " + _settingPackName);
+            log.Debug($"Serializing (saving) VehiclePropertySystem with settings:\nName: {_settingPackName}\nFactor: {Setting.Instance.SavegamePropertyPackFactor}");
             if (_settingPackName == "Default")
                 _settingPackName = "";
             writer.Write(_settingPackName);
+            writer.Write(Setting.Instance.SavegamePropertyPackFactor);
         }
         
         /// <inheritdoc/>
         public void Deserialize<TReader>(TReader reader) where TReader : IReader
         {
-            reader.Read(out string packName);
-            // try
-            // {
-            log.Debug("Deserialized (loaded) VehiclePropertySystem with pack " + packName);
-            Setting.Instance.SavegamePropertyPackDropdown = packName;
-            // }
-            // catch (Exception x)
-            // {
-            //     log.Error($"Error loading savegame property pack with name {packName}: {x.Message}");
-            // }
-
-
+            log.Debug("Trying to deserialize VehiclePropertySystem savegame data.");
+            try
+            {
+                reader.Read(out string packName);
+                reader.Read(out float factor);
+                if (factor == 0)
+                    factor = 1.0f;
+                log.Debug($"Deserialized (loaded) VehiclePropertySystem with settings:\nName: {packName}\nFactor: {factor}");
+                Setting.Instance.SavegamePropertyPackDropdown = packName;
+                Setting.Instance.SavegamePropertyPackFactor = factor;
+            }
+            catch (Exception x)
+            {
+                log.Debug("Exception during Vehicle Property Savegame Data loading: " + x.Message);
+                log.Warn("Error loading Vehicle Property Savegame Data. This can happen when loading an older savegame, and is safe to ignore. Exception: " + x.Message);
+            }
         }
 
         public void SetDefaults(Context context)
@@ -294,8 +299,6 @@ namespace VehicleController.Systems
             {
                 try
                 {
-
-
                     log.Trace("Processing entity " + entity);
                     var prefabName = prefabSystem.GetPrefabName(entity);
                     log.Trace("Prefab name: " + prefabName);
@@ -306,18 +309,18 @@ namespace VehicleController.Systems
                         if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                         {
                             log.Trace("Has CarData component");
-                            carData.m_MaxSpeed = entry.MaxSpeed;
-                            carData.m_Acceleration = entry.Acceleration;
-                            carData.m_Braking = entry.Braking;
+                            carData.m_MaxSpeed = entry.MaxSpeed * Setting.Instance!.SavegamePropertyPackFactor;
+                            carData.m_Acceleration = entry.Acceleration * Setting.Instance!.SavegamePropertyPackFactor;
+                            carData.m_Braking = entry.Braking * Setting.Instance!.SavegamePropertyPackFactor;
                             EntityManager.SetComponentData(entity, carData);
                             count++;
                         }
                         else if (EntityManager.TryGetComponent<TrainData>(entity, out var trainData))
                         {
                             log.Trace("Has TrainData component");
-                            trainData.m_MaxSpeed = entry.MaxSpeed;
-                            trainData.m_Acceleration = entry.Acceleration;
-                            trainData.m_Braking = entry.Braking;
+                            trainData.m_MaxSpeed = entry.MaxSpeed * Setting.Instance!.SavegamePropertyPackFactor;
+                            trainData.m_Acceleration = entry.Acceleration * Setting.Instance!.SavegamePropertyPackFactor;
+                            trainData.m_Braking = entry.Braking * Setting.Instance!.SavegamePropertyPackFactor;
                             EntityManager.SetComponentData(entity, trainData);
                             count++;
                         }

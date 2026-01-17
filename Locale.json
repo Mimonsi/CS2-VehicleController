@@ -23,10 +23,12 @@
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Class Properties]": "Vehicle Class Properties",
     
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Stiffness]": "Vehicle Stiffness",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.UseImprovedStiffnessValues]": "Use Improved Stiffness Values",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.UseImprovedStiffnessValues]": "When checked, use default improved vehicle stiffness. When unchecked, enter custom values.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.StiffnessModifier]": "Stiffness Modifier",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.StiffnessModifier]": "The Max Position modifier for all vehicles. Vanilla is 1.0, Default for Mod is 3.0 Higher values makes vehicles lean less, but it might look harsher.",
-    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DampingModifier]": "Damping Modifier",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DampingModifier]": "The Damping modifier for all vehicles. Vanilla is 1.0, Default for Mod is 2.0 Higher values makes vehicles bounce more. Low values are stiffer.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DampingModifier]": "Bounciness Modifier",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DampingModifier]": "The Damping modifier for all vehicles. Vanilla is 1.0, Default for Mod is 2.0 Higher values makes vehicles bounce less, achieving balance more quickly. Lower values make the vehicle sway more.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetStiffnessToDefault]": "Reset To Default",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ResetStiffnessToDefault]": "Reset Stiffness and Damping modifiers to default mod values.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetStiffnessToVanilla]": "Reset To Vanilla",
@@ -43,6 +45,8 @@
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DefaultPropertyPackDropdown]": "Choose which Property Pack to use per Default. This pack will be used unless a save game specific pack is selected below. The following packs can be used: \n\nVanilla: Normal Base Game Vehicle Behaviour\nImproved: More detailed and realistic behaviour (recommended)\nRealistic: Like improved pack, but max speed is halved",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackDropdown]": "Savegame Property Pack",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackDropdown]": "Choose which Property Pack to use in this specific savegame",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackFactor]": "Property Pack Factor",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackFactor]": "Multiplies all values by this factor. If you want to double all vehicle speeds, use factor 2.0.",
     
     "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Speed Limits]": "Vehicle Speed Limits (experimental)",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.CustomSpeedLimitFactor]": "Custom Speed Limit Factor",

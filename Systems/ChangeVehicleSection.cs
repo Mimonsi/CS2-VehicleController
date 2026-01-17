@@ -625,6 +625,7 @@ namespace VehicleController.Systems
                 }
             }
 
+            log.Trace("Trying to get entity for new prefab: " + newPrefab);
             if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity)) // Get entity for prefab
             {
                 log.Debug("New Prefab: " + newPrefab.name);
