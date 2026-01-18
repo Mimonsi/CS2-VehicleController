@@ -16,6 +16,7 @@ namespace VehicleController.Components
         /// </summary>
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
+            writer.Write(DataMigrationVersion.InitialVersion); // Version
             writer.Write(VanillaSpeedLimit);
         }
 
@@ -24,8 +25,13 @@ namespace VehicleController.Components
         /// </summary>
         public void Deserialize<TReader>(TReader reader) where TReader : IReader
         {
-            reader.Read(out float vanillaSpeedLimit);
-            VanillaSpeedLimit = vanillaSpeedLimit;
+            reader.Read(out int version);
+            if (version == DataMigrationVersion.InitialVersion)
+            {
+                reader.Read(out float vanillaSpeedLimit);
+                VanillaSpeedLimit = vanillaSpeedLimit;
+            }
+            //Mod.log.Warn("Serialization version mismatch in OriginalSpeedLimit.Deserialize. Data has been lost");
         }
     }
 }

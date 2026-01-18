@@ -4,15 +4,18 @@ using System.IO;
 using System.Linq;
 using Colossal.Entities;
 using Colossal.Logging;
+using Colossal.PSI.Environment;
 using Colossal.Serialization.Entities;
 using Game;
 using Game.Common;
 using Game.Net;
 using Game.Prefabs;
 using Game.SceneFlow;
+using Game.UI;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
+using VehicleController.Components;
 using VehicleController.Data;
 using PersonalCar = Game.Vehicles.PersonalCar;
 
@@ -64,6 +67,7 @@ namespace VehicleController.Systems
             log.Debug($"Serializing (saving) VehiclePropertySystem with settings:\nName: {_settingPackName}\nFactor: {Setting.Instance.SavegamePropertyPackFactor}");
             if (_settingPackName == "Default")
                 _settingPackName = "";
+            writer.Write(DataMigrationVersion.InitialVersion); // Write version first
             writer.Write(_settingPackName);
             writer.Write(Setting.Instance.SavegamePropertyPackFactor);
         }
@@ -74,11 +78,25 @@ namespace VehicleController.Systems
             log.Debug("Trying to deserialize VehiclePropertySystem savegame data.");
             try
             {
-                reader.Read(out string packName);
-                reader.Read(out float factor);
+                string packName = "Default";
+                float factor = 1.0f;
+                // Read version first
+                reader.Read(out int version);
+                
+                if (version == DataMigrationVersion.InitialVersion)
+                {
+                    // Versioning code
+                    reader.Read(out packName);
+                    reader.Read(out factor);
+                    log.Debug($"Deserialized (loaded) VehiclePropertySystem with settings:\nName: {packName}\nFactor: {factor}");
+                }
+                else
+                {
+                    log.Warn("VehiclePropertySystem savegame data version mismatch. Data may have been lost.");
+                }
+                
                 if (factor == 0)
                     factor = 1.0f;
-                log.Debug($"Deserialized (loaded) VehiclePropertySystem with settings:\nName: {packName}\nFactor: {factor}");
                 Setting.Instance.SavegamePropertyPackDropdown = packName;
                 Setting.Instance.SavegamePropertyPackFactor = factor;
             }
@@ -152,6 +170,20 @@ namespace VehicleController.Systems
         {
             log.Debug("OnGameLoadingComplete called with mode " + mode);
             base.OnGameLoadingComplete(purpose, mode);
+
+            if (mode == GameMode.MainMenu) // TODO: Remove when migration period is over
+            {
+                var filePath = Path.Combine(EnvPath.kUserDataPath, "ModsData", nameof(VehicleController),
+                    "migration_done.txt");
+                if (!File.Exists(filePath))
+                {
+                    Mod.ShowMessageDialog("Vehicle Controller",
+                            "You might see 2 error messages about 'Data size mismatch when deserializing component/system'. These errors will not happen again once you saved your game.",
+                            "Ok");
+                    File.Create(filePath).Dispose();
+                }
+            }
+            
             IsIngame = mode == GameMode.Game;
 
             if (IsIngame)

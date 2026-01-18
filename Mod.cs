@@ -9,6 +9,7 @@ using Game.Citizens;
 using Game.Input;
 using Game.Modding;
 using Game.SceneFlow;
+using Game.UI;
 using Unity.Entities;
 using UnityEngine.InputSystem;
 using VehicleController.Systems;
@@ -149,6 +150,13 @@ namespace VehicleController
             {
                 log.Error($"Error during {nameof(OnDispose)}: {e.Message}");
             }
+        }
+
+        public static void ShowMessageDialog(string title, string message, string confirmAction)
+        {
+            GameManager.instance.userInterface.appBindings.ShowMessageDialog(
+                new MessageDialog(title, message, confirmAction), null);
+            
         }
     }
 }

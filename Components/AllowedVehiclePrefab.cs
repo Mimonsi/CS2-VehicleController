@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using Colossal.Serialization.Entities;
 using Game.Prefabs;
 using Unity.Collections;
+using ISerializable = Colossal.Serialization.Entities.ISerializable;
 
 namespace VehicleController.Components
 {
@@ -44,6 +46,7 @@ namespace VehicleController.Components
         public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
         {
             //Mod.Logger.Info($"Serializing AllowedVehiclePrefab: {PrefabName}");
+            writer.Write(DataMigrationVersion.InitialVersion); // Version number
             writer.Write(PrefabName.ToString());
         }
 
@@ -52,9 +55,15 @@ namespace VehicleController.Components
         /// </summary>
         public void Deserialize<TReader>(TReader reader) where TReader : IReader
         {
-            reader.Read(out string prefabNameStr);
-            PrefabName = new FixedString128Bytes(prefabNameStr);
-            //Mod.Logger.Info($"Deserialized AllowedVehiclePrefab: {PrefabName}");
+            reader.Read(out int version);
+            if (version == DataMigrationVersion.InitialVersion)
+            {
+                reader.Read(out string prefabNameStr);
+                PrefabName = new FixedString128Bytes(prefabNameStr);
+            }
+            //Mod.log.Warn("Serialization version mismatch in AllowedVehiclePrefab.Deserialize. Data has been lost");
+
+            //Mod.log.Info($"Deserialized AllowedVehiclePrefab: {PrefabName}");
         }
     }
 }
