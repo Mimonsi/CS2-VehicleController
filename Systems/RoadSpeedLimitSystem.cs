@@ -155,8 +155,9 @@ namespace VehicleController.Systems
         /// <returns>Speed the lane was set to</returns>
         private float SetLaneSpeed(Entity laneEntity, float modifier)
         {
+            bool recheckLane = false;
             var ignoreCarFlags = CarLaneFlags.Unsafe | CarLaneFlags.SideConnection;
-
+            // TODO: If modifier is -1, don't modify speed -> Caused by migration (new serialized version)
             try
             {
                 // Car Lane is used for Roads, Waterways
@@ -165,6 +166,13 @@ namespace VehicleController.Systems
                 {
                     if (EntityManager.TryGetComponent(laneEntity, out OriginalLaneSpeedLimit speedLimitModified))
                     {
+                        if (speedLimitModified.VanillaSpeedLimit < 0)
+                        {
+                            log.Trace(
+                                $"Found invalid VanillaSpeedLimit, fixing");
+                            recheckLane = true;
+                            return -1;
+                        }
                         log.Trace(
                             $"LaneSpeedLimit already exists, using {speedLimitModified.VanillaSpeedLimit} as start value");
                     }
@@ -212,9 +220,10 @@ namespace VehicleController.Systems
 
                 }
             }
-            finally // Regardless of case, add LaneSpeedLimitChecked to avoid rechecking
+            finally // Regardless of case, add LaneSpeedLimitChecked to avoid rechecking, except it is explicitly wanted
             {
-                EntityManager.AddComponent<LaneSpeedLimitChecked>(laneEntity);
+                if (!recheckLane)
+                    EntityManager.AddComponent<LaneSpeedLimitChecked>(laneEntity);
             }
 
             return -1;

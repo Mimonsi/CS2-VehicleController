@@ -188,6 +188,7 @@ namespace VehicleController.Systems
 
             if (IsIngame)
             {
+                log.Info($"Original Speed Limits deserialized: {Mod.OriginalSpeedLimitDeserialized}/{Mod.OriginalSpeedLimitCount}");
                 SaveVanillaPack();
                 LoadSelectedPropertyPack();
             }

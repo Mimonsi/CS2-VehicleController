@@ -95,6 +95,9 @@ namespace VehicleController
             
             log.Info("VehicleController mod loaded successfully with pack");
         }
+
+        public static int OriginalSpeedLimitCount = 0; // TODO: Temporary migration integers, remove later
+        public static int OriginalSpeedLimitDeserialized = 0;
         
         /// <summary>
         /// Copies embedded packs from the mod directory into the user data folder.
