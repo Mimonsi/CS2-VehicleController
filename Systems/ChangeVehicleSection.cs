@@ -814,13 +814,25 @@ namespace VehicleController.Systems
         
         private PrefabBase? GetPrefabBaseForName(string prefabName)
         {
-            if (m_PrefabSystem.TryGetPrefab(
+            // TODO: Make this work for custom assets
+            if (!m_PrefabSystem.TryGetPrefab(
                     new PrefabID("CarPrefab", prefabName),
                     out PrefabBase prefab))
             {
-                return prefab;
+                var prefabId = PrefabCacheSystem.GetPrefabIDByName(prefabName);
+                if (prefabId != null)
+                {
+                    PrefabID id = prefabId.Value;
+                    if (!m_PrefabSystem.TryGetPrefab(
+                            id,
+                            out prefab))
+                    {
+                        log.Warn($"Could not get prefab for name: {prefabName}. Thumbnail not loaded.");
+                        return null;
+                    }
+                }
             }
-            return null;
+            return prefab;
         }
 
         private Entity? GetEntityForName(string prefabName)
