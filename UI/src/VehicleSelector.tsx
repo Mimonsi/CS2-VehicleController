@@ -36,7 +36,7 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
             }}
             value={vehiclePrefab.prefabName}
             checked={selected}
-            onChange={() => trigger(mod.id, "SelectedVehicleChanged", prefabName)}
+            onChange={() => trigger("VehicleController.Systems.VehicleSelectionSection", "SelectedVehicleChanged", prefabName)}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
           >
               {dropdownItemContent}

@@ -642,7 +642,7 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
         [SettingsUIAdvanced]
         public bool RemoveAllowedVehiclePrefab 
         {
-            set => ChangeVehicleSection.Instance?.RemoveAllowedVehiclePrefabs();
+            set => Systems.VehicleSelectionSection.Instance?.RemoveAllowedVehiclePrefabs();
         }
         
         // [SettingsUISection(DebugSection, DebugComponentsGroup)]

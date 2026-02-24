@@ -21,7 +21,8 @@ const uilColored =                           "coui://uil/Colored/";
 const minimizeSrc =                     uilStandard + "ArrowsMinimize.svg";
 const expandSrc =                       uilStandard + "ArrowsExpand.svg";
 
-const Minimized$ = bindValue<boolean>(mod.id, "Minimized");
+const group = "VehicleController.Systems.VehicleSelectionSection";
+const Minimized$ = bindValue<boolean>(group, "Minimized");
 // The component for the change vehicle section
 export const SIPVehicleSelectorComponent = (componentList: any): any =>
 {
@@ -56,7 +57,7 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
 
   // Add ChangeVehicleSection to the component list.
   // Make sure section name is unique by including the mod id.
-  componentList["VehicleController.Systems.ChangeVehicleSection"] = (props: ChangeVehicleSection) =>
+  componentList["VehicleController.Systems.VehicleSelectionSection"] = (props: ChangeVehicleSection) =>
   {
     const Minimized = useValue(Minimized$);
     // Get the mod's translated text for the section heading and button.
@@ -83,24 +84,24 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     // Handle click on Change Now button
     function onChangeNowClicked()
     {
-      trigger(mod.id, "ChangeNowClicked");
+      trigger(group, "ChangeNowClicked");
     }
 
     // Handle click
     function onClearBufferClicked()
     {
-      trigger(mod.id, "ClearBufferClicked");
+      trigger(group, "ClearBufferClicked");
     }
 
     // Handle click
     function onDeleteOwnedClicked()
     {
-      trigger(mod.id, "DeleteOwnedVehiclesClicked");
+      trigger(group, "DeleteOwnedVehiclesClicked");
     }
 
     function minimizeClick()
     {
-      trigger(mod.id, "Minimize");
+      trigger(group, "Minimize");
     }
 
     // Construct the change company section.

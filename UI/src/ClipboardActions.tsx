@@ -22,7 +22,7 @@ export const ClipboardActions = (props : ClipboardActionsProps) => {
   {
     //trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1); // Sound already played by ToolButton
     //trigger("audio", "playSound", ModuleResolver.instance.UISound.xpEvent, 1);
-    trigger(mod.id, eventName);
+    trigger("VehicleController.Systems.VehicleSelectionSection", eventName);
   }
   
   const prefabName = `**${props.prefabName}**`
