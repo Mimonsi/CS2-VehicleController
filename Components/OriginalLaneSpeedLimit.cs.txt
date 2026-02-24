@@ -1,0 +1,30 @@
+﻿using Colossal.Serialization.Entities;
+using Unity.Entities;
+using VehicleController.Systems;
+
+namespace VehicleController.Components
+{
+    /// <summary>
+    /// Component to display Vehicle Controller has halved the speed limit for a road
+    /// </summary>
+    public struct OriginalLaneSpeedLimit : IComponentData, ISerializable
+    {
+        public float VanillaSpeedLimit;
+        
+        /// <summary>
+        /// Writes the prefab name to the save file.
+        /// </summary>
+        public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
+        {
+
+        }
+
+        /// <summary>
+        /// Reads the prefab name from the save file and restores the struct.
+        /// </summary>
+        public void Deserialize<TReader>(TReader reader) where TReader : IReader
+        {
+            CompatibilityRoadSpeedLimitSystem.StartReset = true;
+        }
+    }
+}

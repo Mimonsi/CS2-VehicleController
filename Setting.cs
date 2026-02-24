@@ -44,8 +44,8 @@ namespace VehicleController
     /// </summary>
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
     [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
-    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSpeedLimitGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
-    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, VehicleSpeedLimitGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, RoadSpeedLimitGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, RoadSpeedLimitGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -61,7 +61,7 @@ namespace VehicleController
         public const string VehiclePropertiesGroup = "Vehicle Properties";
         public const string VehicleStiffnessGroup = "Vehicle Stiffness";
         public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
-        public const string VehicleSpeedLimitGroup = "Vehicle Speed Limits";
+        public const string RoadSpeedLimitGroup = "Road Speed Limits";
         
         public const string VehicleSelectionSection = "Vehicle Selection";
         public const string VehicleSelectionGroup = "Vehicle Selection";
@@ -453,55 +453,68 @@ namespace VehicleController
             return extendedItems;
         }
         
-        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-        public bool SetSpeedLimitFactorRealistic
+        #region RoadSpeedLimitGroup
+        
+        [SettingsUISection(VehiclePropertiesSection, RoadSpeedLimitGroup)]
+        public bool ResetSpeedLimits
         {
-            set => SpeedLimitFactor = 0.5f;
+            set => CompatibilityRoadSpeedLimitSystem.Instance?.ResetAllSpeedLimits();
         }
         
-        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-        public bool SetSpeedLimitFactorVanilla
-        {
-            set => SpeedLimitFactor = 1f;
-        }
-        
-        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-        public bool SetSpeedLimitFactorDouble
-        {
-            set => SpeedLimitFactor = 2f;
-        }
-        
-        [SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-        public bool SetSpeedLimitFactorSuperSpeed
-        {
-            set => SpeedLimitFactor = 10f;
-        }
-        
-        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-        public bool CustomSpeedLimitFactor { get; set; }= false;
-        
-        private float _speedLimitFactor = 1f;
-        
-        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-        [SettingsUISlider(min=0.5f, max=10f, step=0.5f, unit=Unit.kFloatSingleFraction)]
-        [SettingsUIDisableByCondition(typeof(Setting), nameof(CustomSpeedLimitFactor), true)]
-        public float SpeedLimitFactor
-        {
-            get => _speedLimitFactor;
-            set
-            {
-                _speedLimitFactor = value;
-                RoadSpeedLimitSystem.Instance?.UnmarkAllLanes();
-            }
-        }
 
-        [SettingsUIAdvanced]
-        [SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-        public bool DisableSpeedLimitUpdate { get; set; } = false;
+/*[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+public bool SetSpeedLimitFactorRealistic
+{
+    set => SpeedLimitFactor = 0.5f;
+}
+
+public static float GetSpeedLimitModifier() => Instance!.SpeedLimitFactor;
+
+[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+public bool SetSpeedLimitFactorVanilla
+{
+    set => SpeedLimitFactor = 1f;
+}
+
+[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+public bool SetSpeedLimitFactorDouble
+{
+    set => SpeedLimitFactor = 2f;
+}
+
+[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
+[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+public bool SetSpeedLimitFactorSuperSpeed
+{
+    set => SpeedLimitFactor = 10f;
+}
+
+[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+public bool CustomSpeedLimitFactor { get; set; }= false;
+
+private float _speedLimitFactor = 1f;
+
+[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+[SettingsUISlider(min=0.5f, max=10f, step=0.5f, unit=Unit.kFloatSingleFraction)]
+[SettingsUIDisableByCondition(typeof(Setting), nameof(CustomSpeedLimitFactor), true)]
+public float SpeedLimitFactor
+{
+    get => _speedLimitFactor;
+    set
+    {
+        _speedLimitFactor = value;
+        RoadSpeedLimitSystem.Instance?.UnmarkAllLanes();
+    }
+}
+
+[SettingsUIAdvanced]
+[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
+public bool DisableSpeedLimitUpdate { get; set; } = false;*/
+        
+        #endregion
         
         
 
@@ -613,17 +626,17 @@ namespace VehicleController
             set => VehicleCounterSystem.Instance.CountPrefabInstances();
         }
         
-        [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        [SettingsUIAdvanced]
-        public bool ResetAllSpeedLimits 
-        {
-            set => RoadSpeedLimitSystem.Instance?.ResetAllSpeedLimits();
-        }
+        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        // [SettingsUIAdvanced]
+        // public bool ResetAllSpeedLimits 
+        // {
+        //     set => RoadSpeedLimitSystem.Instance?.ResetAllSpeedLimits();
+        // }
         
-        [SettingsUIAdvanced]
-        [SettingsUIKeyboardBinding(Mod.ResetSpeedLimitActionName)]
-        [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        public ProxyBinding ResetAllSpeedLimitsBinding { get; set; }
+        // [SettingsUIAdvanced]
+        // [SettingsUIKeyboardBinding(Mod.ResetSpeedLimitActionName)]
+        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        // public ProxyBinding ResetAllSpeedLimitsBinding { get; set; }
         
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
         [SettingsUIAdvanced]
@@ -632,26 +645,26 @@ namespace VehicleController
             set => ChangeVehicleSection.Instance?.RemoveAllowedVehiclePrefabs();
         }
         
-        [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        [SettingsUIAdvanced]
-        public bool RemoveSpeedLimitComponents 
-        {
-            set => RoadSpeedLimitSystem.Instance?.RemoveSpeedLimitComponents();
-        }
-        
+        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        // [SettingsUIAdvanced]
+        // public bool RemoveSpeedLimitComponents 
+        // {
+        //     set => RoadSpeedLimitSystem.Instance?.RemoveSpeedLimitComponents();
+        // }
+        //
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
         [SettingsUIAdvanced]
         public bool CountAllSpeedLimits 
         {
-            set => RoadSpeedLimitSystem.Instance?.CountAllSpeedLimits();
+            set => CompatibilityRoadSpeedLimitSystem.Instance?.CountAllSpeedLimits();
         }
-        
-        [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        [SettingsUIAdvanced]
-        public bool ManualUpdate 
-        {
-            set => RoadSpeedLimitSystem.Instance?.DoUpdate();
-        }
+        //
+        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        // [SettingsUIAdvanced]
+        // public bool ManualUpdate 
+        // {
+        //     set => RoadSpeedLimitSystem.Instance?.DoUpdate();
+        // }
         
         #endregion
         
@@ -712,8 +725,6 @@ namespace VehicleController
             
             VanProbability = 100;
         }
-
-        public static float GetSpeedLimitModifier() => Instance!.SpeedLimitFactor;
     }
 
     /// <summary>

@@ -48,7 +48,9 @@
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackFactor]": "Property Pack Factor",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackFactor]": "Multiplies all values by this factor. If you want to double all vehicle speeds, use factor 2.0.",
     
-    "Options.GROUP[VehicleController.VehicleController.Mod.Vehicle Speed Limits]": "Vehicle Speed Limits (experimental)",
+    "Options.GROUP[VehicleController.VehicleController.Mod.Road Speed Limits]": "Road Speed Limits (experimental)",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ResetSpeedLimits]": "Reset Speed Limits",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ResetSpeedLimits]": "Road Speed Limits are currently disabled. Click this button to reset to vanilla values. This should have happened automatically already when loading a save.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.CustomSpeedLimitFactor]": "Custom Speed Limit Factor",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.CustomSpeedLimitFactor]": "Enables a slider to set a custom speed limit factor value.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SpeedLimitFactor]": "Speed Limit Factor (experimental)",

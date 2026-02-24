@@ -30,15 +30,15 @@ namespace VehicleController
         public const string Name = "Vehicle Controller";
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
-        public static bool EnableProbabilitySystem = false;
-        public static bool EnablePropertySystem = false;
-        public static bool EnableVehicleCounterSystem = false;
-        public static bool EnableChangeVehicleSection = false;
+        public static bool EnableProbabilitySystem = true;
+        public static bool EnablePropertySystem = true;
+        public static bool EnableVehicleCounterSystem = true;
+        public static bool EnableChangeVehicleSection = true;
         public static bool EnableRoadSpeedLimitSystem = true;
-        public static bool EnableVehicleStiffnessSystem = false;
+        public static bool EnableVehicleStiffnessSystem = true;
         
-        public static ProxyAction ResetSpeedLimitAction;
-        public const string ResetSpeedLimitActionName = "VehicleController_ResetRoadSpeedLimits";
+        // public static ProxyAction ResetSpeedLimitAction;
+        // public const string ResetSpeedLimitActionName = "VehicleController_ResetRoadSpeedLimits";
 
         /// <summary>
         /// Called by the game when the mod is loaded.
@@ -63,7 +63,7 @@ namespace VehicleController
             if (EnableVehicleCounterSystem)
                 updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             if (EnableRoadSpeedLimitSystem)
-                updateSystem.UpdateAt<RoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop); // TODO: Road Speed System causes an error on loading a savegame twice in a row
+                updateSystem.UpdateAt<CompatibilityRoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop); // TODO: Road Speed System causes an error on loading a savegame twice in a row
             if (EnableChangeVehicleSection)
                 updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
             if (EnableVehicleStiffnessSystem)
@@ -84,13 +84,13 @@ namespace VehicleController
             AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
             
-            ResetSpeedLimitAction = Setting.Instance.GetAction(ResetSpeedLimitActionName);
-            ResetSpeedLimitAction.shouldBeEnabled = true;
-            ResetSpeedLimitAction.onInteraction += (_, phase) =>
-            {
-                if (phase == InputActionPhase.Performed)
-                    RoadSpeedLimitSystem.Instance.ResetAllSpeedLimits();
-            };
+            // ResetSpeedLimitAction = Setting.Instance.GetAction(ResetSpeedLimitActionName);
+            // ResetSpeedLimitAction.shouldBeEnabled = true;
+            // ResetSpeedLimitAction.onInteraction += (_, phase) =>
+            // {
+            //     if (phase == InputActionPhase.Performed)
+            //         RoadSpeedLimitSystem.Instance.ResetAllSpeedLimits();
+            // };
             
             log.Info("VehicleController mod loaded successfully with pack");
         }
