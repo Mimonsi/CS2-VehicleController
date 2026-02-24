@@ -38,7 +38,10 @@ namespace VehicleController.Systems
             base.OnCreate();
             Instance = this;
             Enabled = true;
-            log = Mod.log;
+            //log = Mod.log;
+            log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(VehicleProbabilitySystem)}")
+                .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Error);
+            log.effectivenessLevel = Level.Verbose;
             
             carQuery = SystemAPI.QueryBuilder().WithAll<PersonalCarData>().Build();
             

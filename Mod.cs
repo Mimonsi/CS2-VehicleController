@@ -53,6 +53,8 @@ namespace VehicleController
             
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
                 path = asset.path;
+            
+            //TODO: Next: Check what log outputs when vehicle probability system loads, if it even works
 
             CopyEmbeddedFiles();
             updateSystem.UpdateAt<PrefabCacheSystem>(SystemUpdatePhase.MainLoop);
