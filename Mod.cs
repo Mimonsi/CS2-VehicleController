@@ -30,12 +30,12 @@ namespace VehicleController
         public const string Name = "Vehicle Controller";
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
-        public static bool EnableProbabilitySystem = true;
-        public static bool EnablePropertySystem = true;
-        public static bool EnableVehicleCounterSystem = true;
-        public static bool EnableChangeVehicleSection = true;
+        public static bool EnableProbabilitySystem = false;
+        public static bool EnablePropertySystem = false;
+        public static bool EnableVehicleCounterSystem = false;
+        public static bool EnableChangeVehicleSection = false;
         public static bool EnableRoadSpeedLimitSystem = true;
-        public static bool EnableVehicleStiffnessSystem = true;
+        public static bool EnableVehicleStiffnessSystem = false;
         
         public static ProxyAction ResetSpeedLimitAction;
         public const string ResetSpeedLimitActionName = "VehicleController_ResetRoadSpeedLimits";
@@ -55,7 +55,6 @@ namespace VehicleController
                 path = asset.path;
 
             CopyEmbeddedFiles();
-            
             updateSystem.UpdateAt<PrefabCacheSystem>(SystemUpdatePhase.MainLoop);
             if (EnableProbabilitySystem)
                 updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
@@ -64,7 +63,7 @@ namespace VehicleController
             if (EnableVehicleCounterSystem)
                 updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             if (EnableRoadSpeedLimitSystem)
-                updateSystem.UpdateAt<RoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop);
+                updateSystem.UpdateAt<RoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop); // TODO: Road Speed System causes an error on loading a savegame twice in a row
             if (EnableChangeVehicleSection)
                 updateSystem.UpdateAt<ChangeVehicleSection>(SystemUpdatePhase.PreCulling);
             if (EnableVehicleStiffnessSystem)
@@ -95,9 +94,6 @@ namespace VehicleController
             
             log.Info("VehicleController mod loaded successfully with pack");
         }
-
-        public static int OriginalSpeedLimitCount = 0; // TODO: Temporary migration integers, remove later
-        public static int OriginalSpeedLimitDeserialized = 0;
         
         /// <summary>
         /// Copies embedded packs from the mod directory into the user data folder.

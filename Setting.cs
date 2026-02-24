@@ -495,7 +495,7 @@ namespace VehicleController
             set
             {
                 _speedLimitFactor = value;
-                RoadSpeedLimitSystem.UnmarkAllLanes();
+                RoadSpeedLimitSystem.Instance?.UnmarkAllLanes();
             }
         }
 
@@ -629,7 +629,7 @@ namespace VehicleController
         [SettingsUIAdvanced]
         public bool RemoveAllowedVehiclePrefab 
         {
-            set => ChangeVehicleSection.RemoveAllowedVehiclePrefabs();
+            set => ChangeVehicleSection.Instance?.RemoveAllowedVehiclePrefabs();
         }
         
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
@@ -637,6 +637,20 @@ namespace VehicleController
         public bool RemoveSpeedLimitComponents 
         {
             set => RoadSpeedLimitSystem.Instance?.RemoveSpeedLimitComponents();
+        }
+        
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        [SettingsUIAdvanced]
+        public bool CountAllSpeedLimits 
+        {
+            set => RoadSpeedLimitSystem.Instance?.CountAllSpeedLimits();
+        }
+        
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        [SettingsUIAdvanced]
+        public bool ManualUpdate 
+        {
+            set => RoadSpeedLimitSystem.Instance?.DoUpdate();
         }
         
         #endregion

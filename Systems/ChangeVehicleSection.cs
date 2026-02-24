@@ -934,7 +934,7 @@ namespace VehicleController.Systems
 
         protected override string group => nameof(ChangeVehicleSection);
 
-        public static void RemoveAllowedVehiclePrefabs()
+        public void RemoveAllowedVehiclePrefabs()
         {
             var componentQuery = Instance.GetEntityQuery(new EntityQueryDesc
             {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Colossal.Entities;
 using Colossal.Logging;
 using Colossal.Serialization.Entities;
@@ -21,13 +22,19 @@ namespace VehicleController.Systems
     /// </summary>
     public partial class RoadSpeedLimitSystem : GameSystemBase
     {
-        private static ILog log;
+        public static ILog log;
         private EntityQuery _uneditedLaneEntityQuery;
         private EntityQuery _checkedLanesQuery;
+        private EntityQuery _changedLanesQuery;
 
         private PrefabSystem prefabSystem;
         public static RoadSpeedLimitSystem? Instance { get; private set; }
         private GameMode currentGameMode = GameMode.None;
+        
+        public static int OriginalSpeedLimitCount = 0; // TODO: Temporary migration integers, remove later
+        public static int OriginalSpeedLimitDeserialized = 0;
+        public static bool MigrationFailed = false;
+        public bool UpdateEnabled = false; // Enables or disables the speed limit updates
         
         /// <summary>
         /// Creates entity queries and prepares the system.
@@ -36,9 +43,10 @@ namespace VehicleController.Systems
         {
             base.OnCreate();
             Instance = this;
-            log = Mod.log;
-            //log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(RoadSpeedLimitSystem)}")
-            //    .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Error);
+            //log = Mod.log;
+            log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(RoadSpeedLimitSystem)}")
+                .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Error);
+            log.effectivenessLevel = Level.Verbose;
             Enabled = true;
             
             _uneditedLaneEntityQuery = SystemAPI
@@ -48,6 +56,7 @@ namespace VehicleController.Systems
                 .Build();
 
             _checkedLanesQuery = SystemAPI.QueryBuilder().WithAny<LaneSpeedLimitChecked>().Build();
+            _changedLanesQuery = SystemAPI.QueryBuilder().WithAny<LaneSpeedLimitChecked, OriginalLaneSpeedLimit>().Build();
             
             //RequireForUpdate(_uneditedRoadPrefabQuery);
             RequireForUpdate(_uneditedLaneEntityQuery);
@@ -60,6 +69,16 @@ namespace VehicleController.Systems
         {
             base.OnGameLoadingComplete(purpose, mode);
             currentGameMode = mode;
+
+            if (mode == GameMode.Game)
+            {
+                log.Info($"Original Speed Limits deserialized: {OriginalSpeedLimitDeserialized}/{OriginalSpeedLimitCount}");
+                if (MigrationFailed)
+                {
+                    log.Warn("Migration failed, resetting all data");
+                    ResetAllSpeedLimits();
+                }
+            }
         }
 
 
@@ -72,27 +91,79 @@ namespace VehicleController.Systems
             {
                 return;
             }*/
-            if (currentGameMode != GameMode.Game || Setting.Instance!.DisableSpeedLimitUpdate)
+            if (currentGameMode != GameMode.Game || Setting.Instance!.DisableSpeedLimitUpdate || !UpdateEnabled)
                 return;
-            log.Debug("Updating road speed limits for unedited lanes.");
-            UpdateSpeedForLanes(_uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp), Setting.GetSpeedLimitModifier());
-            _lastUpdateTime = DateTime.Now;
+            DoUpdate();
             
         }
 
-        public static void UnmarkAllLanes(bool removeOriginalLimit = false)
+        public void DoUpdate()
         {
-            if (Instance == null)
+            log.Debug("Updating road speed limits for unedited lanes.");
+            UpdateSpeedForLanes(_uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp), Setting.GetSpeedLimitModifier());
+            _lastUpdateTime = DateTime.Now;
+        }
+
+        public void UnmarkAllLanesAndRemove()
+        {
+            
+        }
+        
+        // Removes Checked component from all lanes, causing a re-check on next update
+        public void UnmarkAllLanes(bool removeOriginalLimit = false)
+        {
+            /*if (Instance == null)
             {
                 Mod.log.Warn("RoadSpeedLimitSystem instance is null, cannot trigger update.");
                 return;
-            }
+            }*/
             log.Debug("Marking all checked lanes as unchecked");
+            int checksRemoved = 0, originalLimitsRemoved = 0;
             foreach(var entity in Instance._checkedLanesQuery.ToEntityArray(Allocator.Temp))
             {
                 Instance.EntityManager.RemoveComponent<LaneSpeedLimitChecked>(entity);
+                checksRemoved++;
                 if (removeOriginalLimit && Instance.EntityManager.HasComponent<OriginalLaneSpeedLimit>(entity))
+                {
                     Instance.EntityManager.RemoveComponent<OriginalLaneSpeedLimit>(entity);
+                    originalLimitsRemoved++;
+                }
+            }
+            log.Debug($"Removed {checksRemoved} LaneSpeedLimitChecked components and {originalLimitsRemoved} OriginalLaneSpeedLimit components.");
+        }
+
+        public void CountAllSpeedLimits()
+        {
+            log.Info("Printing all road/track lane speed limits:");
+            Dictionary<float, int> speedLimitCounts = new Dictionary<float, int>();
+            foreach (var entity in Instance._checkedLanesQuery.ToEntityArray(Allocator.Temp))
+            {
+                if (Instance.EntityManager.TryGetComponent(entity, out CarLane carLane))
+                {
+                    log.Verbose(
+                        $"CarLane Entity {entity.ToString()}: Speed Limit = {FormatSpeedLimit(carLane.m_SpeedLimit)}");
+                    int limit = (int)carLane.m_SpeedLimit;
+                    if (!speedLimitCounts.ContainsKey(limit))
+                        speedLimitCounts[limit] = 0;
+                    speedLimitCounts[limit]++;
+                }
+
+                if (Instance.EntityManager.TryGetComponent(entity, out TrackLane trackLane))
+                {
+                    var limit = (int)trackLane.m_SpeedLimit;
+                    if (!speedLimitCounts.ContainsKey(limit))
+                        speedLimitCounts[limit] = 0;
+                    speedLimitCounts[limit]++;
+                    log.Verbose(
+                        $"TrackLane Entity {entity.ToString()}: Speed Limit = {FormatSpeedLimit(limit)}");
+                }
+            }
+            log.Info("Speed limit counts:");
+            // Sort by count descending
+            speedLimitCounts = new Dictionary<float, int>(speedLimitCounts.OrderByDescending(x => x.Value));
+            foreach (var key in speedLimitCounts.Keys)
+            {
+                log.Info($"Speed Limit {FormatSpeedLimit(key)}: {speedLimitCounts[key]} lanes");
             }
         }
 
@@ -168,8 +239,9 @@ namespace VehicleController.Systems
                     {
                         if (speedLimitModified.VanillaSpeedLimit < 0)
                         {
+                            EntityManager.RemoveComponent<OriginalLaneSpeedLimit>(laneEntity);
                             log.Trace(
-                                $"Found invalid VanillaSpeedLimit, fixing");
+                                $"Found invalid VanillaSpeedLimit, removed OriginalLaneSpeedLimit component to reinitialize");
                             recheckLane = true;
                             return -1;
                         }
@@ -230,6 +302,7 @@ namespace VehicleController.Systems
             
         }
         
+        // TODO: Obsolete?
         public void RemoveSpeedLimitComponents()
         {
             var query = SystemAPI.QueryBuilder().WithAny<OriginalLaneSpeedLimit, LaneSpeedLimitChecked>().Build();
@@ -251,8 +324,11 @@ namespace VehicleController.Systems
             //log.Debug($"Updated road prefab {prefabSystem.GetPrefabName(entity)} speed limit to {FormatSpeedLimit(carLane.m_SpeedLimit)}).");
             Dictionary<float, int> entityAmountBySpeedLimit = new Dictionary<float, int>();
             log.Info("Debug Option: Reset all road speed limits to vanilla values.");
-            UnmarkAllLanes(true);
-            foreach (var entity in _uneditedLaneEntityQuery.ToEntityArray(Allocator.Temp))
+            
+            // Get all entities that have either OriginalLaneSpeedLimit or LaneSpeedLimitChecked
+            var entities = _changedLanesQuery.ToEntityArray(Allocator.Temp);
+            log.Debug($"Found {entities.Length} unedited lane entities to reset.");
+            foreach (var entity in entities)
             {
                 if (EntityManager.TryGetComponent<CarLane>(entity, out var carLane))
                 {
@@ -289,6 +365,10 @@ namespace VehicleController.Systems
                         }
                     }
                 }
+                if (EntityManager.HasComponent<LaneSpeedLimitChecked>(entity))
+                    EntityManager.RemoveComponent<LaneSpeedLimitChecked>(entity);
+                if (EntityManager.HasComponent<OriginalLaneSpeedLimit>(entity))
+                    EntityManager.RemoveComponent<OriginalLaneSpeedLimit>(entity);
             }
             
             foreach (var pair in entityAmountBySpeedLimit)

@@ -42,7 +42,7 @@
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ExportVanillaPack]": "Export Vanilla Pack",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ExportVanillaPack]": "Activate currently active properties as Vanilla Pack. This will overwrite the existing Vanilla Pack.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DefaultPropertyPackDropdown]": "Default Property Pack",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DefaultPropertyPackDropdown]": "Choose which Property Pack to use per Default. This pack will be used unless a save game specific pack is selected below. The following packs can be used: \n\nVanilla: Normal Base Game Vehicle Behaviour\nImproved: More detailed and realistic behaviour (recommended)\nRealistic: Like improved pack, but max speed is halved",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DefaultPropertyPackDropdown]": "Choose which Property Pack to use per Default. This pack will be used unless a save game specific pack is selected below. The following packs can be used: \n\nVanilla: Normal Base Game Vehicle Behaviour\nImproved: More detailed and realistic behaviour (recommended)\n",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackDropdown]": "Savegame Property Pack",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackDropdown]": "Choose which Property Pack to use in this specific savegame",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.SavegamePropertyPackFactor]": "Property Pack Factor",
@@ -108,5 +108,9 @@
     "Options.OPTION[VehicleController.VehicleController.Mod/VehicleController_ResetRoadSpeedLimits/binding]": "Reset All Speed Limit Modifications",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveAllowedVehiclePrefab]": "Removes all AllowedVehiclePrefab components from your current savegame. These are used to control which vehicles can spawn for each building.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitComponents]": "Remove Speed Limit Components",
-    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitComponents]": "Removes all Speed Limit components from your current savegame. WARNING: This will NOT revert any speed limit changes made to roads by the mod."
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.RemoveSpeedLimitComponents]": "Removes all Speed Limit components from your current savegame. WARNING: This will NOT revert any speed limit changes made to roads by the mod.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.CountAllSpeedLimits]": "Count All Speed Limits",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.CountAllSpeedLimits]": "Counts the number of entities that have a specific speed limit.",
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.ManualUpdate]": "Force One Manual Update",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.ManualUpdate]": "Forces a manual update of the RoadSpeedLimitSystem."
 }
