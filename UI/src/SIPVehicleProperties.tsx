@@ -3,6 +3,7 @@ import { SelectedInfoSectionBase    } from "cs2/bindings";
 import { useLocalization            } from "cs2/l10n";
 import {FormattedParagraphs, } from "cs2/ui";
 import { VehicleSelector            } from "./VehicleSelector";
+import { ProbabilityComponent            } from "./ProbabilityComponent";
 import { ClipboardActions } from "./ClipboardActions";
 import { ModuleResolver             } from "./ModuleResolver";
 import   mod                          from "../mod.json";
@@ -102,6 +103,14 @@ export const SipVehicleProperties = (componentList: any): any =>
                   />
                 </>
               }
+              disableFocus={false}
+            />
+            <ModuleResolver.instance.InfoRow
+              left={
+              <ProbabilityComponent text={"Probability"} initialValue={100}/>
+              }
+              uppercase={false}
+              tooltip={<FormattedParagraphs>Hello **there**</FormattedParagraphs>}
               disableFocus={false}
             />
           </>
