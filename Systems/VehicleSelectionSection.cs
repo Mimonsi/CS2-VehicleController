@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
-using Colossal;
 using Colossal.Collections;
 using Colossal.Entities;
 using Colossal.Logging;
@@ -12,8 +10,6 @@ using Game;
 using Game.Areas;
 using Game.Common;
 using Game.Prefabs;
-using Game.Rendering;
-using Game.SceneFlow;
 using Game.UI;
 using Game.UI.InGame;
 using Game.Vehicles;
@@ -172,6 +168,7 @@ namespace VehicleController.Systems
                 EntityManager.AddComponent<Deleted>(entity);
             }
             log.Info("Deleted " + entities.Length + " vehicles for entity: " + selectedEntity);
+            TriggerUpdate();
         }
 
         private void ClearBufferClicked()
@@ -485,6 +482,7 @@ namespace VehicleController.Systems
             NativeArray<Entity> entitiesArray = new NativeArray<Entity>(entities, Allocator.Temp);
             log.Debug($"Changing vehicle prefabs for {entitiesArray.Length} existing service vehicles.");
             ChangeVehiclePrefabs(entitiesArray);
+            TriggerUpdate();
         }
 
         /// <summary>
@@ -568,6 +566,7 @@ namespace VehicleController.Systems
         
         private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
         {
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
             List<string> allowedVehicleNames = new List<string>();
             
             // Collect all allowed vehicle prefab names
@@ -639,8 +638,9 @@ namespace VehicleController.Systems
                     return;
                 }
                 log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
-                EntityManager.SetComponentData(vehicleEntity, prefabRef);
-                EntityManager.AddComponent<Updated>(vehicleEntity); // TODO: Investigate if this is crash reason, maybe use EntityCommandBuffer
+                buffer.SetComponent(vehicleEntity, prefabRef);
+                buffer.AddComponent<Updated>(vehicleEntity); // TODO: Investigate if this is crash reason, maybe use EntityCommandBuffer
+                
                 log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
                 return;
             }
@@ -672,6 +672,8 @@ namespace VehicleController.Systems
         /// </summary>
         private void ChangeVehiclePrefabs(NativeArray<Entity> entities)
         {
+            if (entities.Length == 0) // Performance skip code if no results
+                return;
             // Loop through all vehicles that were just created (might be multiple in one frame)
             foreach (Entity entity in entities)
             {
