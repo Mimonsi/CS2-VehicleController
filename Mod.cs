@@ -46,7 +46,7 @@ namespace VehicleController
         /// </summary>
         public void OnLoad(UpdateSystem updateSystem)
         {
-            //Logger.keepStreamOpen = false; // TEST: Solution for logger bug?
+            log.keepStreamOpen = true; // TEST: Solution for logger bug?
             
             log.Info("Loading VehicleController mod");
             //log.effectivenessLevel = Level.Debug;
@@ -67,7 +67,7 @@ namespace VehicleController
             if (EnableRoadSpeedLimitSystem)
                 updateSystem.UpdateAt<CompatibilityRoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop); // TODO: Road Speed System causes an error on loading a savegame twice in a row
             if (EnableChangeVehicleSection)
-                updateSystem.UpdateAt<VehicleSelectionSection>(SystemUpdatePhase.PreCulling);
+                updateSystem.UpdateAt<VehicleSelectionSection>(SystemUpdatePhase.UIUpdate);
             if (EnableProbabilitySystem || EnablePropertySystem)
                 updateSystem.UpdateAt<VehiclePropertiesSection>(SystemUpdatePhase.PreCulling);
             if (EnableVehicleStiffnessSystem)

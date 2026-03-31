@@ -64,6 +64,11 @@ namespace VehicleController.Systems
         };
 
         private static readonly ComponentType s_CarDataComponent = ComponentType.ReadOnly<CarData>();
+        private static readonly ComponentType s_HelicopterDataComponent = ComponentType.ReadOnly<HelicopterData>();
+
+        private Dictionary<ServiceType, List<SelectableVehiclePrefab>> _availableHelicopterPrefabs = new();
+        private EntityQuery m_ExistingHelicopterQuery;
+        private EntityQuery m_CreatedHelicopterQuery;
         
         
         // <inheritdoc/>
@@ -90,6 +95,7 @@ namespace VehicleController.Systems
 
             // UI -> C#
             AddBinding(new TriggerBinding<string>(group, "SelectedVehicleChanged", SelectedVehicleChanged));
+            AddBinding(new TriggerBinding<string>(group, "SelectedHelicopterChanged", SelectedHelicopterChanged));
             AddBinding(new TriggerBinding(group, "ChangeNowClicked", ChangeNowClicked));
             AddBinding(new TriggerBinding(group, "ClearBufferClicked", ClearBufferClicked));
             AddBinding(new TriggerBinding(group, "DeleteOwnedVehiclesClicked", DeleteOwnedVehiclesClicked));
@@ -120,6 +126,8 @@ namespace VehicleController.Systems
             
             m_CreatedServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: true);
             m_ExistingServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: false);
+            m_CreatedHelicopterQuery = CreateHelicopterQuery(requireCreatedComponent: true);
+            m_ExistingHelicopterQuery = CreateHelicopterQuery(requireCreatedComponent: false);
             m_ServiceBuildingQuery = GetEntityQuery(new EntityQueryDesc
             {
                 All = new[]
@@ -129,7 +137,8 @@ namespace VehicleController.Systems
                 Any = s_ServiceBuildingComponentTypes
             });
             
-            RequireForUpdate(m_CreatedServiceVehicleQuery);
+            // Note: Not using RequireForUpdate since we need to handle both cars AND helicopters.
+            // The old single-query approach would miss helicopter-only creation frames.
 
             //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
             log.Info($"ChangeVehicleSection created with group {group}");
@@ -156,31 +165,80 @@ namespace VehicleController.Systems
             });
         }
 
+        private EntityQuery CreateHelicopterQuery(bool requireCreatedComponent)
+        {
+            List<ComponentType> allComponents = new List<ComponentType>
+            {
+                ComponentType.ReadOnly<Game.Common.Owner>(),
+                ComponentType.ReadOnly<Helicopter>()
+            };
+
+            if (requireCreatedComponent)
+            {
+                allComponents.Add(ComponentType.ReadOnly<Created>());
+            }
+
+            return GetEntityQuery(new EntityQueryDesc
+            {
+                All = allComponents.ToArray(),
+                Any = s_ServiceVehicleComponentTypes,
+                None = s_ServiceVehicleExcludedComponents
+            });
+        }
+
         private void DeleteOwnedVehiclesClicked()
         {
+            // TODO: Don't use query, but Building.OwnedVehicles[] instead
             log.Trace("DeleteVehicles clicked");
+            int totalDeleted = 0;
+            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+
+            // Delete owned cars
             NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
+            var carEntities = existingServiceVehicleEntities
+                .Where(e => EntityManager.HasComponent<Game.Common.Owner>(e) &&
+                            EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity).ToArray();
+
+            foreach (var carEntity in carEntities)
+            {
+                buffer.AddComponent<Deleted>(carEntity);
+            }
             
-            // Filter by owner = selectedEntity
-            var entities = existingServiceVehicleEntities
+            totalDeleted += carEntities.Length;
+
+            // Delete owned helicopters
+            /*NativeArray<Entity> existingHelicopterEntities = m_ExistingHelicopterQuery.ToEntityArray(Allocator.Temp);
+            var heliEntities = existingHelicopterEntities
                 .Where(e => EntityManager.HasComponent<Game.Common.Owner>(e) &&
                             EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity)
                 .ToArray();
-
-            foreach (Entity entity in entities)
+            foreach (Entity entity in heliEntities)
             {
-                EntityManager.AddComponent<Deleted>(entity);
+                buffer.DestroyEntity(entity);
             }
-            log.Info("Deleted " + entities.Length + " vehicles for entity: " + selectedEntity);
+            totalDeleted += heliEntities.Length;*/
+            
+            log.Info("Deleted " + totalDeleted + " vehicles (cars + helicopters) for entity: " + selectedEntity);
+            //TriggerUpdate();
         }
 
         private void ClearBufferClicked()
         {
             log.Trace("ClearBufferClicked");
+            bool cleared = false;
             if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
             {
                 EntityManager.RemoveComponent<AllowedVehiclePrefab>(selectedEntity);
-                log.Info("Buffer has been cleared for entity: " + selectedEntity);
+                cleared = true;
+            }
+            if (EntityManager.HasBuffer<AllowedHelicopterPrefab>(selectedEntity))
+            {
+                EntityManager.RemoveComponent<AllowedHelicopterPrefab>(selectedEntity);
+                cleared = true;
+            }
+            if (cleared)
+            {
+                log.Info("Buffers have been cleared for entity: " + selectedEntity);
                 TriggerUpdate();
             }
         }
@@ -434,15 +492,20 @@ namespace VehicleController.Systems
         private void SelectedVehicleChanged(string prefabName)
         {
             log.Verbose("SelectedVehicleChanged: " + prefabName);
-            // Don't save dummy element
             if (prefabName.Contains("Vehicles Selected"))
                 return;
-            // Save selected company index.
-            //_selectedCompanyIndex = selectedCompanyIndex;
             log.Info("SelectedVehicleChanged: " + prefabName);
-            // Send selected company index back to the UI so the correct dropdown entry is highlighted.
-            //_bindingSelectedCompanyIndex.Update(_selectedCompanyIndex);
             AddAllowedVehicle(prefabName);
+        }
+
+        /// <summary>
+        /// Handle change to selected helicopter in the dropdown list.
+        /// </summary>
+        private void SelectedHelicopterChanged(string prefabName)
+        {
+            log.Verbose("SelectedHelicopterChanged: " + prefabName);
+            log.Info("SelectedHelicopterChanged: " + prefabName);
+            AddAllowedHelicopter(prefabName);
         }
 
         /// <summary>
@@ -461,8 +524,31 @@ namespace VehicleController.Systems
                 log.Debug("Added allowed vehicle prefab: " + prefabName);
             }
             else
-            { 
+            {
                 log.Debug($"Vehicle prefab {prefabName} already exists in allowed vehicles, therefore it is being removed");
+                CollectionUtils.RemoveValue(buffer, prefab);
+            }
+            TriggerUpdate();
+        }
+
+        /// <summary>
+        /// Toggles the presence of a prefab in the allowed helicopter list for the selected building.
+        /// </summary>
+        private void AddAllowedHelicopter(string prefabName)
+        {
+            if (!EntityManager.HasBuffer<AllowedHelicopterPrefab>(selectedEntity))
+            {
+                EntityManager.AddBuffer<AllowedHelicopterPrefab>(selectedEntity);
+            }
+            var buffer = EntityManager.GetBuffer<AllowedHelicopterPrefab>(selectedEntity);
+            var prefab = new AllowedHelicopterPrefab() { PrefabName = prefabName };
+            if (CollectionUtils.TryAddUniqueValue(buffer, prefab))
+            {
+                log.Debug("Added allowed helicopter prefab: " + prefabName);
+            }
+            else
+            {
+                log.Debug($"Helicopter prefab {prefabName} already exists in allowed helicopters, therefore it is being removed");
                 CollectionUtils.RemoveValue(buffer, prefab);
             }
             TriggerUpdate();
@@ -474,21 +560,30 @@ namespace VehicleController.Systems
         private void ChangeNowClicked()
         {
             log.Verbose("ChangeNow clicked");
+
+            // Apply to existing cars
             NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
-            
-            // Filter by owner = selectedEntity
-            var entities = existingServiceVehicleEntities
+            var carEntities = existingServiceVehicleEntities
                 .Where(e => EntityManager.HasComponent<Game.Common.Owner>(e) &&
                             EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity)
                 .ToArray();
-            
-            NativeArray<Entity> entitiesArray = new NativeArray<Entity>(entities, Allocator.Temp);
-            log.Debug($"Changing vehicle prefabs for {entitiesArray.Length} existing service vehicles.");
-            ChangeVehiclePrefabs(entitiesArray);
+            NativeArray<Entity> carArray = new NativeArray<Entity>(carEntities, Allocator.Temp);
+            log.Debug($"Changing vehicle prefabs for {carArray.Length} existing service vehicles.");
+            ChangeVehiclePrefabs(carArray);
+
+            // Apply to existing helicopters
+            NativeArray<Entity> existingHelicopterEntities = m_ExistingHelicopterQuery.ToEntityArray(Allocator.Temp);
+            var heliEntities = existingHelicopterEntities
+                .Where(e => EntityManager.HasComponent<Game.Common.Owner>(e) &&
+                            EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity)
+                .ToArray();
+            NativeArray<Entity> heliArray = new NativeArray<Entity>(heliEntities, Allocator.Temp);
+            log.Debug($"Changing helicopter prefabs for {heliArray.Length} existing helicopters.");
+            ChangeHelicopterPrefabs(heliArray);
         }
 
         /// <summary>
-        /// Scans the world for service vehicle prefabs and stores them by service type.
+        /// Scans the world for service vehicle prefabs (cars) and stores them by service type.
         /// </summary>
         private void PopulateAvailableVehicles()
         {
@@ -523,7 +618,47 @@ namespace VehicleController.Systems
                     prefabEntities.Dispose();
                 }
             }
+        }
 
+        /// <summary>
+        /// Scans the world for helicopter prefabs and stores them by service type.
+        /// </summary>
+        private void PopulateAvailableHelicopters()
+        {
+            _availableHelicopterPrefabs.Clear();
+
+            foreach (var descriptor in s_ServiceDescriptors)
+            {
+                if (descriptor.VehiclePrefabComponents.Length == 0)
+                {
+                    continue;
+                }
+
+                List<ComponentType> prefabComponents = new List<ComponentType>(descriptor.VehiclePrefabComponents.Length + 1)
+                {
+                    s_HelicopterDataComponent
+                };
+                prefabComponents.AddRange(descriptor.VehiclePrefabComponents);
+
+                EntityQuery query = GetEntityQuery(new EntityQueryDesc
+                {
+                    All = prefabComponents.ToArray()
+                });
+
+                NativeArray<Entity> prefabEntities = query.ToEntityArray(Allocator.Temp);
+                try
+                {
+                    var helicopterPrefabs = GetPrefabsForType(descriptor.ServiceType, prefabEntities);
+                    if (helicopterPrefabs.Count > 0)
+                    {
+                        _availableHelicopterPrefabs[descriptor.ServiceType] = helicopterPrefabs;
+                    }
+                }
+                finally
+                {
+                    prefabEntities.Dispose();
+                }
+            }
         }
 
         private List<SelectableVehiclePrefab> GetPrefabsForType(ServiceType type, NativeArray<Entity> entities)
@@ -648,15 +783,20 @@ namespace VehicleController.Systems
         }
 
         /// <summary>
-        /// Called each frame to handle newly created service vehicles.
+        /// Called each frame to handle newly created service vehicles (cars and helicopters).
         /// </summary>
         private void VehicleCreated()
         {
-            NativeArray<Entity> entities = m_CreatedServiceVehicleQuery.ToEntityArray(Allocator.Temp);
-            //EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
-            log.Verbose($"Calling Change Vehicle Prefabs for {entities.Length} created vehicles.");
-            ChangeVehiclePrefabs(entities);
-            log.Verbose("Finished Change Vehicle Prefabs");
+            // Handle newly created cars
+            NativeArray<Entity> carEntities = m_CreatedServiceVehicleQuery.ToEntityArray(Allocator.Temp);
+            log.Verbose($"Calling Change Vehicle Prefabs for {carEntities.Length} created vehicles.");
+            ChangeVehiclePrefabs(carEntities);
+
+            // Handle newly created helicopters
+            NativeArray<Entity> heliEntities = m_CreatedHelicopterQuery.ToEntityArray(Allocator.Temp);
+            log.Verbose($"Calling Change Helicopter Prefabs for {heliEntities.Length} created helicopters.");
+            ChangeHelicopterPrefabs(heliEntities);
+            log.Verbose("Finished Change Vehicle/Helicopter Prefabs");
         }
 
         /// <summary>
@@ -664,7 +804,9 @@ namespace VehicleController.Systems
         /// </summary>
         private void TriggerUpdate()
         {
+            log.Debug("Triggering update");
             _selectedInfoUISystem.SetDirty();
+            log.Debug("Update triggered");
         }
 
         /// <summary>
@@ -672,13 +814,10 @@ namespace VehicleController.Systems
         /// </summary>
         private void ChangeVehiclePrefabs(NativeArray<Entity> entities)
         {
-            // Loop through all vehicles that were just created (might be multiple in one frame)
             foreach (Entity entity in entities)
             {
-                // Has Owner
                 if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner != Entity.Null)
                 {
-                    // Get allowed vehicle list form owner (service building)
                     if (EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<AllowedVehiclePrefab> allowedVehicles))
                     {
                         if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
@@ -687,6 +826,84 @@ namespace VehicleController.Systems
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Iterates over the provided helicopter entities and replaces their prefab if needed.
+        /// </summary>
+        private void ChangeHelicopterPrefabs(NativeArray<Entity> entities)
+        {
+            foreach (Entity entity in entities)
+            {
+                if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner != Entity.Null)
+                {
+                    if (EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<AllowedHelicopterPrefab> allowedHelicopters))
+                    {
+                        // Convert to the same format used by ChangePrefabToRandomAllowedPrefab
+                        DynamicBuffer<AllowedVehiclePrefab> tempBuffer = default;
+                        var allowedNames = new List<string>();
+                        foreach (var heli in allowedHelicopters)
+                        {
+                            if (!string.IsNullOrEmpty(heli.PrefabName.ToString()))
+                                allowedNames.Add(heli.PrefabName.ToString());
+                        }
+                        if (allowedNames.Count == 0) continue;
+
+                        if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
+                        {
+                            ChangePrefabToRandomAllowed(entity, prefabRef, allowedNames);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Changes a vehicle/helicopter entity to a random prefab from the given name list.
+        /// </summary>
+        private void ChangePrefabToRandomAllowed(Entity vehicleEntity, PrefabRef prefabRef, List<string> allowedNames)
+        {
+            if (allowedNames.Count == 0) return;
+
+            int index = UnityEngine.Random.Range(0, allowedNames.Count);
+            var newPrefabName = allowedNames[index];
+
+            if (m_PrefabSystem.TryGetPrefab(prefabRef, out VehiclePrefab currentPrefab))
+                log.Debug($"Changing {currentPrefab} Prefab to {newPrefabName}");
+
+            // Try CarPrefab first, then HelicopterPrefab, then cache fallback
+            PrefabBase newPrefab;
+            if (!m_PrefabSystem.TryGetPrefab(new PrefabID("CarPrefab", newPrefabName), out newPrefab) &&
+                !m_PrefabSystem.TryGetPrefab(new PrefabID("HelicopterPrefab", newPrefabName), out newPrefab))
+            {
+                var prefabId = PrefabCacheSystem.GetPrefabIDByName(newPrefabName);
+                if (prefabId != null)
+                {
+                    if (!m_PrefabSystem.TryGetPrefab(prefabId.Value, out newPrefab))
+                    {
+                        log.Warn($"Could not get prefab for name: {newPrefabName}. Aborting change.");
+                        return;
+                    }
+                }
+                else
+                {
+                    log.Warn("prefabId is null for prefab name: " + newPrefabName);
+                    return;
+                }
+            }
+
+            if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity))
+            {
+                prefabRef.m_Prefab = prefabEntity;
+                if (!EntityManager.Exists(vehicleEntity)) return;
+                EntityManager.SetComponentData(vehicleEntity, prefabRef);
+                EntityManager.AddComponent<Updated>(vehicleEntity);
+                log.Verbose("Changed vehicle/helicopter prefab to: " + newPrefab.name);
+            }
+            else
+            {
+                log.Warn("Could not find entity for new prefab: " + newPrefab.name);
             }
         }
 
@@ -822,21 +1039,25 @@ namespace VehicleController.Systems
         
         private PrefabBase? GetPrefabBaseForName(string prefabName)
         {
-            // TODO: Make this work for custom assets (why did I leave this comment, they _seem_ to work just fine now?)
             if (!m_PrefabSystem.TryGetPrefab(
                     new PrefabID("CarPrefab", prefabName),
                     out PrefabBase prefab))
             {
-                var prefabId = PrefabCacheSystem.GetPrefabIDByName(prefabName);
-                if (prefabId != null)
+                // Try helicopter prefab type
+                if (!m_PrefabSystem.TryGetPrefab(
+                        new PrefabID("HelicopterPrefab", prefabName),
+                        out prefab))
                 {
-                    PrefabID id = prefabId.Value;
-                    if (!m_PrefabSystem.TryGetPrefab(
-                            id,
-                            out prefab))
+                    // Fallback to cache
+                    var prefabId = PrefabCacheSystem.GetPrefabIDByName(prefabName);
+                    if (prefabId != null)
                     {
-                        log.Warn($"Could not get prefab for name: {prefabName}. Thumbnail not loaded.");
-                        return null;
+                        PrefabID id = prefabId.Value;
+                        if (!m_PrefabSystem.TryGetPrefab(id, out prefab))
+                        {
+                            log.Warn($"Could not get prefab for name: {prefabName}. Thumbnail not loaded.");
+                            return null;
+                        }
                     }
                 }
             }
@@ -851,6 +1072,44 @@ namespace VehicleController.Systems
                 return entity;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Get thumbnails for all helicopter prefabs and mark selected ones
+        /// </summary>
+        private int ProcessHelicopters(List<SelectableVehiclePrefab> helicopterPrefabs)
+        {
+            var count = 0;
+            DynamicBuffer<AllowedHelicopterPrefab> allowedHelicopters = new DynamicBuffer<AllowedHelicopterPrefab>();
+            if (EntityManager.HasBuffer<AllowedHelicopterPrefab>(selectedEntity))
+            {
+                allowedHelicopters = EntityManager.GetBuffer<AllowedHelicopterPrefab>(selectedEntity);
+            }
+            foreach (var prefab in helicopterPrefabs)
+            {
+                try
+                {
+                    var prefabBase = GetPrefabBaseForName(prefab.prefabName);
+                    var thumbnail = ImageSystem.GetThumbnail(prefabBase);
+                    prefab.imageUrl = thumbnail;
+                }
+                catch (Exception x)
+                {
+                    log.Trace("No thumbnail found for helicopter prefab: " + prefab.prefabName + ", " + x.Message);
+                }
+                if (!allowedHelicopters.IsEmpty)
+                {
+                    foreach (var allowed in allowedHelicopters)
+                    {
+                        if (allowed.PrefabName == prefab.prefabName)
+                        {
+                            prefab.selected = true;
+                            count++;
+                        }
+                    }
+                }
+            }
+            return count;
         }
 
         /// <summary>
@@ -902,42 +1161,65 @@ namespace VehicleController.Systems
                 log.Error("Selected entity is null, THIS SHOULD NEVER HAPPEN!");
                 return;
             }
-            
+
             var types = GetServiceTypes();
-            var prefabs = new List<SelectableVehiclePrefab>(); // Collect all available vehicle prefabs for the selected building
+
+            // Collect car prefabs
+            var prefabs = new List<SelectableVehiclePrefab>();
             PopulateAvailableVehicles();
-            int selectedVehicleCount = 0; // Count of selected vehicles
+            int selectedVehicleCount = 0;
             foreach (var type in types)
             {
                 if (_availableVehiclePrefabs.TryGetValue(type, out var vehiclePrefabs))
                 {
-                    selectedVehicleCount += ProcessVehicles(vehiclePrefabs); // Add selected = true to all allowed vehicles
+                    selectedVehicleCount += ProcessVehicles(vehiclePrefabs);
                     prefabs.AddRange(vehiclePrefabs);
                 }
             }
-            
+
+            // Collect helicopter prefabs
+            var helicopterPrefabs = new List<SelectableVehiclePrefab>();
+            PopulateAvailableHelicopters();
+            int selectedHelicopterCount = 0;
+            foreach (var type in types)
+            {
+                if (_availableHelicopterPrefabs.TryGetValue(type, out var heliPrefabs))
+                {
+                    selectedHelicopterCount += ProcessHelicopters(heliPrefabs);
+                    helicopterPrefabs.AddRange(heliPrefabs);
+                }
+            }
+
+            // Write car prefabs
             writer.PropertyName("availableVehicles");
             writer.ArrayBegin(prefabs.Count);
-            //new SelectableVehiclePrefab(){ prefabName = "NA_PoliceVehicle01" }.Write(writer);
-            foreach (var prefab in prefabs) // Write all available vehicle prefabs
+            foreach (var prefab in prefabs)
             {
                 prefab.Write(writer);
             }
             writer.ArrayEnd();
             writer.PropertyName("vehiclesSelected");
             writer.Write(selectedVehicleCount);
-            
+
+            // Write helicopter prefabs
+            writer.PropertyName("availableHelicopters");
+            writer.ArrayBegin(helicopterPrefabs.Count);
+            foreach (var prefab in helicopterPrefabs)
+            {
+                prefab.Write(writer);
+            }
+            writer.ArrayEnd();
+            writer.PropertyName("helicoptersSelected");
+            writer.Write(selectedHelicopterCount);
+
             writer.PropertyName("serviceName");
-            writer.Write(serviceName); // TODO: Get actual service name based on building type
+            writer.Write(serviceName);
             writer.PropertyName("prefabName");
             writer.Write(prefabName);
             writer.PropertyName("districtName");
             writer.Write(districtName);
             writer.PropertyName("displayPrefabNames");
             writer.Write(Setting.Instance!.DisplayVehiclePrefabNames);
-            
-            
-            //Logger.Debug("ChangeVehicleSection properties written");
         }
 
         public void RemoveAllowedVehiclePrefabs()
@@ -956,6 +1238,21 @@ namespace VehicleController.Systems
                 Instance.EntityManager.RemoveComponent<AllowedVehiclePrefab>(entity);
             }
             log.Info("Removed AllowedVehiclePrefab component from " + entities.Length + " entities.");
+
+            var heliQuery = Instance.GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[]
+                {
+                    ComponentType.ReadOnly<AllowedHelicopterPrefab>(),
+                },
+            });
+
+            var heliEntities = heliQuery.ToEntityArray(Allocator.Temp);
+            foreach (var entity in heliEntities)
+            {
+                Instance.EntityManager.RemoveComponent<AllowedHelicopterPrefab>(entity);
+            }
+            log.Info("Removed AllowedHelicopterPrefab component from " + heliEntities.Length + " entities.");
         }
     }
 }

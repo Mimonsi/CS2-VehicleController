@@ -10,3 +10,7 @@
 ## AllowedVehiclePrefab
 
 ### 1
+
+## AllowedHelicopterPrefab
+
+### 1

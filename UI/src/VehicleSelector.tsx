@@ -9,13 +9,17 @@ import { VehicleLabel } from "./VehicleLabel";
 // Define props for vehicle selector dropdown.
 type VehicleSelectorProps = {
     vehicleTypes: SelectableVehiclePrefab[];
-    displayPrefabNames: boolean
+    displayPrefabNames: boolean;
+    label?: string;
+    triggerName?: string;
 }
 
 export const VehicleSelector = (props: VehicleSelectorProps) => {
 
     // Empty array as fallback if vehicleTypes is not provided
     const vehicleTypes = props.vehicleTypes ?? [];
+    const label = props.label ?? "Select models";
+    const triggerName = props.triggerName ?? "SelectedVehicleChanged";
 
     // Create a dropdown item for each selectable prefab and get content of the selected item.
     const vehicleDropdownItems: JSX.Element[] = vehicleTypes.map((vehiclePrefab, index): JSX.Element => {
@@ -36,14 +40,14 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
             }}
             value={vehiclePrefab.prefabName}
             checked={selected}
-            onChange={() => trigger("VehicleController.Systems.VehicleSelectionSection", "SelectedVehicleChanged", prefabName)}
+            onChange={() => trigger("VehicleController.Systems.VehicleSelectionSection", triggerName, prefabName)}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
           >
               {dropdownItemContent}
           </ModuleResolver.instance.DropdownFlagItem>
         );
     });
-    
+
     return (
     <Dropdown
       theme={ModuleResolver.instance.DropdownClasses}
@@ -51,9 +55,9 @@ export const VehicleSelector = (props: VehicleSelectorProps) => {
       focusKey={ModuleResolver.instance.FOCUS_DISABLED}
     >
         <DropdownToggle className={ModuleResolver.instance.SIPDropdownClasses.dropdown}>
-            <div className={ModuleResolver.instance.SIPDropdownClasses.dropdownLabel}>Select models</div>
+            <div className={ModuleResolver.instance.SIPDropdownClasses.dropdownLabel}>{label}</div>
         </DropdownToggle>
-      
+
     </Dropdown>
     );
 };

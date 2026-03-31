@@ -61,7 +61,7 @@ namespace VehicleController.Systems
             {
                 if (StartReset)
                 {
-                    log.Warn("Removing Road Speed Limit Data");
+                    //log.Warn("Removing Road Speed Limit Data");
                     ResetAllSpeedLimits();
                 }
             }

@@ -217,7 +217,7 @@ namespace VehicleController.Data
         /// <summary>
         /// Looks for an entry for the specified vehicle class.
         /// </summary>
-        public bool TryGetClassEntry(string className, out ProbabilityPackEntry? entry)
+        public bool TryGetClassEntry(string className, out ProbabilityPackEntry entry)
         {
             entry = Entries.Find(e => e.ClassName == className);
             if (entry != null)

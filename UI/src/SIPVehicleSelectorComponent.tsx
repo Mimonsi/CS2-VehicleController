@@ -52,6 +52,8 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     districtName: string | null,
     availableVehicles: SelectableVehiclePrefab[],
     vehiclesSelected: number,
+    availableHelicopters: SelectableVehiclePrefab[],
+    helicoptersSelected: number,
     displayPrefabNames: boolean
   }
 
@@ -67,19 +69,18 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
     const clearBufferLabel: string = translate(mod.id + ".ClearBuffer"    ) || "Clear allowed Vehicles";
     const DeleteOwnedVehiclesLabel: string = translate(mod.id + ".DeleteOwnedVehicles"    ) || "Delete owned vehicles";
 
-    // Get the mod's translated formatted tooltip text based on property type.
-    //const tooltipText: string = translate(mod.id + ".SectionTooltip" + PropertyType[props.propertyType]) ||
-    //    "Select a company from the dropdown and click Change Now.";
     const tooltipText = "Select all **vehicle models** that this building is allowed to use. When multiple vehicles are selected, a **random** vehicle from the selection will be chosen.";
-    //const formattedParagraphsProps: FormattedParagraphsProps = { children: tooltipText };
-    //const formattedTooltip: JSX.Element = ModuleResolver.instance.FormattedParagraphs(formattedParagraphsProps);
+    const helicopterTooltipText = "Select all **helicopter models** that this building is allowed to use. When multiple helicopters are selected, a **random** helicopter from the selection will be chosen.";
 
-    //const dummyVehicle: SelectableVehiclePrefab = { prefabName: props.vehiclesSelected + " Vehicles Selected" };
-    // Add dummy vehicle on first index
     const modifiedVehicleList: SelectableVehiclePrefab[] = [
-      //dummyVehicle,
       ...props.availableVehicles
     ];
+
+    const modifiedHelicopterList: SelectableVehiclePrefab[] = [
+      ...(props.availableHelicopters ?? [])
+    ];
+
+    const hasHelicopters = modifiedHelicopterList.length > 0;
 
     // Handle click on Change Now button
     function onChangeNowClicked()
@@ -106,9 +107,9 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
 
     // Construct the change company section.
     // Info row 1 has section heading and Change Now button.
-    // Info row 2 has the actual dropdown
-    // Info row 3 has two additional buttons
-    // All further rows are for actions buttons, e.g. copy, paste, export, etc.
+    // Info row 2 has the vehicle dropdown
+    // Info row 3 (conditional) has the helicopter dropdown
+    // Further rows are for action and clipboard buttons
     return (
       <ModuleResolver.instance.InfoSection>
         <ModuleResolver.instance.InfoRow
@@ -128,12 +129,34 @@ export const SIPVehicleSelectorComponent = (componentList: any): any =>
         {!Minimized && (
           <>
             <ModuleResolver.instance.InfoRow
-              left={<VehicleSelector vehicleTypes={modifiedVehicleList} displayPrefabNames={props.displayPrefabNames}/>}
+              left={<VehicleSelector
+                vehicleTypes={modifiedVehicleList}
+                displayPrefabNames={props.displayPrefabNames}
+                label="Select vehicles"
+                triggerName="SelectedVehicleChanged"
+              />}
               tooltip={<FormattedParagraphs>{tooltipText}</FormattedParagraphs>}
               disableFocus={true}
             />
-            
+
             <Wrapbox vehicleTypes={modifiedVehicleList}/>
+
+            {hasHelicopters && (
+              <>
+                <ModuleResolver.instance.InfoRow
+                  left={<VehicleSelector
+                    vehicleTypes={modifiedHelicopterList}
+                    displayPrefabNames={props.displayPrefabNames}
+                    label="Select helicopters"
+                    triggerName="SelectedHelicopterChanged"
+                  />}
+                  tooltip={<FormattedParagraphs>{helicopterTooltipText}</FormattedParagraphs>}
+                  disableFocus={true}
+                />
+
+                <Wrapbox vehicleTypes={modifiedHelicopterList}/>
+              </>
+            )}
 
             <ModuleResolver.instance.InfoRow
               left={"Actions"}
