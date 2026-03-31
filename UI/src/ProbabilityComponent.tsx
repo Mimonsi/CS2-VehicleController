@@ -1,23 +1,43 @@
-import { useLocalization    } from "cs2/l10n";
-import { ModuleResolver     } from "./ModuleResolver";
-import React from "react";
-import {Icon} from "cs2/ui";
+import React, { useState, useEffect } from "react";
 
 interface ProbabilityComponentProps
 {
-    text: string,
-    initialValue: number,
+    value: number,
+    onChange: (value: number) => void,
 }
-//<input type="text">Input</input>
-// Custom component to combine the icon and label for a resource
-// so the game does not split the icon from the label when wrapping in the company selector.
-export const ProbabilityComponent = ({ text, initialValue }: ProbabilityComponentProps) =>
+
+export const ProbabilityComponent = ({ value, onChange }: ProbabilityComponentProps) =>
 {
-    const { translate } = useLocalization();
-    
+    const [inputValue, setInputValue] = useState(value.toString());
+
+    // Sync local input when the external value changes (e.g. different vehicle selected)
+    useEffect(() =>
+    {
+        setInputValue(value.toString());
+    }, [value]);
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement>)
+    {
+        const raw = e.target.value;
+        setInputValue(raw);
+        const parsed = parseInt(raw, 10);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 255)
+        {
+            onChange(parsed);
+        }
+    }
+
     return (
-      <div>
-          <input className="hex-input_hFc" type="text" vk-title="a" vk-description="" vk-type="text"/>
-      </div>
+        <div>
+            <input
+                className="hex-input_hFc"
+                type="text"
+                value={inputValue}
+                onChange={handleChange}
+                vk-title="Probability"
+                vk-description="Spawn probability (0-255). Default is 100."
+                vk-type="text"
+            />
+        </div>
     );
 }

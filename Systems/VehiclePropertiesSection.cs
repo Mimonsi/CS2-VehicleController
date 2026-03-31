@@ -33,7 +33,7 @@ namespace VehicleController.Systems
     {
         //public ILog log = LogManager.GetLogger($"{nameof(VehicleController)}.{nameof(ChangeVehicleSection)}")
         //    .SetShowsErrorsInUI(false).SetShowsStackTraceAboveLevels(Level.Critical);
-        
+
         protected override string group => $"{nameof(VehicleController)}.{nameof(Systems)}.{nameof(VehiclePropertiesSection)}";
         private new static ILog log;
         public static VehiclePropertiesSection Instance;
@@ -65,7 +65,7 @@ namespace VehicleController.Systems
             Enabled = true;
 
             // UI -> C#
-            AddBinding(new TriggerBinding(group, "ApplyProbabilityClicked", ApplyProbabilityClicked));
+            AddBinding(new TriggerBinding<int>(group, "ApplyProbabilityClicked", ApplyProbabilityClicked));
             AddBinding(new TriggerBinding(group, "ApplyPropertiesClicked", ApplyPropertiesClicked));
             
             // C# -> UI
@@ -80,9 +80,27 @@ namespace VehicleController.Systems
             //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
             log.Info($"VehiclePropertiesSection created with group {group}");
         }
-        private void ApplyProbabilityClicked()
+        private void ApplyProbabilityClicked(int probability)
         {
-            log.Trace("ApplyProbabilityClicked");
+            log.Info($"ApplyProbabilityClicked: {probability}");
+            if (selectedEntity == Entity.Null) return;
+            if (!EntityManager.TryGetComponent<PrefabRef>(selectedEntity, out var prefabRef)) return;
+
+            Entity prefabEntity = prefabRef.m_Prefab;
+            string prefabName = m_PrefabSystem.GetPrefabName(prefabEntity);
+
+            // Persist in the current probability pack (saves to disk)
+            VehicleProbabilitySystem.Instance.SetPrefabProbability(prefabName, probability);
+
+            // Apply immediately to the prefab entity
+            if (EntityManager.TryGetComponent<PersonalCarData>(prefabEntity, out var carData))
+            {
+                carData.m_Probability = (byte)Math.Clamp(probability, 0, 255);
+                EntityManager.SetComponentData(prefabEntity, carData);
+                EntityManager.AddComponent<BatchesUpdated>(prefabEntity);
+                log.Info($"Set probability of {prefabName} to {probability}");
+            }
+            TriggerUpdate();
         }
         
         private void ApplyPropertiesClicked()
@@ -169,15 +187,12 @@ namespace VehicleController.Systems
 
         private bool Visible()
         {
-            if (selectedEntity == Entity.Null)
+            if (selectedEntity == Entity.Null) return false;
+            if (EntityManager.TryGetComponent<PrefabRef>(selectedEntity, out var prefabRef))
             {
-                return false;
+                return EntityManager.HasComponent<PersonalCarData>(prefabRef.m_Prefab);
             }
-            
-            // TODO: Return true if vehicle is supported:
-            // PersonalCar, Train
-            
-            return true;
+            return false;
         }
 
         protected override void OnProcess()
@@ -225,21 +240,37 @@ namespace VehicleController.Systems
                 log.Error("Selected entity is null, THIS SHOULD NEVER HAPPEN!");
                 return;
             }
-            
+
+            string prefabName = "";
+            int probability = 100;
+            bool overrideProbability = false;
+
+            if (EntityManager.TryGetComponent<PrefabRef>(selectedEntity, out var prefabRef))
+            {
+                Entity prefabEntity = prefabRef.m_Prefab;
+                prefabName = m_PrefabSystem.GetPrefabName(prefabEntity);
+
+                if (EntityManager.TryGetComponent<PersonalCarData>(prefabEntity, out var carData))
+                {
+                    probability = carData.m_Probability;
+                }
+                overrideProbability = VehicleProbabilitySystem.Instance?.HasPrefabOverride(prefabName) ?? false;
+            }
+
             writer.PropertyName("prefabName");
-            writer.Write("CarPrefab"); //TODO
+            writer.Write(prefabName);
             writer.PropertyName("overrideProbability");
-            writer.Write(true); //TODO
+            writer.Write(overrideProbability);
             writer.PropertyName("probability");
-            writer.Write(100); //TODO
+            writer.Write(probability);
             writer.PropertyName("overrideProperties");
-            writer.Write(true); //TODO
+            writer.Write(false);
             writer.PropertyName("maxSpeed");
-            writer.Write(100); //TODO
+            writer.Write(0);
             writer.PropertyName("acceleration");
-            writer.Write(10); //TODO
+            writer.Write(0);
             writer.PropertyName("braking");
-            writer.Write(10); //TODO
+            writer.Write(0);
         }
     }
 }

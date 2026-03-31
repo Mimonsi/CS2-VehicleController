@@ -277,7 +277,7 @@ namespace VehicleController.Systems
         /// <summary>
         /// Applies property changes to all train entities if enabled.
         /// </summary>
-        private bool UpdateTrainProperties()
+        private bool UpdateTrainProperties() // TODO: Currently uses hardcoded values, fix
         {
             log.Debug("Updating Train Properties");
             var entities = trainQuery.ToEntityArray(Allocator.Temp);

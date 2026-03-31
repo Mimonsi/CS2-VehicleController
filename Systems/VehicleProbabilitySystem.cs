@@ -226,6 +226,31 @@ namespace VehicleController.Systems
         }
         
         /// <summary>
+        /// Updates the probability for a single prefab in the current pack, saves the pack to disk,
+        /// and applies the change immediately to the prefab entity.
+        /// </summary>
+        public void SetPrefabProbability(string prefabName, int probability)
+        {
+            if (_currentProbabilityPack == null)
+            {
+                log.Warn("SetPrefabProbability called but no probability pack is loaded.");
+                return;
+            }
+            _currentProbabilityPack.AddEntry(prefabName, probability);
+            _currentProbabilityPack.SaveToFile();
+            log.Info($"Updated probability of {prefabName} to {probability} in pack '{_currentProbabilityPack.Name}' and saved.");
+        }
+
+        /// <summary>
+        /// Returns true if the current pack has a prefab-level override for the given prefab name.
+        /// </summary>
+        public bool HasPrefabOverride(string prefabName)
+        {
+            return _currentProbabilityPack != null &&
+                   _currentProbabilityPack.TryGetPrefabEntry(prefabName, out _);
+        }
+
+        /// <summary>
         /// Called from settings when probability sliders are changed.
         /// </summary>
         public void ApplySettings()

@@ -163,7 +163,15 @@ namespace VehicleController.Data
         /// </remarks>
         public bool AddEntry(string prefabName, int probability)
         {
-            // TODO: implement storage of new entries
+            var existing = Entries.Find(e => e.PrefabName == prefabName);
+            if (existing != null)
+            {
+                existing.Probability = probability;
+            }
+            else
+            {
+                Entries.Add(new ProbabilityPackEntry(ProbabilityEntryType.Prefab, prefabName, probability));
+            }
             return true;
         }
 
