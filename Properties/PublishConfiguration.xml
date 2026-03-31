@@ -67,12 +67,9 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-## Vehicle Controller Beta 0.4.0
-Most Major Features of Vehicle Controller are now implemented! Please test and provide feedback.
-
-- Added Vehicle Selection to most service buildings (Police, Fire, Ambulance, Garbage, Postal)
-- Added Vehicle Property Packs feature to change acceleration, braking and max speed for personal vehicles and trains
-- Added Speed Limit Override feature to change speed limit multiplier for all roads and tracks
+## Vehicle Controller 1.0.0
+- Potential Fix for Native Crashes when changing vehicle prefab (feel like random crashes during gameplay)
+- Potential Fix for loading empty packs
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />

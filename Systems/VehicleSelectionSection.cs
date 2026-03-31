@@ -624,6 +624,8 @@ namespace VehicleController.Systems
                         return;
                     }
                 }
+                log.Warn("Potential Crash #1: prefabId is null for prefab name: " + newPrefabName);
+                return;
             }
 
             log.Trace("Trying to get entity for new prefab: " + newPrefab);
@@ -631,9 +633,14 @@ namespace VehicleController.Systems
             {
                 log.Debug("New Prefab: " + newPrefab.name);
                 prefabRef.m_Prefab = prefabEntity;
+                if (!EntityManager.Exists(vehicleEntity))
+                {
+                    log.Warn("Potential Crash #2: Entity destroyed in meantime");
+                    return;
+                }
                 log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
                 EntityManager.SetComponentData(vehicleEntity, prefabRef);
-                EntityManager.AddComponent<Updated>(vehicleEntity);
+                EntityManager.AddComponent<Updated>(vehicleEntity); // TODO: Investigate if this is crash reason, maybe use EntityCommandBuffer
                 log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
                 return;
             }
@@ -815,7 +822,7 @@ namespace VehicleController.Systems
         
         private PrefabBase? GetPrefabBaseForName(string prefabName)
         {
-            // TODO: Make this work for custom assets
+            // TODO: Make this work for custom assets (why did I leave this comment, they _seem_ to work just fine now?)
             if (!m_PrefabSystem.TryGetPrefab(
                     new PrefabID("CarPrefab", prefabName),
                     out PrefabBase prefab))

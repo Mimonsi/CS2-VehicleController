@@ -380,6 +380,7 @@ namespace VehicleController
                     }
                     else
                         DefaultPropertyPackDropdown = "Vanilla";
+                    return;
                 }
                 _defaultPropertyPackDropdown = value;
                 VehiclePropertySystem.DefaultPackSettingChanged();

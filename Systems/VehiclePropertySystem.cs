@@ -221,6 +221,12 @@ namespace VehicleController.Systems
                 packName = GetDefaultPack();
             }
 
+            if (string.IsNullOrEmpty(packName))
+            {
+                log.Warn("No valid property pack name resolved, skipping load.");
+                return;
+            }
+
             try
             {
                 var pack = PropertyPack.LoadFromFile(packName);
