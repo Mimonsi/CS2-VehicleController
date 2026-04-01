@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Colossal.PSI.Environment;
 using Newtonsoft.Json;
 
@@ -161,7 +162,7 @@ namespace VehicleController.Data
         /// The actual implementation is currently disabled. Once implemented this method
         /// should insert the entry or modify the existing one.
         /// </remarks>
-        public bool AddEntry(string prefabName, int probability)
+        public void AddEntry(string prefabName, int probability)
         {
             var existing = Entries.Find(e => e.PrefabName == prefabName);
             if (existing != null)
@@ -172,7 +173,6 @@ namespace VehicleController.Data
             {
                 Entries.Add(new ProbabilityPackEntry(ProbabilityEntryType.Prefab, prefabName, probability));
             }
-            return true;
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace VehicleController.Data
         /// <param name="name">Prefab name to lookup.</param>
         /// <param name="entry">Returns the found entry.</param>
         /// <returns>True if an entry was found.</returns>
-        public bool TryGetEntry(string name, out ProbabilityPackEntry? entry)
+        public bool TryGetEntry(string name, out ProbabilityPackEntry entry)
         {
             // If prefab override, return it
             if (TryGetPrefabEntry(name, out entry))
@@ -189,16 +189,14 @@ namespace VehicleController.Data
                 return true;
             }
             // Check for class value
-            List<string> classes = VehicleClass.GetClassesForPrefab(name);
-            if (classes.Count > 0)
+            var classes = VehicleClass.GetClassesForPrefab(name);
+            if (classes.Count == 0) return false;
+            // If there are multiple classes, return the first one
+            foreach (var className in classes)
             {
-                // If there are multiple classes, return the first one
-                foreach (var className in classes)
-                {
-                    entry = Entries.Find(e => e.ClassName == className);
-                    if (entry != null)
-                        return true;
-                }
+                entry = Entries.Find(e => e.ClassName == className);
+                if (entry != null)
+                    return true;
             }
             return false;
         }
@@ -206,12 +204,10 @@ namespace VehicleController.Data
         /// <summary>
         /// Looks for an entry that specifically targets the given prefab.
         /// </summary>
-        public bool TryGetPrefabEntry(string prefabName, out ProbabilityPackEntry? entry)
+        public bool TryGetPrefabEntry(string prefabName, out ProbabilityPackEntry entry)
         {
             entry = Entries.Find(e => e.PrefabName == prefabName);
-            if (entry != null)
-                return true;
-            return false;
+            return entry != null;
         }
         
         /// <summary>
@@ -220,9 +216,7 @@ namespace VehicleController.Data
         public bool TryGetClassEntry(string className, out ProbabilityPackEntry? entry)
         {
             entry = Entries.Find(e => e.ClassName == className);
-            if (entry != null)
-                return true;
-            return false;
+            return entry != null;
         }
         
         /// <summary>
@@ -234,13 +228,10 @@ namespace VehicleController.Data
         public bool TryGetProbability(string prefabName, out int probability)
         {
             probability = 0;
-            if (TryGetEntry(prefabName, out var entry))
-            {
-                probability = entry.Probability;
-                return true;
-            }
+            if (!TryGetEntry(prefabName, out var entry)) return false;
+            probability = entry.Probability;
+            return true;
 
-            return false;
         }
 
         /// <summary>
@@ -253,14 +244,8 @@ namespace VehicleController.Data
                 return new List<string>();
 
             var files = Directory.GetFiles(path, "*.json");
-            List<string> names = new List<string>();
-            foreach (var file in files)
-            {
-                var name = Path.GetFileNameWithoutExtension(file);
-                names.Add(name);
-            }
 
-            return names;
+            return files.Select(Path.GetFileNameWithoutExtension).ToList();
         }
     }
 }

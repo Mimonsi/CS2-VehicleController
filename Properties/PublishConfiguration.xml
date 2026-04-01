@@ -60,14 +60,14 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<!--Link to the forum post where the mod can be discussed-->
 	<ForumLink Value="" />
 	<!--Version of the mod-->
-	<ModVersion Value="0.4.0" />
+	<ModVersion Value="0.5.0" />
 	<!--Recommended version of the base game to use the mod-->
-	<GameVersion Value="1.5.3*" />
+	<GameVersion Value="1.5.6*" />
 	<!--Dependency for the mod, can be set multiple times-->
 	<Dependency Id="74417" /> <!-- Unified Icon Library -->
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
-## Vehicle Controller 1.0.0
+## Vehicle Controller 0.5.0
 - Potential Fix for Native Crashes when changing vehicle prefab (feel like random crashes during gameplay)
 - Potential Fix for loading empty packs
 	</ChangeLog>
