@@ -33,33 +33,33 @@ namespace VehicleController.Systems
         protected override string group => $"{nameof(VehicleController)}.{nameof(Systems)}.{nameof(VehicleSelectionSection)}";
         private new static ILog log;
         public static VehicleSelectionSection Instance;
-        private EntityQuery m_ExistingServiceVehicleQuery;
-        private EntityQuery m_CreatedServiceVehicleQuery;
-        private EntityQuery m_ServiceBuildingQuery;
-        private static List<string> m_Clipboard = new();
-        private EndFrameBarrier m_Barrier;
+        private EntityQuery _existingServiceVehicleQuery;
+        private EntityQuery _createdServiceVehicleQuery;
+        private EntityQuery _serviceBuildingQuery;
+        private static readonly VehicleClipboard Clipboard = new();
+        private EndFrameBarrier _endFrameBarrier;
         private Dictionary<ServiceType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
-        private ValueBinding<bool> m_Minimized;
-        private ValueBinding<string> m_ClipboardData;
+        private ValueBinding<bool> _minimized;
+        private ValueBinding<string> _clipboardData;
 
-        private string serviceName;
-        private string? districtName;
-        private string prefabName;
+        private string _serviceName;
+        private string? _districtName;
+        private string _prefabName;
 
-        private static readonly IReadOnlyList<ServiceDescriptor> s_ServiceDescriptors = ServiceCatalog.Descriptors;
+        private static readonly IReadOnlyList<ServiceDescriptor> ServiceDescriptors = ServiceCatalog.Descriptors;
 
-        private static readonly ComponentType[] s_ServiceVehicleComponentTypes = ServiceCatalog.VehicleComponentTypes;
+        private static readonly ComponentType[] ServiceVehicleComponentTypes = ServiceCatalog.VehicleComponentTypes;
 
-        private static readonly ComponentType[] s_ServiceBuildingComponentTypes = ServiceCatalog.BuildingComponentTypes;
+        private static readonly ComponentType[] ServiceBuildingComponentTypes = ServiceCatalog.BuildingComponentTypes;
 
-        private static readonly ComponentType[] s_ServiceVehicleExcludedComponents =
+        private static readonly ComponentType[] ServiceVehicleExcludedComponents =
         {
             ComponentType.ReadOnly<Deleted>(),
             ComponentType.ReadOnly<Game.Tools.Temp>()
         };
 
-        private static readonly ComponentType s_CarDataComponent = ComponentType.ReadOnly<CarData>();
+        private static readonly ComponentType CarDataComponent = ComponentType.ReadOnly<CarData>();
         
         
         // <inheritdoc/>
@@ -72,7 +72,7 @@ namespace VehicleController.Systems
             Instance = this;
             log = Mod.log;
             
-            m_Barrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
+            _endFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             _selectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
             _selectedInfoUISystem.eventSelectionChanged =
@@ -102,30 +102,30 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding(group, "PasteSameServiceTypeDistrictClicked", PasteSameServiceTypeDistrictClicked));
             
             // C# -> UI
-            m_Minimized = new ValueBinding<bool>(group, "Minimized", false);
-            AddBinding(m_Minimized);
-            m_Minimized.Update(false);
+            _minimized = new ValueBinding<bool>(group, "Minimized", false);
+            AddBinding(_minimized);
+            _minimized.Update(false);
             AddBinding(new TriggerBinding(group, "Minimize", () =>
             {
-                m_Minimized.Update(!m_Minimized.value);
+                _minimized.Update(!_minimized.value);
             }));
 
-            m_ClipboardData = new ValueBinding<string>(group, "ClipboardData", string.Empty);
-            AddBinding(m_ClipboardData);
-            m_ClipboardData.Update(string.Empty);
+            _clipboardData = new ValueBinding<string>(group, "ClipboardData", string.Empty);
+            AddBinding(_clipboardData);
+            _clipboardData.Update(string.Empty);
             
-            m_CreatedServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: true);
-            m_ExistingServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: false);
-            m_ServiceBuildingQuery = GetEntityQuery(new EntityQueryDesc
+            _createdServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: true);
+            _existingServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: false);
+            _serviceBuildingQuery = GetEntityQuery(new EntityQueryDesc
             {
                 All = new[]
                 {
                     ComponentType.ReadOnly<PrefabRef>()
                 },
-                Any = s_ServiceBuildingComponentTypes
+                Any = ServiceBuildingComponentTypes
             });
             
-            RequireForUpdate(m_CreatedServiceVehicleQuery);
+            RequireForUpdate(_createdServiceVehicleQuery);
 
             //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
             log.Info($"ChangeVehicleSection created with group {group}");
@@ -147,15 +147,15 @@ namespace VehicleController.Systems
             return GetEntityQuery(new EntityQueryDesc
             {
                 All = allComponents.ToArray(),
-                Any = s_ServiceVehicleComponentTypes,
-                None = s_ServiceVehicleExcludedComponents
+                Any = ServiceVehicleComponentTypes,
+                None = ServiceVehicleExcludedComponents
             });
         }
 
         private void DeleteOwnedVehiclesClicked()
         {
             log.Trace("DeleteVehicles clicked");
-            NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
+            NativeArray<Entity> existingServiceVehicleEntities = _existingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             
             // Filter by owner = selectedEntity
             var entities = existingServiceVehicleEntities
@@ -187,17 +187,8 @@ namespace VehicleController.Systems
             log.Trace("CopySelectionClicked");
             try
             {
-                m_Clipboard.Clear();
-                if (EntityManager.HasBuffer<AllowedVehiclePrefab>(selectedEntity))
-                {
-                    foreach (var allowed in EntityManager.GetBuffer<AllowedVehiclePrefab>(selectedEntity))
-                    {
-                        m_Clipboard.Add(allowed.PrefabName.ToString());
-                    }
-                }
-
-                m_ClipboardData.Update(string.Join(",", m_Clipboard));
-                log.Info($"Copied {m_Clipboard.Count} vehicles to clipboard");
+                Clipboard.CopyFrom(EntityManager, selectedEntity);
+                _clipboardData.Update(Clipboard.Serialize());
             }
             catch(Exception x)
             {
@@ -207,40 +198,19 @@ namespace VehicleController.Systems
         
         private void PasteSelectionClicked()
         {
-            // TODO: Fix
             log.Trace("PasteSelectionClicked");
             if (selectedEntity == Entity.Null)
             {
                 log.Error("Selected entity is null, cannot paste vehicles");
                 return;
             }
-            if (m_Clipboard.Count == 0)
+            if (Clipboard.IsEmpty)
             {
                 log.Warn("Clipboard is empty, nothing to paste");
                 return;
             }
-            ApplyClipboardToEntity(selectedEntity);
-            log.Info($"Pasted {m_Clipboard.Count} vehicles to entity: {selectedEntity}");
-        }
-
-        /// <summary>
-        /// Load allowed vehicles from the clipboard into the entity
-        /// </summary>
-        /// <param name="entity"></param>
-        private void ApplyClipboardToEntity(Entity entity)
-        {
-            log.Trace("Applying clipboard to entity: " + entity);
-            if (EntityManager.HasBuffer<AllowedVehiclePrefab>(entity))
-            {
-                EntityManager.RemoveComponent<AllowedVehiclePrefab>(entity);
-            }
-            if (m_Clipboard.Count == 0)
-                return;
-            var buffer = EntityManager.AddBuffer<AllowedVehiclePrefab>(entity);
-            foreach (var name in m_Clipboard)
-            {
-                buffer.Add(new AllowedVehiclePrefab { PrefabName = name });
-            }
+            Clipboard.ApplyTo(EntityManager, selectedEntity);
+            log.Info($"Pasted {Clipboard.Count} vehicles to entity: {selectedEntity}");
         }
 
         /// <summary>
@@ -254,34 +224,13 @@ namespace VehicleController.Systems
 
         private void PasteSamePrefabWithinDistrict(Entity? district = null)
         {
-            if (m_Clipboard.Count == 0)
+            if (Clipboard.IsEmpty)
                 return;
             if (!EntityManager.TryGetComponent(selectedEntity, out PrefabRef selectedPrefab))
                 return;
-            NativeArray<Entity> entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
-            try
-            {
-                foreach (var entity in entities)
-                {
-                    if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && prefabRef.m_Prefab == selectedPrefab.m_Prefab)
-                    {
-                        if(EntityManager.TryGetComponent<CurrentDistrict>(entity, out var currentDistrict))
-                        {
-                            // Don't apply if district doesn't match
-                            if (district != null && currentDistrict.m_District != district)
-                            {
-                                continue;
-                            }
-                            ApplyClipboardToEntity(entity);
-                        }
-
-                    }
-                }
-            }
-            finally
-            {
-                entities.Dispose();
-            }
+            PasteToMatchingBuildings(
+                entity => EntityManager.TryGetComponent(entity, out PrefabRef prefabRef) && prefabRef.m_Prefab == selectedPrefab.m_Prefab,
+                district);
         }
         
         /// <summary>
@@ -305,38 +254,14 @@ namespace VehicleController.Systems
 
         private void PasteSameServiceWithinDistrict(Entity? district = null)
         {
-
-            if (m_Clipboard.Count == 0)
+            if (Clipboard.IsEmpty)
                 return;
             var selectedTypes = new HashSet<ServiceType>(GetServiceTypes());
             if (selectedTypes.Count == 0)
-            {
                 return;
-            }
-
-            NativeArray<Entity> entities = m_ServiceBuildingQuery.ToEntityArray(Allocator.Temp);
-            try
-            {
-                foreach (var entity in entities)
-                {
-                    if (TryGetServiceTypeForBuilding(entity, out ServiceType serviceType) && selectedTypes.Contains(serviceType))
-                    {
-                        if(EntityManager.TryGetComponent<CurrentDistrict>(entity, out var currentDistrict))
-                        {
-                            // Don't apply if district doesn't match
-                            if (district != null && currentDistrict.m_District != district)
-                            {
-                                continue;
-                            }
-                            ApplyClipboardToEntity(entity);
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                entities.Dispose();
-            }
+            PasteToMatchingBuildings(
+                entity => TryGetServiceTypeForBuilding(entity, out ServiceType serviceType) && selectedTypes.Contains(serviceType),
+                district);
         }
 
         private void PasteSameServiceTypeDistrictClicked()
@@ -348,43 +273,44 @@ namespace VehicleController.Systems
             }
         }
 
+        /// <summary>
+        /// Applies the clipboard to all service buildings that match the predicate,
+        /// optionally filtering by district.
+        /// </summary>
+        private void PasteToMatchingBuildings(Func<Entity, bool> matches, Entity? district = null)
+        {
+            NativeArray<Entity> entities = _serviceBuildingQuery.ToEntityArray(Allocator.Temp);
+            try
+            {
+                foreach (var entity in entities)
+                {
+                    if (!matches(entity))
+                        continue;
+                    if (EntityManager.TryGetComponent<CurrentDistrict>(entity, out var currentDistrict))
+                    {
+                        if (district != null && currentDistrict.m_District != district)
+                            continue;
+                        Clipboard.ApplyTo(EntityManager, entity);
+                    }
+                }
+            }
+            finally
+            {
+                entities.Dispose();
+            }
+        }
+
         private void ExportClipboardClicked()
         {
             log.Verbose("ExportClipboardClicked");
-            try
-            {
-                string clipboardText = string.Join(",", m_Clipboard);
-                GUIUtility.systemCopyBuffer = clipboardText;
-                log.Info("Clipboard exported to system clipboard");
-            }
-            catch (Exception ex)
-            {
-                log.Error($"Error exporting clipboard: {ex.Message}");
-            }
+            Clipboard.ExportToSystem();
         }
 
         private void ImportClipboardClicked()
         {
             log.Verbose("ImportClipboardClicked");
-            try
-            {
-                string clipboardText = GUIUtility.systemCopyBuffer;
-                log.Info($"Importing clipboard data: {clipboardText}");
-                m_Clipboard.Clear();
-                if (!string.IsNullOrEmpty(clipboardText))
-                {
-                    foreach (string entry in clipboardText.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        m_Clipboard.Add(entry.Trim());
-                    }
-                }
-                m_ClipboardData.Update(string.Join(",", m_Clipboard));
-                log.Info($"Imported {m_Clipboard.Count} entries from system clipboard");
-            }
-            catch (Exception ex)
-            {
-                log.Error($"Error importing clipboard: {ex.Message}");
-            }
+            Clipboard.ImportFromSystem();
+            _clipboardData.Update(Clipboard.Serialize());
         }
 
 
@@ -471,7 +397,7 @@ namespace VehicleController.Systems
         private void ChangeNowClicked()
         {
             log.Verbose("ChangeNow clicked");
-            NativeArray<Entity> existingServiceVehicleEntities = m_ExistingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
+            NativeArray<Entity> existingServiceVehicleEntities = _existingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             
             // Filter by owner = selectedEntity
             var entities = existingServiceVehicleEntities
@@ -492,7 +418,7 @@ namespace VehicleController.Systems
         {
             _availableVehiclePrefabs.Clear();
 
-            foreach (var descriptor in s_ServiceDescriptors)
+            foreach (var descriptor in ServiceDescriptors)
             {
                 if (descriptor.VehiclePrefabComponents.Length == 0)
                 {
@@ -501,7 +427,7 @@ namespace VehicleController.Systems
 
                 List<ComponentType> prefabComponents = new List<ComponentType>(descriptor.VehiclePrefabComponents.Length + 1)
                 {
-                    s_CarDataComponent
+                    CarDataComponent
                 };
                 prefabComponents.AddRange(descriptor.VehiclePrefabComponents);
 
@@ -566,7 +492,7 @@ namespace VehicleController.Systems
         
         private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
         {
-            EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
+            EntityCommandBuffer buffer = _endFrameBarrier.CreateCommandBuffer();
             List<string> allowedVehicleNames = new List<string>();
             
             // Collect all allowed vehicle prefab names
@@ -652,7 +578,7 @@ namespace VehicleController.Systems
         /// </summary>
         private void VehicleCreated()
         {
-            NativeArray<Entity> entities = m_CreatedServiceVehicleQuery.ToEntityArray(Allocator.Temp);
+            NativeArray<Entity> entities = _createdServiceVehicleQuery.ToEntityArray(Allocator.Temp);
             //EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
             log.Verbose($"Calling Change Vehicle Prefabs for {entities.Length} created vehicles.");
             ChangeVehiclePrefabs(entities);
@@ -695,7 +621,7 @@ namespace VehicleController.Systems
         private List<ServiceType> GetServiceTypes()
         {
             List<ServiceType> types = new List<ServiceType>();
-            foreach (var descriptor in s_ServiceDescriptors)
+            foreach (var descriptor in ServiceDescriptors)
             {
                 if (descriptor.IsSupportedBuilding(EntityManager, selectedEntity))
                 {
@@ -708,7 +634,7 @@ namespace VehicleController.Systems
 
         private bool TryGetServiceTypeForBuilding(Entity entity, out ServiceType serviceType)
         {
-            foreach (var descriptor in s_ServiceDescriptors)
+            foreach (var descriptor in ServiceDescriptors)
             {
                 if (descriptor.IsSupportedBuilding(EntityManager, entity))
                 {
@@ -732,7 +658,7 @@ namespace VehicleController.Systems
 
         private bool TryGetServiceTypeForVehicle(Entity entity, out ServiceType serviceType)
         {
-            foreach (var descriptor in s_ServiceDescriptors)
+            foreach (var descriptor in ServiceDescriptors)
             {
                 if (descriptor.IsSupportedVehicle(EntityManager, entity))
                 {
@@ -790,31 +716,31 @@ namespace VehicleController.Systems
                 return false;
             }
             var types = GetServiceTypes();
-            serviceName = GetServiceTypeNameForBuilding(selectedEntity);
-            prefabName = GetLocalizedPrefabName(selectedEntity);
-            districtName = null;
-            log.Debug($"Service name for selected entity: {serviceName}, prefab: {prefabName}");
+            _serviceName = GetServiceTypeNameForBuilding(selectedEntity);
+            _prefabName = GetLocalizedPrefabName(selectedEntity);
+            _districtName = null;
+            log.Debug($"Service name for selected entity: {_serviceName}, prefab: {_prefabName}");
             if (EntityManager.TryGetComponent<CurrentDistrict>(selectedEntity, out var district))
             {
                 if (district.m_District != Entity.Null)
                 {
-                    districtName = m_NameSystem.GetRenderedLabelName(district.m_District);
+                    _districtName = m_NameSystem.GetRenderedLabelName(district.m_District);
                 }
             }
             
             if (types.Count == 0)
             {
-                log.Debug($"No service vehicle types available for selected entity of type: {serviceName}");
+                log.Debug($"No service vehicle types available for selected entity of type: {_serviceName}");
                 return false;
             }
             
             if (!types.Any(t => SupportedServiceTypes.Contains(t)))
             {
-                log.Debug($"Service vehicle types for entity type {serviceName} are not supported: " + string.Join(", ", types));
+                log.Debug($"Service vehicle types for entity type {_serviceName} are not supported: " + string.Join(", ", types));
                 return false;
             }
             
-            log.Debug($"Service vehicle types for entity type {serviceName}: " + string.Join(", ", types));
+            log.Debug($"Service vehicle types for entity type {_serviceName}: " + string.Join(", ", types));
             return true;
         }
 
@@ -930,11 +856,11 @@ namespace VehicleController.Systems
             writer.Write(selectedVehicleCount);
             
             writer.PropertyName("serviceName");
-            writer.Write(serviceName); // TODO: Get actual service name based on building type
+            writer.Write(_serviceName); // TODO: Get actual service name based on building type
             writer.PropertyName("prefabName");
-            writer.Write(prefabName);
+            writer.Write(_prefabName);
             writer.PropertyName("districtName");
-            writer.Write(districtName);
+            writer.Write(_districtName);
             writer.PropertyName("displayPrefabNames");
             writer.Write(Setting.Instance!.DisplayVehiclePrefabNames);
             

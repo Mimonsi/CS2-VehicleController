@@ -397,5 +397,14 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+## Claude Code
+.claude/
+
+## JetBrains IDE
+.idea/
+
+## Unity/Library
+Library/
+
 ## Project related
 GlobalProperties.props
