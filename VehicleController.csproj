@@ -18,6 +18,7 @@
         <AssemblyName>VehicleController</AssemblyName>
         <RootNamespace>VehicleController</RootNamespace>
         <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <!--Imports must be after PropertyGroup block-->

@@ -13,7 +13,9 @@ using Game.Prefabs;
 using Game.UI;
 using Game.UI.InGame;
 using Game.Vehicles;
+using Game.Effects;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
@@ -38,6 +40,8 @@ namespace VehicleController.Systems
         private EntityQuery _serviceBuildingQuery;
         private static readonly VehicleClipboard Clipboard = new();
         private EndFrameBarrier _endFrameBarrier;
+        private VFXSystem _vfxSystem;
+        private EffectControlSystem _effectControlSystem;
         private Dictionary<ServiceType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
         private ValueBinding<bool> _minimized;
@@ -73,6 +77,8 @@ namespace VehicleController.Systems
             log = Mod.log;
             
             _endFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
+            _vfxSystem = World.GetOrCreateSystemManaged<VFXSystem>();
+            _effectControlSystem = World.GetOrCreateSystemManaged<EffectControlSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             _selectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
             _selectedInfoUISystem.eventSelectionChanged =
@@ -490,6 +496,43 @@ namespace VehicleController.Systems
                 VehicleCreated();
         }
         
+        /// <summary>
+        /// See Game.Effects.EffectControlSystem.EnabledActionJob.Disable()
+        /// Removes all visual effects from the vehicle entity before swapping its prefab to prevent crashes.
+        /// </summary>
+        private unsafe void CleanupEffects(Entity effectsOwner)
+        {
+            if (!EntityManager.TryGetBuffer(effectsOwner, true, out DynamicBuffer<EnabledEffect> dynamicBuffer))
+            {
+                return;
+            }
+            var vfxUpdateQueue = _vfxSystem.GetSourceUpdateData();
+            NativeList<EnabledEffectData> enabledData = _effectControlSystem.GetEnabledData(false, out _);
+            for (int i = 0; i < dynamicBuffer.Length; i++)
+            {
+                ref EnabledEffect reference = ref dynamicBuffer.ElementAt(i);
+                if (reference.m_EnabledIndex >= enabledData.Length)
+                {
+                    break;
+                }
+                ref EnabledEffectData enabledEffect = ref UnsafeUtility.ArrayElementAsRef<EnabledEffectData>(enabledData.GetUnsafePtr(), reference.m_EnabledIndex);
+                if ((enabledEffect.m_Flags & EnabledEffectFlags.IsEnabled) != 0)
+                {
+                    enabledEffect.m_Flags &= ~EnabledEffectFlags.IsEnabled;
+                    enabledEffect.m_Flags |= EnabledEffectFlags.EnabledUpdated;
+                    if ((enabledEffect.m_Flags & EnabledEffectFlags.IsVFX) != 0)
+                    {
+                        vfxUpdateQueue.Enqueue(new VFXUpdateInfo
+                        {
+                            m_Type = VFXUpdateType.Remove,
+                            m_EnabledIndex = reference.m_EnabledIndex
+                        });
+                    }
+                }
+                enabledEffect.m_Flags |= EnabledEffectFlags.Deleted;
+            }
+        }
+
         private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
         {
             EntityCommandBuffer buffer = _endFrameBarrier.CreateCommandBuffer();
@@ -564,8 +607,10 @@ namespace VehicleController.Systems
                     return;
                 }
                 log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
+                CleanupEffects(vehicleEntity);
+                buffer.RemoveComponent<EnabledEffect>(vehicleEntity); // Desperate try to stop the crashing
                 buffer.SetComponent(vehicleEntity, prefabRef);
-                buffer.AddComponent<Updated>(vehicleEntity); // TODO: Investigate if this is crash reason, maybe use EntityCommandBuffer
+                buffer.AddComponent<Updated>(vehicleEntity);
                 
                 log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
                 return;
