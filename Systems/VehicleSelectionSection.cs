@@ -17,6 +17,7 @@ using Game.Effects;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using VehicleController.Data;
@@ -501,42 +502,76 @@ namespace VehicleController.Systems
         
         /// <summary>
         /// See Game.Effects.EffectControlSystem.EnabledActionJob.Disable()
-        /// Removes all visual effects from the vehicle entity before swapping its prefab to prevent crashes.
+        /// Removes all visual effects from the given entities before swapping prefabs to prevent crashes.
+        /// Runs as a scheduled job to properly synchronize with the VFX and effect systems.
         /// </summary>
-        private unsafe void CleanupEffects(Entity effectsOwner)
+        private unsafe struct CleanupEffectsJob : IJob
         {
-            if (!EntityManager.TryGetBuffer(effectsOwner, true, out DynamicBuffer<EnabledEffect> dynamicBuffer))
+            [ReadOnly] public BufferLookup<EnabledEffect> enabledEffectsData;
+            [ReadOnly] public NativeArray<Entity>.ReadOnly entities;
+            public NativeList<EnabledEffectData> enabledData;
+            public NativeQueue<VFXUpdateInfo> vfxUpdateQueue;
+
+            public void Execute()
             {
-                return;
-            }
-            var vfxUpdateQueue = _vfxSystem.GetSourceUpdateData();
-            NativeList<EnabledEffectData> enabledData = _effectControlSystem.GetEnabledData(false, out _);
-            for (int i = 0; i < dynamicBuffer.Length; i++)
-            {
-                ref EnabledEffect reference = ref dynamicBuffer.ElementAt(i);
-                if (reference.m_EnabledIndex >= enabledData.Length)
+                foreach (Entity entity in entities)
                 {
-                    break;
-                }
-                ref EnabledEffectData enabledEffect = ref UnsafeUtility.ArrayElementAsRef<EnabledEffectData>(enabledData.GetUnsafePtr(), reference.m_EnabledIndex);
-                if ((enabledEffect.m_Flags & EnabledEffectFlags.IsEnabled) != 0)
-                {
-                    enabledEffect.m_Flags &= ~EnabledEffectFlags.IsEnabled;
-                    enabledEffect.m_Flags |= EnabledEffectFlags.EnabledUpdated;
-                    if ((enabledEffect.m_Flags & EnabledEffectFlags.IsVFX) != 0)
+                    if (!enabledEffectsData.TryGetBuffer(entity, out DynamicBuffer<EnabledEffect> dynamicBuffer))
                     {
-                        vfxUpdateQueue.Enqueue(new VFXUpdateInfo
+                        continue;
+                    }
+                    for (int i = 0; i < dynamicBuffer.Length; i++)
+                    {
+                        ref EnabledEffect reference = ref dynamicBuffer.ElementAt(i);
+                        if (reference.m_EnabledIndex >= enabledData.Length)
                         {
-                            m_Type = VFXUpdateType.Remove,
-                            m_EnabledIndex = reference.m_EnabledIndex
-                        });
+                            break;
+                        }
+                        ref EnabledEffectData enabledEffect = ref UnsafeUtility.ArrayElementAsRef<EnabledEffectData>(enabledData.GetUnsafePtr(), reference.m_EnabledIndex);
+                        if ((enabledEffect.m_Flags & EnabledEffectFlags.IsEnabled) != 0)
+                        {
+                            enabledEffect.m_Flags &= ~EnabledEffectFlags.IsEnabled;
+                            enabledEffect.m_Flags |= EnabledEffectFlags.EnabledUpdated;
+                            if ((enabledEffect.m_Flags & EnabledEffectFlags.IsVFX) != 0)
+                            {
+                                vfxUpdateQueue.Enqueue(new VFXUpdateInfo
+                                {
+                                    m_Type = VFXUpdateType.Remove,
+                                    m_EnabledIndex = reference.m_EnabledIndex
+                                });
+                            }
+                        }
+                        enabledEffect.m_Flags |= EnabledEffectFlags.Deleted;
                     }
                 }
-                enabledEffect.m_Flags |= EnabledEffectFlags.Deleted;
             }
         }
 
-        private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
+        /// <summary>
+        /// Schedules a <see cref="CleanupEffectsJob"/> for the given entities and registers
+        /// the resulting job handle with the VFX system.
+        /// </summary>
+        private void ScheduleEffectsCleanup(NativeList<Entity> entitiesToClean)
+        {
+            NativeArray<Entity> data = entitiesToClean.ToArray(Allocator.TempJob);
+            JobHandle job = new CleanupEffectsJob
+            {
+                entities = data.AsReadOnly(),
+                enabledEffectsData = SystemAPI.GetBufferLookup<EnabledEffect>(true),
+                vfxUpdateQueue = _vfxSystem.GetSourceUpdateData(),
+                enabledData = _effectControlSystem.GetEnabledData(false, out JobHandle effectsDeps)
+            }.Schedule(effectsDeps);
+            data.Dispose(job);
+            _vfxSystem.AddSourceUpdateWriter(job);
+        }
+
+        /// <summary>
+        /// Picks a random allowed prefab and swaps the vehicle entity's PrefabRef.
+        /// Adds the entity to <paramref name="entitiesToClean"/> so effects can be
+        /// cleaned up in a batched job afterwards.
+        /// </summary>
+        private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef,
+            DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs, NativeList<Entity> entitiesToClean)
         {
             // Collect all non-empty allowed vehicle prefab names
             // (foreach instead of LINQ because DynamicBuffer doesn't implement IEnumerable)
@@ -584,7 +619,7 @@ namespace VehicleController.Systems
             }
 
             log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
-            CleanupEffects(vehicleEntity);
+            entitiesToClean.Add(vehicleEntity);
             EntityCommandBuffer commandBuffer = _endFrameBarrier.CreateCommandBuffer();
             commandBuffer.RemoveComponent<EnabledEffect>(vehicleEntity);
             commandBuffer.SetComponent(vehicleEntity, prefabRef);
@@ -613,28 +648,40 @@ namespace VehicleController.Systems
         }
 
         /// <summary>
-        /// Iterates over the provided vehicle entities and replaces their prefab if needed.
+        /// Iterates over the provided vehicle entities, replaces their prefab if needed,
+        /// and schedules a batched effects cleanup job for all changed vehicles.
         /// </summary>
         private void ChangeVehiclePrefabs(NativeArray<Entity> entities)
         {
-            if (entities.Length == 0) // Performance skip code if no results
+            if (entities.Length == 0) // Performance skip if no results
                 return;
+
+            NativeList<Entity> entitiesToClean = new NativeList<Entity>(entities.Length, Allocator.Temp);
+
             // Loop through all vehicles that were just created (might be multiple in one frame)
             foreach (Entity entity in entities)
             {
                 // Has Owner
                 if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner != Entity.Null)
                 {
-                    // Get allowed vehicle list form owner (service building)
+                    // Get allowed vehicle list from owner (service building)
                     if (EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<AllowedVehiclePrefab> allowedVehicles))
                     {
                         if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
                         {
-                            ChangePrefabToRandomAllowedPrefab(entity, prefabRef, allowedVehicles);
+                            ChangePrefabToRandomAllowedPrefab(entity, prefabRef, allowedVehicles, entitiesToClean);
                         }
                     }
                 }
             }
+
+            // Schedule batched effects cleanup for all changed vehicles
+            if (entitiesToClean.Length > 0)
+            {
+                ScheduleEffectsCleanup(entitiesToClean);
+            }
+
+            entitiesToClean.Dispose();
         }
 
         private List<ServiceType> GetServiceTypes()

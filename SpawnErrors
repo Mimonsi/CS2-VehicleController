@@ -39,3 +39,14 @@
 0x00007ff62f6011f6 (Cities2) 
 0x00007ff82bdbe8d7 (KERNEL32) BaseThreadInitThunk
 0x00007ff82cf8c3fc (ntdll) RtlUserThreadStart
+
+
+NullReferenceException: Object reference not set to an instance of an object
+  at Unity.Entities.JobChunkExtensions+JobChunkProducer`1[T].ExecuteInternal (Unity.Entities.JobChunkExtensions+JobChunkWrapper`1[T]& jobWrapper, System.IntPtr bufferRangePatchData, Unity.Jobs.LowLevel.Unsafe.JobRanges& ranges, System.Int32 jobIndex) [0x000af] in <6d7ec2feea7d4ac5b7696dc2e8c39a00>:0 
+  at Unity.Entities.JobChunkExtensions+JobChunkProducer`1[T].Execute (Unity.Entities.JobChunkExtensions+JobChunkWrapper`1[T]& jobWrapper, System.IntPtr additionalPtr, System.IntPtr bufferRangePatchData, Unity.Jobs.LowLevel.Unsafe.JobRanges& ranges, System.Int32 jobIndex) [0x00000] in <6d7ec2feea7d4ac5b7696dc2e8c39a00>:0 
+  at (wrapper delegate-invoke) Unity.Entities.JobChunkExtensions+JobChunkProducer`1+ExecuteJobFunction[Game.Rendering.PreCullingSystem+QueryCullingJob].invoke_void_JobChunkExtensions/JobChunkWrapper`1<T>&_intptr_intptr_JobRanges&_int(Unity.Entities.JobChunkExtensions/JobChunkWrapper`1<Game.Rendering.PreCullingSystem/QueryCullingJob>&,intptr,intptr,Unity.Jobs.LowLevel.Unsafe.JobRanges&,int)
+UnityEngine.DebugLogHandler:Internal_LogException(Exception, Object)
+UnityEngine.DebugLogHandler:LogException(Exception, Object)
+Colossal.Logging.CustomLogHandler:LogException(Exception, Object)
+UnityEngine.Logger:LogException(Exception, Object)
+UnityEngine.Debug:CallOverridenDebugHandler(Exception, Object)
