@@ -67,9 +67,9 @@ namespace VehicleController
             if (EnableRoadSpeedLimitSystem)
                 updateSystem.UpdateAt<CompatibilityRoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop); // TODO: Road Speed System causes an error on loading a savegame twice in a row
             if (EnableChangeVehicleSection)
-                updateSystem.UpdateAt<VehicleSelectionSection>(SystemUpdatePhase.PreCulling);
+                updateSystem.UpdateAt<VehicleSelectionSection>(SystemUpdatePhase.UIUpdate);
             if (EnableProbabilitySystem || EnablePropertySystem)
-                updateSystem.UpdateAt<VehiclePropertiesSection>(SystemUpdatePhase.PreCulling);
+                updateSystem.UpdateAt<VehiclePropertiesSection>(SystemUpdatePhase.UIUpdate);
             if (EnableVehicleStiffnessSystem)
                 updateSystem.UpdateAt<VehicleStiffnessSystem>(SystemUpdatePhase.MainLoop);
             
