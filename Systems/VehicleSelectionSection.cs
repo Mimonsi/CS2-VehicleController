@@ -66,16 +66,23 @@ namespace VehicleController.Systems
         private static readonly ComponentType CarDataComponent = ComponentType.ReadOnly<CarData>();
         
         
-        // <inheritdoc/>
-        /// <summary>
-        /// Initializes UI bindings and entity queries for the info section.
-        /// </summary>
+        /// <inheritdoc/>
         protected override void OnCreate()
         {
             base.OnCreate();
             Instance = this;
             log = Mod.log;
-            
+
+            InitializeSystems();
+            RegisterBindings();
+            InitializeQueries();
+
+            RequireForUpdate(_createdServiceVehicleQuery);
+            log.Info($"ChangeVehicleSection created with group {group}");
+        }
+
+        private void InitializeSystems()
+        {
             _endFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
             _vfxSystem = World.GetOrCreateSystemManaged<VFXSystem>();
             _effectControlSystem = World.GetOrCreateSystemManaged<EffectControlSystem>();
@@ -85,29 +92,31 @@ namespace VehicleController.Systems
                 (Action<Entity, Entity, float3>)Delegate.Combine(
                     _selectedInfoUISystem.eventSelectionChanged,
                     (Action<Entity, Entity, float3>)SelectedEntityChanged);
-            
-            //m_InfoUISystem.AddMiddleSection(this); //
+
             AddMiddleSectionCustom();
             Enabled = true;
+        }
 
-            // UI -> C#
+        private void RegisterBindings()
+        {
+            // UI -> C# triggers
             AddBinding(new TriggerBinding<string>(group, "SelectedVehicleChanged", SelectedVehicleChanged));
             AddBinding(new TriggerBinding(group, "ChangeNowClicked", ChangeNowClicked));
             AddBinding(new TriggerBinding(group, "ClearBufferClicked", ClearBufferClicked));
             AddBinding(new TriggerBinding(group, "DeleteOwnedVehiclesClicked", DeleteOwnedVehiclesClicked));
-            
+
             AddBinding(new TriggerBinding(group, "CopySelectionClicked", CopySelectionClicked));
             AddBinding(new TriggerBinding(group, "ImportClipboardClicked", ImportClipboardClicked));
             AddBinding(new TriggerBinding(group, "ExportClipboardClicked", ExportClipboardClicked));
 
             AddBinding(new TriggerBinding(group, "PasteSelectionClicked", PasteSelectionClicked));
-            
+
             AddBinding(new TriggerBinding(group, "PasteSamePrefabClicked", PasteSamePrefabClicked));
             AddBinding(new TriggerBinding(group, "PasteSamePrefabDistrictClicked", PasteSamePrefabDistrictClicked));
             AddBinding(new TriggerBinding(group, "PasteSameServiceTypeClicked", PasteSameServiceTypeClicked));
             AddBinding(new TriggerBinding(group, "PasteSameServiceTypeDistrictClicked", PasteSameServiceTypeDistrictClicked));
-            
-            // C# -> UI
+
+            // C# -> UI value bindings
             _minimized = new ValueBinding<bool>(group, "Minimized", false);
             AddBinding(_minimized);
             _minimized.Update(false);
@@ -119,7 +128,10 @@ namespace VehicleController.Systems
             _clipboardData = new ValueBinding<string>(group, "ClipboardData", string.Empty);
             AddBinding(_clipboardData);
             _clipboardData.Update(string.Empty);
-            
+        }
+
+        private void InitializeQueries()
+        {
             _createdServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: true);
             _existingServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: false);
             _serviceBuildingQuery = GetEntityQuery(new EntityQueryDesc
@@ -130,11 +142,6 @@ namespace VehicleController.Systems
                 },
                 Any = ServiceBuildingComponentTypes
             });
-            
-            RequireForUpdate(_createdServiceVehicleQuery);
-
-            //GameManager.instance.RegisterUpdater(PopulateAvailableVehicles);
-            log.Info($"ChangeVehicleSection created with group {group}");
         }
 
         private EntityQuery CreateServiceVehicleQuery(bool requireCreatedComponent)
@@ -366,11 +373,7 @@ namespace VehicleController.Systems
             // Don't save dummy element
             if (prefabName.Contains("Vehicles Selected"))
                 return;
-            // Save selected company index.
-            //_selectedCompanyIndex = selectedCompanyIndex;
             log.Info("SelectedVehicleChanged: " + prefabName);
-            // Send selected company index back to the UI so the correct dropdown entry is highlighted.
-            //_bindingSelectedCompanyIndex.Update(_selectedCompanyIndex);
             AddAllowedVehicle(prefabName);
         }
 
@@ -535,87 +538,58 @@ namespace VehicleController.Systems
 
         private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef, DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
         {
-            EntityCommandBuffer buffer = _endFrameBarrier.CreateCommandBuffer();
-            List<string> allowedVehicleNames = new List<string>();
-            
-            // Collect all allowed vehicle prefab names
-            foreach (var allowedVehiclePrefab in allowedPrefabs)
+            // Collect all non-empty allowed vehicle prefab names
+            // (foreach instead of LINQ because DynamicBuffer doesn't implement IEnumerable)
+            var allowedVehicleNames = new List<string>();
+            foreach (var allowedPrefab in allowedPrefabs)
             {
-                if (!string.IsNullOrEmpty(allowedVehiclePrefab.PrefabName.ToString()))
-                {
-                    allowedVehicleNames.Add(allowedVehiclePrefab.PrefabName.ToString());
-                }
-            }
-            
-            while (allowedVehicleNames.Contains("")) // Temporary fix for empty prefab names TODO: Fix
-            {
-                allowedVehicleNames.Remove("");
+                var name = allowedPrefab.PrefabName.ToString();
+                if (!string.IsNullOrEmpty(name))
+                    allowedVehicleNames.Add(name);
             }
 
             if (allowedVehicleNames.Count == 0)
             {
                 log.Warn("No allowed vehicle prefabs found");
-                return; // No allowed vehicles, nothing to change
+                return;
             }
 
-            // Check if current prefab exists
-            /*if (allowedVehicleNames.Count == 0 || allowedVehicleNames.Contains(currentPrefabName.name))
-            {
-                Logger.Debug($"Not changing prefab {currentPrefabName}, as it's allowed.");
-                return null; // No change needed, prefab is already allowed
-            }*/
-        
-            // If the prefab is not allowed, we need to change it
             // Select random allowed prefab
             int index = UnityEngine.Random.Range(0, allowedVehicleNames.Count);
             var newPrefabName = allowedVehicleNames[index];
-        
+
             if (m_PrefabSystem.TryGetPrefab(prefabRef, out VehiclePrefab currentPrefab))
                 log.Debug($"Changing {currentPrefab} Prefab to {newPrefabName}");
             else
                 log.Debug($"Changing UNKNOWN Prefab to {newPrefabName}");
-            // Since 1.5.3 we need to check internal assets separately from PDXMods assets (PrefabCacheSystem)
-            PrefabBase newPrefab;
-            if (!m_PrefabSystem.TryGetPrefab(
-                    new PrefabID("CarPrefab", newPrefabName),
-                    out newPrefab))
+
+            if (!TryResolvePrefab(newPrefabName, out PrefabBase newPrefab))
             {
-                var prefabId = PrefabCacheSystem.GetPrefabIDByName(newPrefabName);
-                if (prefabId != null)
-                {
-                    PrefabID id = prefabId.Value;
-                    if (!m_PrefabSystem.TryGetPrefab(
-                            id,
-                            out newPrefab))
-                    {
-                        log.Warn($"Could not get prefab for name: {newPrefabName}. Aborting change.");
-                        return;
-                    }
-                }
-                log.Warn("Potential Crash #1: prefabId is null for prefab name: " + newPrefabName);
+                log.Warn($"Could not resolve prefab for name: {newPrefabName}. Aborting change.");
                 return;
             }
 
-            log.Trace("Trying to get entity for new prefab: " + newPrefab);
-            if (m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity)) // Get entity for prefab
+            if (!m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity))
             {
-                log.Debug("New Prefab: " + newPrefab.name);
-                prefabRef.m_Prefab = prefabEntity;
-                if (!EntityManager.Exists(vehicleEntity))
-                {
-                    log.Warn("Potential Crash #2: Entity destroyed in meantime");
-                    return;
-                }
-                log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
-                CleanupEffects(vehicleEntity);
-                buffer.RemoveComponent<EnabledEffect>(vehicleEntity); // Desperate try to stop the crashing
-                buffer.SetComponent(vehicleEntity, prefabRef);
-                buffer.AddComponent<Updated>(vehicleEntity);
-                
-                log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
+                log.Warn("Could not find entity for new prefab: " + newPrefab.name);
                 return;
             }
-            log.Warn("Could not find entity for new prefab: " + newPrefab.name);
+
+            log.Debug("New Prefab: " + newPrefab.name);
+            prefabRef.m_Prefab = prefabEntity;
+            if (!EntityManager.Exists(vehicleEntity))
+            {
+                log.Warn("Potential Crash #2: Entity destroyed in meantime");
+                return;
+            }
+
+            log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
+            CleanupEffects(vehicleEntity);
+            EntityCommandBuffer commandBuffer = _endFrameBarrier.CreateCommandBuffer();
+            commandBuffer.RemoveComponent<EnabledEffect>(vehicleEntity);
+            commandBuffer.SetComponent(vehicleEntity, prefabRef);
+            commandBuffer.AddComponent<Updated>(vehicleEntity);
+            log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
         }
 
         /// <summary>
@@ -701,37 +675,6 @@ namespace VehicleController.Systems
             return "Unknown ServiceType";
         }
 
-        private bool TryGetServiceTypeForVehicle(Entity entity, out ServiceType serviceType)
-        {
-            foreach (var descriptor in ServiceDescriptors)
-            {
-                if (descriptor.IsSupportedVehicle(EntityManager, entity))
-                {
-                    serviceType = descriptor.ServiceType;
-                    return true;
-                }
-            }
-
-            serviceType = ServiceType.None;
-            return false;
-        }
-
-        private bool TryGetServiceType(Entity entity, out ServiceType serviceType)
-        {
-            if (TryGetServiceTypeForBuilding(entity, out serviceType))
-            {
-                return true;
-            }
-
-            if (TryGetServiceTypeForVehicle(entity, out serviceType))
-            {
-                return true;
-            }
-
-            serviceType = ServiceType.None;
-            return false;
-        }
-
         private string GetLocalizedPrefabName(Entity entity)
         {
             if (EntityManager.TryGetComponent<PrefabRef>(entity, out var prefabRef))
@@ -793,36 +736,29 @@ namespace VehicleController.Systems
         {
         }
         
-        private PrefabBase? GetPrefabBaseForName(string prefabName)
+        /// <summary>
+        /// Resolves a prefab by name, checking both built-in CarPrefab IDs
+        /// and the PrefabCacheSystem for modded/PDXMods assets.
+        /// </summary>
+        private bool TryResolvePrefab(string prefabName, out PrefabBase prefab)
         {
-            // TODO: Make this work for custom assets (why did I leave this comment, they _seem_ to work just fine now?)
-            if (!m_PrefabSystem.TryGetPrefab(
-                    new PrefabID("CarPrefab", prefabName),
-                    out PrefabBase prefab))
-            {
-                var prefabId = PrefabCacheSystem.GetPrefabIDByName(prefabName);
-                if (prefabId != null)
-                {
-                    PrefabID id = prefabId.Value;
-                    if (!m_PrefabSystem.TryGetPrefab(
-                            id,
-                            out prefab))
-                    {
-                        log.Warn($"Could not get prefab for name: {prefabName}. Thumbnail not loaded.");
-                        return null;
-                    }
-                }
-            }
-            return prefab;
+            // Try built-in CarPrefab first
+            if (m_PrefabSystem.TryGetPrefab(new PrefabID("CarPrefab", prefabName), out prefab))
+                return true;
+
+            // Fall back to PrefabCacheSystem for modded assets (since 1.5.3)
+            var cachedId = PrefabCacheSystem.GetPrefabIDByName(prefabName);
+            if (cachedId != null && m_PrefabSystem.TryGetPrefab(cachedId.Value, out prefab))
+                return true;
+
+            prefab = null;
+            return false;
         }
 
         private Entity? GetEntityForName(string prefabName)
         {
-            var prefab = GetPrefabBaseForName(prefabName);
-            if (prefab != null && m_PrefabSystem.TryGetEntity(prefab, out Entity entity))
-            {
+            if (TryResolvePrefab(prefabName, out var prefab) && m_PrefabSystem.TryGetEntity(prefab, out Entity entity))
                 return entity;
-            }
             return null;
         }
 
@@ -844,9 +780,8 @@ namespace VehicleController.Systems
                 // Try getting the thumbnail
                 try
                 {
-                    var prefabBase = GetPrefabBaseForName(prefab.prefabName);
-                    var thumbnail = ImageSystem.GetThumbnail(prefabBase);
-                    prefab.imageUrl = thumbnail;
+                    if (TryResolvePrefab(prefab.prefabName, out var prefabBase))
+                        prefab.imageUrl = ImageSystem.GetThumbnail(prefabBase);
                 }
                 catch (Exception x)
                 {
