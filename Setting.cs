@@ -556,9 +556,14 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
 
 
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
-        public bool EnableChangeVehicles { get; set; } = true;
-        
+        public bool EnableExperimentalVehicleSelection { get; set; } = false;
+
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(EnableExperimentalVehicleSelection), true)]
+        public bool EnableChangeVehicles { get; set; } = true;
+
+        [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
+        [SettingsUIHideByCondition(typeof(Setting), nameof(EnableExperimentalVehicleSelection), true)]
         public bool DisplayVehiclePrefabNames { get; set; } = true;
         
         #endregion

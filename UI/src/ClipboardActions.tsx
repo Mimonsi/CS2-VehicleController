@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { bindValue, useValue, trigger } from "cs2/api";
 import { ModuleResolver } from "./ModuleResolver";
-import mod from "../mod.json";
 import {FormattedParagraphs} from "cs2/ui";
 
 
@@ -12,29 +11,31 @@ interface ClipboardActionsProps
   districtName: string | null,
 }
 
+const group = "VehicleController.Systems.VehicleSelectionSection";
+
 // UI-Idea:
 // Display a text:
 // "Paste selection to all *FR_PoliceStation* in the *city/district*" -> Paste to prefab type
 // "Paste selection to all *Police Buildings* in the *city/district*" -> Paste to service type
 export const ClipboardActions = (props : ClipboardActionsProps) => {
-  
+
   function handleClick(eventName : string)
   {
     //trigger("audio", "playSound", ModuleResolver.instance.UISound.selectItem, 1); // Sound already played by ToolButton
     //trigger("audio", "playSound", ModuleResolver.instance.UISound.xpEvent, 1);
-    trigger("VehicleController.Systems.VehicleSelectionSection", eventName);
+    trigger(group, eventName);
   }
-  
+
   const prefabName = `**${props.prefabName}**`
   const serviceName = `**${props.serviceName}**`;
   const districtName = `**${props.districtName}**`;
 
-  const clipboardData$ = bindValue<string>(mod.id, "ClipboardData", "");
+  const clipboardData$ = bindValue<string>(group, "ClipboardData", "");
   const clipboardData = useValue(clipboardData$);
 
   function getClipboardEntryLength(text: string): number {
     try {
-      // See how many comma seperated entries are in the clipboard text
+      // See how many comma separated entries are in the clipboard text
       if (!text) return 0;
       // Split the text by commas and filter out empty entries
       const entries = text.split(",").map(entry => entry.trim()).filter(entry => entry.length > 0);

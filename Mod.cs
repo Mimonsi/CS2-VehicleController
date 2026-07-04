@@ -66,15 +66,8 @@ namespace VehicleController
                 updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             if (EnableRoadSpeedLimitSystem)
                 updateSystem.UpdateAt<CompatibilityRoadSpeedLimitSystem>(SystemUpdatePhase.MainLoop); // TODO: Road Speed System causes an error on loading a savegame twice in a row
-            if (EnableChangeVehicleSection)
-                updateSystem.UpdateAt<VehicleSelectionSection>(SystemUpdatePhase.UIUpdate);
-            if (EnableProbabilitySystem || EnablePropertySystem)
-                updateSystem.UpdateAt<VehiclePropertiesSection>(SystemUpdatePhase.UIUpdate);
             if (EnableVehicleStiffnessSystem)
                 updateSystem.UpdateAt<VehicleStiffnessSystem>(SystemUpdatePhase.MainLoop);
-            
-            //World.DefaultGameObjectInjectionWorld.GetOrCreateSystemManaged<ChangeVehicleSection>();
-            //updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
 
             m_Setting = new Setting(this);
             m_Setting.RegisterInOptionsUI();
@@ -87,7 +80,16 @@ namespace VehicleController
             m_Setting.RegisterKeyBindings();
             AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
-            
+
+            // Experimental/unstable: swaps vehicle prefabs on spawn and manipulates VFX/audio/search effect
+            // state to support it. Gated on a persisted setting read here in OnLoad, so toggling it in the
+            // UI requires a restart before it takes effect. Must run after LoadSettings above, since the
+            // setting value has to be known before deciding whether to register the system.
+            if (EnableChangeVehicleSection && Setting.Instance.EnableExperimentalVehicleSelection)
+                updateSystem.UpdateAt<VehicleSelectionSection>(SystemUpdatePhase.UIUpdate);
+            //if (EnableProbabilitySystem || EnablePropertySystem) // TODO: Re-enabled
+                //updateSystem.UpdateAt<VehiclePropertiesSection>(SystemUpdatePhase.UIUpdate);
+
             // ResetSpeedLimitAction = Setting.Instance.GetAction(ResetSpeedLimitActionName);
             // ResetSpeedLimitAction.shouldBeEnabled = true;
             // ResetSpeedLimitAction.onInteraction += (_, phase) =>

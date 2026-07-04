@@ -72,6 +72,8 @@
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "Delete Vehicle Instances",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.DeleteVehicleInstances]": "When activated, delete incorrectly spawned vehicles. The default behavior is changing the vehicle on spawn to the correct one.",
   
+    "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableExperimentalVehicleSelection]": "Enable Experimental Vehicle Selection (Requires Restart)",
+    "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableExperimentalVehicleSelection]": "Enables the experimental feature that lets you restrict which vehicle prefabs a service building may spawn. This swaps vehicle prefabs on spawn and can still cause crashes. Disabled by default. Changing this setting requires a full game restart to take effect.",
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enable Auto Change Vehicles",
     "Options.OPTION_DESCRIPTION[VehicleController.VehicleController.Mod.Setting.EnableChangeVehicles]": "Enabled vehicle prefabs from service buildings automatically changing to the selected vehicles. If disabled, vehicle spawning is not changed, unless you manually update the existing spawned vehicled",   
     "Options.OPTION[VehicleController.VehicleController.Mod.Setting.DisplayVehiclePrefabNames]": "Show Vehicle Prefab Names",
