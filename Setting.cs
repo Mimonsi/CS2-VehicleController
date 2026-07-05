@@ -291,7 +291,7 @@ namespace VehicleController
         private float _stiffnessModifier = 3f;
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(UseImprovedStiffnessValues), false)]
-        [SettingsUISlider(min = 0.00f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
+        [SettingsUISlider(min = 0.01f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
         public float StiffnessModifier
         {
             get => _stiffnessModifier;
@@ -306,7 +306,7 @@ namespace VehicleController
         private float _dampingModifier = 2f;
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(UseImprovedStiffnessValues), false)]
-        [SettingsUISlider(min = 0.00f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
+        [SettingsUISlider(min = 0.01f, max = 10f, step = 0.25f, unit = Unit.kFloatTwoFractions, scalarMultiplier = 1f)]
         public float DampingModifier
         {
             get => _dampingModifier;

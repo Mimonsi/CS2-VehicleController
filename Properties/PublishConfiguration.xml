@@ -68,8 +68,12 @@ The game uses double speed limits for all roads. If a road has a speed limit of 
 	<!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
 	<ChangeLog>
 ## Vehicle Controller 0.5.0
+I have been working on this update for more than 9 months now and have not managed to rule out all crashes. Therefore, service vehicle selection is disabled by default. If you want to use it, you can enable it in the mod settings, but please be aware that it may cause crashes.
+- Service Vehicle Selection is still unstable and now disabled by default (causes crashes)
 - Potential Fix for Native Crashes when changing vehicle prefab (feel like random crashes during gameplay)
 - Potential Fix for loading empty packs
+- Fix for Division by Zero exception when using 0 as stiffness
+- Fix for probabilities not being applied correctly
 	</ChangeLog>
 	<!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
 	<ExternalLink Type="github" Url="https://github.com/Mimonsi/CS2-VehicleController" />

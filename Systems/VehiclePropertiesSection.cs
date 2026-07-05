@@ -27,7 +27,7 @@ using VehicleController.Components;
 namespace VehicleController.Systems
 {
     /// <summary>
-    /// Info UI section that allows service vehicle prefabs to be swapped at runtime.
+    /// Info UI section that allows vehicle property overrides
     /// </summary>
     public partial class VehiclePropertiesSection : InfoSectionBase
     {
