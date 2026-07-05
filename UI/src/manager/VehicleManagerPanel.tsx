@@ -43,8 +43,6 @@ const sendReset = (level: EditLevel, key: string, field: string) =>
 // UI → C#: class management (assign / rename / delete). Empty class name = unassign.
 const sendAssign = (prefab: string, className: string) =>
   trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "assign", prefab, class: className }));
-const sendAssignMany = (prefabs: string[], className: string) =>
-  trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "assignMany", prefabs, class: className }));
 const sendRenameClass = (className: string, newName: string) =>
   trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "rename", class: className, newName }));
 const sendDeleteClass = (className: string) =>
@@ -221,39 +219,24 @@ const Chip = ({ label, active }: { label: string; active?: boolean }) => (
 const PrefabRow = ({
   prefab,
   selected,
-  checked,
   onSelect,
-  onToggleCheck,
 }: {
   prefab: PrefabNode;
   selected: boolean;
-  checked: boolean;
   onSelect: () => void;
-  onToggleCheck: () => void;
 }) => (
   <div
+    onClick={onSelect}
     style={{
-      display: "flex",
-      alignItems: "center",
-      paddingLeft: "20rem",
+      padding: "6rem 10rem 6rem 34rem",
+      cursor: "pointer",
+      color: selected ? OVERRIDE_COLOR : undefined,
       backgroundColor: selected ? "rgba(140, 190, 255, 0.15)" : undefined,
       borderLeft: selected ? "3rem solid " + OVERRIDE_COLOR : "3rem solid transparent",
     }}
   >
-    <input
-      type="checkbox"
-      checked={checked}
-      onChange={onToggleCheck}
-      onClick={e => e.stopPropagation()}
-      style={{ marginRight: "8rem" }}
-    />
-    <div
-      onClick={onSelect}
-      style={{ flex: 1, padding: "6rem 10rem", cursor: "pointer", color: selected ? OVERRIDE_COLOR : undefined }}
-    >
-      {prefab.custom ? "◆ " : ""}
-      {prefab.name}
-    </div>
+    {prefab.custom ? "◆ " : ""}
+    {prefab.name}
   </div>
 );
 
@@ -587,18 +570,14 @@ const Tree = ({
   tree,
   selectedPrefabId,
   selectedClassName,
-  checkedIds,
   onSelectPrefab,
   onSelectClass,
-  onToggleCheck,
 }: {
   tree: CategoryNode[];
   selectedPrefabId: string | null;
   selectedClassName: string | null;
-  checkedIds: Set<string>;
   onSelectPrefab: (id: string) => void;
   onSelectClass: (name: string) => void;
-  onToggleCheck: (id: string) => void;
 }) => (
   <>
     {tree.map(category => (
@@ -661,9 +640,7 @@ const Tree = ({
                 key={prefab.id}
                 prefab={prefab}
                 selected={prefab.id === selectedPrefabId}
-                checked={checkedIds.has(prefab.id)}
                 onSelect={() => onSelectPrefab(prefab.id)}
-                onToggleCheck={() => onToggleCheck(prefab.id)}
               />
             ))}
           </PanelFoldout>
@@ -677,17 +654,6 @@ export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
   const [selection, setSelection] = useState<Selection | null>(null);
   const selectedPrefabId = selection?.kind === "prefab" ? selection.id : null;
   const selectedClassName = selection?.kind === "class" ? selection.name : null;
-
-  // Multi-select for bulk class assignment (independent of the single edit selection).
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
-  const toggleCheck = (id: string) =>
-    setCheckedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  const clearChecked = () => setCheckedIds(new Set());
 
   // Real tree from the backend; falls back to mock data when empty or unparsable.
   const treeJson = useValue(treeJson$);
@@ -782,34 +748,6 @@ export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
 
       <GlobalBar g={global} />
 
-      {checkedIds.size > 0 && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            padding: "6rem 14rem",
-            backgroundColor: "rgba(140, 190, 255, 0.12)",
-            borderTop: "1rem solid rgba(255, 255, 255, 0.08)",
-          }}
-        >
-          <span style={{ fontSize: "12rem", color: OVERRIDE_COLOR }}>{checkedIds.size} selected</span>
-          <span style={{ marginLeft: "10rem", marginRight: "8rem", fontSize: "12rem", color: DIM_COLOR }}>
-            Assign to
-          </span>
-          <ClassDropdownButton
-            label={"class"}
-            classes={classes}
-            onPick={name => {
-              sendAssignMany([...checkedIds], name);
-              clearChecked();
-            }}
-          />
-          <div onClick={clearChecked} style={miniBtnStyle}>
-            Clear
-          </div>
-        </div>
-      )}
-
       {/* Body: tree (scrollable) + detail */}
       <div style={{ display: "flex" }}>
         <Scrollable
@@ -821,10 +759,8 @@ export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
             tree={tree}
             selectedPrefabId={selectedPrefabId}
             selectedClassName={selectedClassName}
-            checkedIds={checkedIds}
             onSelectPrefab={id => setSelection({ kind: "prefab", id })}
             onSelectClass={name => setSelection({ kind: "class", name })}
-            onToggleCheck={toggleCheck}
           />
         </Scrollable>
         <div style={{ flex: 1, minWidth: "0" }}>

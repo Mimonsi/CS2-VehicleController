@@ -274,16 +274,6 @@ namespace VehicleController.Systems
             ApplyAll();
         }
 
-        public void AssignClassMany(string[] prefabNames, string className)
-        {
-            if (prefabNames == null)
-                return;
-            foreach (var prefabName in prefabNames)
-                _active.AssignPrefabToClass(prefabName, className);
-            Persist();
-            ApplyAll();
-        }
-
         public void RenameClass(string oldName, string newName)
         {
             _active.RenameCustomClass(oldName, newName);
