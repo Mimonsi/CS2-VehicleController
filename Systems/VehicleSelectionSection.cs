@@ -14,8 +14,10 @@ using Game.UI;
 using Game.UI.InGame;
 using Game.Vehicles;
 using Game.Effects;
+using Game.Routes;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using VehicleController.Data;
@@ -39,6 +41,7 @@ namespace VehicleController.Systems
         private EntityQuery _serviceBuildingQuery;
         private static readonly VehicleClipboard Clipboard = new();
         private EndFrameBarrier _endFrameBarrier;
+        private EffectControlSystem _effectControlSystem;
         private Dictionary<ServiceType, List<SelectableVehiclePrefab>> _availableVehiclePrefabs = new();
         private SelectedInfoUISystem _selectedInfoUISystem;
         private ValueBinding<bool> _minimized;
@@ -81,6 +84,7 @@ namespace VehicleController.Systems
         private void InitializeSystems()
         {
             _endFrameBarrier = World.GetOrCreateSystemManaged<EndFrameBarrier>();
+            _effectControlSystem = World.GetOrCreateSystemManaged<EffectControlSystem>();
             m_PrefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             _selectedInfoUISystem = World.GetOrCreateSystemManaged<SelectedInfoUISystem>();
             _selectedInfoUISystem.eventSelectionChanged =
@@ -171,12 +175,62 @@ namespace VehicleController.Systems
                             EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity)
                 .ToArray();
 
+            // Disable each vehicle's active effects synchronously before tagging it Deleted.
+            // Waiting for EffectControlSystem's own next update to do this (via the Deleted tag alone)
+            // isn't reliable here: a vehicle deleted right after its effects were freshly (re-)enabled
+            // (e.g. right after Apply) can get destroyed while an EnabledEffectData entry still has
+            // IsEnabled set, leaving it pointing at a destroyed owner entity - EffectTransformSystem
+            // then crashes on that entry every frame afterwards.
+            //DisableVehicleEffects(entities);
+
+            EntityCommandBuffer commandBuffer = _endFrameBarrier.CreateCommandBuffer();
             foreach (Entity entity in entities)
             {
-                EntityManager.AddComponent<Deleted>(entity);
+                commandBuffer.AddComponent<Deleted>(entity);
             }
             log.Info("Deleted " + entities.Length + " vehicles for entity: " + selectedEntity);
             TriggerUpdate();
+        }
+
+        /// <summary>
+        /// Clears the IsEnabled flag on every active effect owned by the given entities, mirroring
+        /// what EffectControlSystem.EnabledActionJob.Disable() does for a Deleted entity. Done
+        /// synchronously (not as a scheduled job) since this only runs on a rare UI-triggered action.
+        /// </summary>
+        private void DisableVehicleEffects(IReadOnlyCollection<Entity> entities)
+        {
+            if (entities.Count == 0)
+                return;
+
+            NativeList<EnabledEffectData> enabledData = _effectControlSystem.GetEnabledData(false, out JobHandle deps);
+            deps.Complete();
+            log.Info($"DisableVehicleEffects: processing {entities.Count} entities, enabledData.Length={enabledData.Length}");
+
+            foreach (Entity entity in entities)
+            {
+                if (!EntityManager.TryGetBuffer(entity, true, out DynamicBuffer<EnabledEffect> effects))
+                {
+                    log.Info($"DisableVehicleEffects: {entity} has no EnabledEffect buffer");
+                    continue;
+                }
+
+                log.Info($"DisableVehicleEffects: {entity} has {effects.Length} EnabledEffect entries");
+                foreach (EnabledEffect effect in effects)
+                {
+                    if (effect.m_EnabledIndex < 0 || effect.m_EnabledIndex >= enabledData.Length)
+                    {
+                        log.Info($"DisableVehicleEffects: {entity} effectIndex={effect.m_EffectIndex} enabledIndex={effect.m_EnabledIndex} OUT OF BOUNDS (enabledData.Length={enabledData.Length})");
+                        continue;
+                    }
+
+                    EnabledEffectData data = enabledData[effect.m_EnabledIndex];
+                    log.Info($"DisableVehicleEffects: {entity} effectIndex={effect.m_EffectIndex} enabledIndex={effect.m_EnabledIndex} owner={data.m_Owner} prefab={data.m_Prefab} flagsBefore={data.m_Flags}");
+                    data.m_Flags &= ~EnabledEffectFlags.IsEnabled;
+                    data.m_Flags |= EnabledEffectFlags.EnabledUpdated | EnabledEffectFlags.Deleted;
+                    enabledData[effect.m_EnabledIndex] = data;
+                    log.Info($"DisableVehicleEffects: {entity} effectIndex={effect.m_EffectIndex} enabledIndex={effect.m_EnabledIndex} flagsAfter={data.m_Flags}");
+                }
+            }
         }
 
         private void ClearBufferClicked()
@@ -829,6 +883,82 @@ namespace VehicleController.Systems
                 Instance.EntityManager.RemoveComponent<AllowedVehiclePrefab>(entity);
             }
             log.Info("Removed AllowedVehiclePrefab component from " + entities.Length + " entities.");
+        }
+
+        /// <summary>
+        /// Debug-only: replicates the query and existence check that
+        /// Game.Serialization.PrimaryPrefabReferencesSystem.FixPrefabRefJob runs on every entity
+        /// with a PrefabRef during save, but on the main thread (no Burst/job) so it can be stepped
+        /// through in a debugger. Logs every entity whose PrefabRef.m_Prefab doesn't point at a
+        /// valid prefab entity, to find what the save-time NullReferenceException in
+        /// PrefabReferences.Check is actually tripping over.
+        /// </summary>
+        public void DebugCheckPrefabRefs()
+        {
+            var query = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[] { ComponentType.ReadOnly<PrefabRef>() },
+                None = new[]
+                {
+                    ComponentType.ReadOnly<NetCompositionData>(),
+                    ComponentType.ReadOnly<EffectInstance>(),
+                    ComponentType.ReadOnly<LivePath>(),
+                    ComponentType.ReadOnly<Game.Tools.Temp>(),
+                    ComponentType.ReadOnly<Deleted>()
+                }
+            });
+
+            NativeArray<Entity> entities = query.ToEntityArray(Allocator.Temp);
+            int badCount = 0;
+            foreach (Entity entity in entities)
+            {
+                PrefabRef prefabRef = EntityManager.GetComponentData<PrefabRef>(entity);
+                if (prefabRef.m_Prefab == Entity.Null)
+                    continue;
+
+                bool prefabExists = EntityManager.Exists(prefabRef.m_Prefab);
+                bool hasPrefabData = prefabExists && EntityManager.HasComponent<PrefabData>(prefabRef.m_Prefab);
+                if (!prefabExists || !hasPrefabData)
+                {
+                    badCount++;
+                    string prefabName = "";
+                    if (prefabExists && m_PrefabSystem.TryGetPrefab(prefabRef, out PrefabBase prefab))
+                        prefabName = prefab.name;
+                    log.Info($"BAD PrefabRef: entity={entity} exists={EntityManager.Exists(entity)} -> prefab={prefabRef.m_Prefab} exists={prefabExists} hasPrefabData={hasPrefabData} name={prefabName}");
+                }
+            }
+            log.Info($"DebugCheckPrefabRefs: {badCount}/{entities.Length} entities with a PrefabRef have a broken reference.");
+            entities.Dispose();
+        }
+
+        /// <summary>
+        /// Debug-only: scans EffectControlSystem's global enabled-effects list for entries that are
+        /// still IsEnabled but whose owner entity no longer exists. Game.Rendering.EffectTransformSystem
+        /// crashes every frame on exactly this kind of orphaned entry (see EffectTransformJob.Execute,
+        /// "this.m_Prefabs[ptr.m_Owner]"). Run this right after Apply/Delete to catch the entry before
+        /// it actually crashes.
+        /// </summary>
+        public void DebugCheckEnabledEffects()
+        {
+            NativeList<EnabledEffectData> enabledData = _effectControlSystem.GetEnabledData(true, out JobHandle deps);
+            deps.Complete();
+
+            int badCount = 0;
+            for (int i = 0; i < enabledData.Length; i++)
+            {
+                EnabledEffectData data = enabledData[i];
+                if ((data.m_Flags & EnabledEffectFlags.IsEnabled) == 0)
+                    continue;
+
+                bool ownerExists = EntityManager.Exists(data.m_Owner);
+                bool prefabExists = EntityManager.Exists(data.m_Prefab);
+                if (!ownerExists || !prefabExists)
+                {
+                    badCount++;
+                    log.Info($"BAD EnabledEffectData[{i}]: owner={data.m_Owner} ownerExists={ownerExists} prefab={data.m_Prefab} prefabExists={prefabExists} flags={data.m_Flags}");
+                }
+            }
+            log.Info($"DebugCheckEnabledEffects: {badCount}/{enabledData.Length} enabled effect entries have a dead owner or prefab.");
         }
     }
 }

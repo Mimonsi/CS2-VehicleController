@@ -646,11 +646,27 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
         
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
         [SettingsUIAdvanced]
-        public bool RemoveAllowedVehiclePrefab 
+        public bool RemoveAllowedVehiclePrefab
         {
             set => Systems.VehicleSelectionSection.Instance?.RemoveAllowedVehiclePrefabs();
         }
-        
+
+        // This simulates what happens when the game is saved
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        [SettingsUIAdvanced]
+        public bool DebugCheckPrefabRefs
+        {
+            set => Systems.VehicleSelectionSection.Instance?.DebugCheckPrefabRefs();
+        }
+
+        // This simulates what happens when prefabs are deleted
+        [SettingsUISection(DebugSection, DebugComponentsGroup)]
+        [SettingsUIAdvanced]
+        public bool DebugCheckEnabledEffects
+        {
+            set => Systems.VehicleSelectionSection.Instance?.DebugCheckEnabledEffects();
+        }
+
         // [SettingsUISection(DebugSection, DebugComponentsGroup)]
         // [SettingsUIAdvanced]
         // public bool RemoveSpeedLimitComponents 
