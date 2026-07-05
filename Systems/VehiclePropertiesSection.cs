@@ -89,8 +89,8 @@ namespace VehicleController.Systems
             Entity prefabEntity = prefabRef.m_Prefab;
             string prefabName = m_PrefabSystem.GetPrefabName(prefabEntity);
 
-            // Persist in the current probability pack (saves to disk)
-            VehicleProbabilitySystem.Instance.SetPrefabProbability(prefabName, probability);
+            // TODO(M1): route probability overrides through VehicleConfigSystem/VehiclePack.
+            // Legacy VehicleProbabilitySystem removed in the cutover.
 
             // Apply immediately to the prefab entity
             if (EntityManager.TryGetComponent<PersonalCarData>(prefabEntity, out var carData))
@@ -254,7 +254,7 @@ namespace VehicleController.Systems
                 {
                     probability = carData.m_Probability;
                 }
-                overrideProbability = VehicleProbabilitySystem.Instance?.HasPrefabOverride(prefabName) ?? false;
+                overrideProbability = false; // TODO(M1): read from VehicleConfigSystem/VehiclePack
             }
 
             writer.PropertyName("prefabName");

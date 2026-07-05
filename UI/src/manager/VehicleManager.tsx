@@ -2,7 +2,7 @@ import { FloatingButton, Portal } from "cs2/ui";
 import React, { useState } from "react";
 
 import { VehicleManagerPanel } from "./VehicleManagerPanel";
-import vcLogo from "./VC.png";
+import vcLogo from "../images/VC.png";
 
 const buttonSrc = vcLogo;
 

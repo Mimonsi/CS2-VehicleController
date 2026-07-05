@@ -30,12 +30,11 @@ namespace VehicleController
         public const string Name = "Vehicle Controller";
         public static string Version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
 
-        public static bool EnableProbabilitySystem = true;
-        public static bool EnablePropertySystem = true;
         public static bool EnableVehicleCounterSystem = true;
         public static bool EnableChangeVehicleSection = true;
         public static bool EnableRoadSpeedLimitSystem = true;
         public static bool EnableVehicleStiffnessSystem = true;
+        public static bool EnableVehicleConfigSystem = true;
         
         // public static ProxyAction ResetSpeedLimitAction;
         // public const string ResetSpeedLimitActionName = "VehicleController_ResetRoadSpeedLimits";
@@ -58,10 +57,11 @@ namespace VehicleController
 
             CopyEmbeddedFiles();
             updateSystem.UpdateAt<PrefabCacheSystem>(SystemUpdatePhase.MainLoop);
-            if (EnableProbabilitySystem)
-                updateSystem.UpdateAt<VehicleProbabilitySystem>(SystemUpdatePhase.MainLoop);
-            if (EnablePropertySystem)
-                updateSystem.UpdateAt<VehiclePropertySystem>(SystemUpdatePhase.MainLoop);
+            if (EnableVehicleConfigSystem)
+            {
+                updateSystem.UpdateAt<VehicleConfigSystem>(SystemUpdatePhase.MainLoop);
+                updateSystem.UpdateAt<VehicleManagerUISystem>(SystemUpdatePhase.UIUpdate);
+            }
             if (EnableVehicleCounterSystem)
                 updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);
             if (EnableRoadSpeedLimitSystem)

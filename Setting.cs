@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -30,7 +30,7 @@ namespace VehicleController
         Error,
         Disabled
     }
-    
+
     public enum SpeedLimitOverride
     {
         Half,
@@ -38,7 +38,7 @@ namespace VehicleController
         Double,
         Speed // x10
     }
-    
+
     /// <summary>
     /// Stores all mod settings and exposes them to the game UI.
     /// </summary>
@@ -49,31 +49,31 @@ namespace VehicleController
     public class Setting : ModSetting
     {
         public static Setting Instance;
-        
+
         public const string MainSection = "Settings";
         public const string MainGroup = "General Settings";
-        
+
         public const string SpawnBehaviorSection = "Spawning Behavior";
         public const string VehicleProbabilityPackGroup = "Probability Settings";
         public const string VehicleProbabilityGroup = "Probability Settings";
-        
+
         public const string VehiclePropertiesSection = "Vehicle Properties";
         public const string VehiclePropertiesGroup = "Vehicle Properties";
         public const string VehicleStiffnessGroup = "Vehicle Stiffness";
         public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
         public const string RoadSpeedLimitGroup = "Road Speed Limits";
-        
+
         public const string VehicleSelectionSection = "Vehicle Selection";
         public const string VehicleSelectionGroup = "Vehicle Selection";
-        
-        
+
+
         public const string AboutSection = "About";
         public const string InfoGroup = "Info";
-        
+
         public const string DebugSection = "Debug";
         public const string DebugGeneralGroup = "Debug General";
         public const string DebugComponentsGroup = "Debug Components";
-        
+
         /// <summary>
         /// Constructs the setting container for the specified mod instance.
         /// </summary>
@@ -84,13 +84,13 @@ namespace VehicleController
 
         private bool IsIngame()
         {
-            return VehiclePropertySystem.IsIngame;
+            return VehicleConfigSystem.IsIngame;
         }
-        
+
         #region MainSection
-        
+
         private Level _loggingLevel = Level.Info;
-        
+
         [SettingsUISection(MainSection, MainGroup)]
         public LogLevel LoggingLevel
         {
@@ -142,15 +142,6 @@ namespace VehicleController
                 Mod.log.Info("Logging level set to: " + _loggingLevel);
             }
         }
-        
-        /*[SettingsUIButton]
-        public bool DeleteInstances
-        {
-            set
-            {
-                VehicleControllerSystem.Instance.DeleteInstances();
-            }
-        }*/
 
         [SettingsUISection(MainSection, MainGroup)]
         public bool ResetSettings
@@ -160,125 +151,15 @@ namespace VehicleController
                 SetDefaults();
             }
         }
-        
-        [SettingsUISection(MainSection, MainGroup)]
-        public bool ResetSettingsVanilla
-        {
-            set
-            {
-                SetVanillaDefaults();
-            }
-        }
         #endregion
-        
-        #region Probabilities
-        
-        private ProbabilityPack _currentProbabilityPack = ProbabilityPack.LoadFromFile("Default");
-        public static int CurrentProbabilityPackVersion { get; set; }
 
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityPackGroup)]
-        [SettingsUIValueVersion(typeof(Setting), nameof(CurrentProbabilityPackVersion))]
-        [SettingsUIDropdown(typeof(Setting), nameof(GetProbabilityPacksDropdownItems))]
-        public string CurrentProbabilityPack
-        {
-            get => _currentProbabilityPack.Name;
-            set
-            {
-                if (VehicleProbabilitySystem.Instance == null) // System might be disabled
-                    return;
-                _currentProbabilityPack = ProbabilityPack.LoadFromFile(value);
-                VehicleProbabilitySystem.Instance.LoadProbabilityPack(_currentProbabilityPack);
-                ApplyProbabilityChanges = true;
-            }
-        }
-        
-        /// <summary>
-        /// Populates the dropdown list for probability packs.
-        /// </summary>
-        public DropdownItem<string>[] GetProbabilityPacksDropdownItems()
-        {
-            var names =  ProbabilityPack.GetPackNames();
-
-            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
-            foreach(string s in names)
-            {
-                items.Add(new DropdownItem<string>()
-                {
-                    value = s,
-                    displayName = s,
-                });
-            }
-            Mod.log.Info("Displaying " + items.Count + " probability packs");
-            return items.ToArray();
-        }
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUIButton]
-        public bool ApplyProbabilityChanges
-        {
-            set
-            {
-                VehicleProbabilitySystem.SaveValueChanges();
-            }
-        }
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int MotorbikeProbability { get; set; } = 25;
-
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int ScooterProbability { get; set; } = 50;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int CityCarProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int HatchbackProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int MinivanProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int SedanProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int SportsCarProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int PickupProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int SUVProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int MuscleCarProbability { get; set; } = 100;
-        
-        [SettingsUISection(SpawnBehaviorSection, VehicleProbabilityGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int VanProbability { get; set; } = 100;
-        
-        /*[SettingsUISection(SpawnBehaviorSection, SpawnProbabilitiesGroup)]
-        [SettingsUISlider(min = 0, max=200, step = 5, unit=Unit.kPercentage)]
-        public int TrailerProbability { get; set; } = 100; // TODO: Implement this*/
-        
-        #endregion
-        
         #region VehicleProperties
-        
+
         private bool _useImprovedStiffnessValues = true;
-        
+
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
-        public bool UseImprovedStiffnessValues 
-        { 
+        public bool UseImprovedStiffnessValues
+        {
             get => _useImprovedStiffnessValues;
             set
             {
@@ -317,7 +198,7 @@ namespace VehicleController
                     VehicleStiffnessSystem.Instance.SettingsUpdated();
             }
         }
-        
+
         [SettingsUISection(VehiclePropertiesSection, VehicleStiffnessGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(UseImprovedStiffnessValues), false)]
         public bool ResetStiffnessToDefault
@@ -331,227 +212,19 @@ namespace VehicleController
         {
             set => VehicleStiffnessSystem.Instance?.ResetSettingsToVanilla();
         }
-        
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIAdvanced]
-        public bool ReloadPropertyPacks
-        {
-            set => PropertyPackDropdownItemsVersion++;
-        }
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIAdvanced]
-        public bool OpenPropertyPacksFolder
-        {
-            set
-            {
-                Process.Start(Path.Combine(EnvPath.kUserDataPath, "ModsData", "VehicleController", "packs", "property"));
-            }
-        }
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIAdvanced]
-        public bool ExportVanillaPack
-        {
-            set => VehiclePropertySystem.Instance.SaveVanillaPack("Exported Vanilla");
-        }
-        
-        private int PropertyPackDropdownItemsVersion { get; set; }
 
-        private string _defaultPropertyPackDropdown = "";
-        [SettingsUIDropdown(typeof(Setting), nameof(GetPropertyPackDropdownItems))]
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIValueVersion(typeof(Setting), nameof(PropertyPackDropdownItemsVersion))]
-        public string DefaultPropertyPackDropdown
-        {
-            get => _defaultPropertyPackDropdown;
-            set
-            {
-                Mod.log.Info("Setting default property pack to: " + value);
-                var packNames = PropertyPack.GetPackNames();
-                if (!packNames.Contains(value))
-                {
-                    Mod.log.Warn("Selected default property pack not found, reverting to Vanilla.json");
-                    if (!packNames.Contains("Vanilla"))
-                    {
-                        Mod.log.Error("Vanilla property pack not found! Reverting to first available pack.");
-                        DefaultPropertyPackDropdown = packNames.First();
-                    }
-                    else
-                        DefaultPropertyPackDropdown = "Vanilla";
-                    return;
-                }
-                _defaultPropertyPackDropdown = value;
-                VehiclePropertySystem.DefaultPackSettingChanged();
-            }
-        }
-        
-        public DropdownItem<string>[] GetPropertyPackDropdownItems()
-        {
-            var names = PropertyPack.GetPackNames();
-            List<DropdownItem<string>> items = new List<DropdownItem<string>>();
-            foreach(string s in names)
-            {
-                items.Add(new DropdownItem<string>()
-                {
-                    value = s,
-                    displayName = s, // TODO: Get name from pack metadata
-                });
-            }
-            return items.ToArray();
-        }
-        
-        private string _savegamePropertyPackDropdown = "Default";
-        [SettingsUIDropdown(typeof(Setting), nameof(GetSavegamePropertyPackDropdownItems))]
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsIngame), true)]
-        [SettingsUIValueVersion(typeof(Setting), nameof(PropertyPackDropdownItemsVersion))]
-        public string SavegamePropertyPackDropdown
-        {
-            get => _savegamePropertyPackDropdown;
-            set
-            {
-                if (!PropertyPack.GetPackNames().Contains(value))
-                {
-                    Mod.log.Info($"Selected savegame property pack not found, reverting to Default ({DefaultPropertyPackDropdown})"); // TODO: Revisit fallback to check for existence of default pack
-                    value = DefaultPropertyPackDropdown;
-                }
-                _savegamePropertyPackDropdown = value;
-                VehiclePropertySystem.SavegamePackSettingChanged();
-            }
-        }
-
-        private float _savegamePropertyPackFactor = 1f;
-
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIHideByCondition(typeof(Setting), nameof(IsIngame), true)]
-        [SettingsUISlider(min = 0.5f, max = 10f, step = 0.5f, unit = Unit.kFloatSingleFraction)]
-        public float SavegamePropertyPackFactor
-        {
-            get => _savegamePropertyPackFactor;
-            set
-            {
-                _savegamePropertyPackFactor = value;
-                VehiclePropertySystem.SavegamePackSettingChanged();
-            }
-        }
-        
-        public DropdownItem<string>[] GetSavegamePropertyPackDropdownItems()
-        {
-            var items = GetPropertyPackDropdownItems(); // Reuse same items
-            DropdownItem<string>[] extendedItems = new DropdownItem<string>[items.Length + 1];
-            extendedItems[0] = new DropdownItem<string>()
-            {
-                value = "Default",
-                displayName = "Default (Use global setting)",
-            };
-            for (int i = 0; i < items.Length; i++)
-            {
-                extendedItems[i + 1] = items[i];
-            }
-
-            return extendedItems;
-        }
-        
         #region RoadSpeedLimitGroup
-        
+
         [SettingsUISection(VehiclePropertiesSection, RoadSpeedLimitGroup)]
         public bool ResetSpeedLimits
         {
             set => CompatibilityRoadSpeedLimitSystem.Instance?.ResetAllSpeedLimits();
         }
-        
 
-/*[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-public bool SetSpeedLimitFactorRealistic
-{
-    set => SpeedLimitFactor = 0.5f;
-}
-
-public static float GetSpeedLimitModifier() => Instance!.SpeedLimitFactor;
-
-[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-public bool SetSpeedLimitFactorVanilla
-{
-    set => SpeedLimitFactor = 1f;
-}
-
-[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-public bool SetSpeedLimitFactorDouble
-{
-    set => SpeedLimitFactor = 2f;
-}
-
-[SettingsUIButtonGroup("SpeedLimitFactorPresets")]
-[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-public bool SetSpeedLimitFactorSuperSpeed
-{
-    set => SpeedLimitFactor = 10f;
-}
-
-[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-public bool CustomSpeedLimitFactor { get; set; }= false;
-
-private float _speedLimitFactor = 1f;
-
-[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-[SettingsUISlider(min=0.5f, max=10f, step=0.5f, unit=Unit.kFloatSingleFraction)]
-[SettingsUIDisableByCondition(typeof(Setting), nameof(CustomSpeedLimitFactor), true)]
-public float SpeedLimitFactor
-{
-    get => _speedLimitFactor;
-    set
-    {
-        _speedLimitFactor = value;
-        RoadSpeedLimitSystem.Instance?.UnmarkAllLanes();
-    }
-}
-
-[SettingsUIAdvanced]
-[SettingsUISection(VehiclePropertiesSection, VehicleSpeedLimitGroup)]
-public bool DisableSpeedLimitUpdate { get; set; } = false;*/
-        
         #endregion
-        
-        
 
-        /*[SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUITextInput]
-        public string PackName { get; set; } = "My Custom Pack";
-
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertyPackGroup)]
-        [SettingsUIButton]
-        public bool ExportPack
-        {
-            set
-            {
-                // TO DO: Implement
-            }
-        }
-
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 5, max=400, step = 5, unit=Unit.kInteger)]
-        public int VehicleMaxSpeed { get; set; } = 210;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int VehicleAcceleration { get; set; } = 10;
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUISlider(min = 1, max=50, step = 1, unit=Unit.kInteger)]
-        public int VehicleBraking { get; set; } = 15;
-        
-        [SettingsUISection(VehiclePropertiesSection, VehiclePropertiesGroup)]
-        [SettingsUIButton]
-        public bool SavePropertyChanges
-        {
-            set => VehiclePropertySystem.Instance.ApplySettings();
-        }*/
-        
         #endregion
-        
+
         #region VehicleSelection
 
 
@@ -565,11 +238,11 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
         [SettingsUISection(VehicleSelectionSection, VehicleSelectionGroup)]
         [SettingsUIHideByCondition(typeof(Setting), nameof(EnableExperimentalVehicleSelection), true)]
         public bool DisplayVehiclePrefabNames { get; set; } = true;
-        
+
         #endregion
-        
+
         #region About
-        
+
         [SettingsUISection(AboutSection, InfoGroup)]
         public string NameText => Mod.Name;
 
@@ -613,37 +286,40 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
                 }
             }
         }
-        
+
         #endregion
-        
+
         #region Debug Options
-        
-        [SettingsUISection(DebugSection, DebugGeneralGroup)]
-        [SettingsUIAdvanced]
-        public bool CreateExamplePack
-        {
-            set => ProbabilityPack.Example().SaveToFile();
-        }
-        
+
         [SettingsUISection(DebugSection, DebugGeneralGroup)]
         [SettingsUIAdvanced]
         public bool CountPrefabInstances
         {
             set => VehicleCounterSystem.Instance.CountPrefabInstances();
         }
-        
-        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        // [SettingsUIAdvanced]
-        // public bool ResetAllSpeedLimits 
-        // {
-        //     set => RoadSpeedLimitSystem.Instance?.ResetAllSpeedLimits();
-        // }
-        
-        // [SettingsUIAdvanced]
-        // [SettingsUIKeyboardBinding(Mod.ResetSpeedLimitActionName)]
-        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        // public ProxyBinding ResetAllSpeedLimitsBinding { get; set; }
-        
+
+        // M0 cascade test hooks (temporary; replaced by the real UI later).
+        [SettingsUISection(DebugSection, DebugGeneralGroup)]
+        [SettingsUIAdvanced]
+        public bool CreateExampleVehiclePack
+        {
+            set => VehicleConfigSystem.CreateExamplePack();
+        }
+
+        [SettingsUISection(DebugSection, DebugGeneralGroup)]
+        [SettingsUIAdvanced]
+        public bool ApplyExampleVehiclePack
+        {
+            set => VehicleConfigSystem.Instance?.ApplyPackByName("Example");
+        }
+
+        [SettingsUISection(DebugSection, DebugGeneralGroup)]
+        [SettingsUIAdvanced]
+        public bool ResetVehiclePackToVanilla
+        {
+            set => VehicleConfigSystem.Instance?.ResetToVanilla();
+        }
+
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
         [SettingsUIAdvanced]
         public bool RemoveAllowedVehiclePrefab
@@ -667,85 +343,21 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
             set => Systems.VehicleSelectionSection.Instance?.DebugCheckEnabledEffects();
         }
 
-        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        // [SettingsUIAdvanced]
-        // public bool RemoveSpeedLimitComponents 
-        // {
-        //     set => RoadSpeedLimitSystem.Instance?.RemoveSpeedLimitComponents();
-        // }
-        //
         [SettingsUISection(DebugSection, DebugComponentsGroup)]
         [SettingsUIAdvanced]
-        public bool CountAllSpeedLimits 
+        public bool CountAllSpeedLimits
         {
             set => CompatibilityRoadSpeedLimitSystem.Instance?.CountAllSpeedLimits();
         }
-        //
-        // [SettingsUISection(DebugSection, DebugComponentsGroup)]
-        // [SettingsUIAdvanced]
-        // public bool ManualUpdate 
-        // {
-        //     set => RoadSpeedLimitSystem.Instance?.DoUpdate();
-        // }
-        
+
         #endregion
-        
+
         /// <summary>
-        /// Restores the mod's recommended default probabilities.
+        /// Restores the mod's recommended defaults.
         /// </summary>
         public override void SetDefaults()
         {
             LoggingLevel = LogLevel.Info;
-            
-            MotorbikeProbability = 25;
-            
-            ScooterProbability = 50;
-            
-            CityCarProbability = 100;
-            
-            HatchbackProbability = 100;
-            
-            MinivanProbability = 100;
-            
-            SedanProbability = 100;
-            
-            SportsCarProbability = 100;
-            
-            PickupProbability = 100;
-            
-            SUVProbability = 100;
-            
-            MuscleCarProbability = 100;
-            
-            VanProbability = 100;
-        }
-        
-        /// <summary>
-        /// Resets probabilities to match the game's vanilla values.
-        /// </summary>
-        public void SetVanillaDefaults()
-        {
-            MotorbikeProbability = 100;
-            
-            ScooterProbability = 100;
-            
-            CityCarProbability = 100;
-            
-            HatchbackProbability = 100;
-            
-            MinivanProbability = 100;
-            
-            SedanProbability = 100;
-            
-            SportsCarProbability = 100;
-            
-            PickupProbability = 100;
-            
-            SUVProbability = 100;
-
-            MuscleCarProbability = 100;
-            
-            VanProbability = 100;
         }
     }
 
@@ -769,24 +381,7 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
             Dictionary<string, int> indexCounts)
         {
             var values = new Dictionary<string, string>();
-            
-            foreach(var (className, classFriendlyName) in VehicleClass.GetSettingClassNames())
-            {
-                values.Add(m_Setting.GetOptionLabelLocaleID($"{className}Probability"), $"{classFriendlyName} Probability");
-                values.Add(m_Setting.GetOptionDescLocaleID($"{className}Probability"), $"Probability to spawn {classFriendlyName}. Default is 100%. 100% will spawn as many {className} as in vanilla, 0% will disable {className}.");
-            }
-            
-            values.Add(m_Setting.GetOptionLabelLocaleID($"VehicleMaxSpeed"), $"Selected Class Max Speed");
-            values.Add(m_Setting.GetOptionDescLocaleID($"VehicleMaxSpeed"), $"Maximum speed for vehicles of this class.");
-                
-            values.Add(m_Setting.GetOptionLabelLocaleID($"VehicleAcceleration"), $"Selected Class Acceleration");
-            values.Add(m_Setting.GetOptionDescLocaleID($"VehicleAcceleration"), $"Acceleration for vehicles of this class. Impacts how fast the vehicle can reach its maximum speed.");
-                
-            values.Add(m_Setting.GetOptionLabelLocaleID($"VehicleBraking"), $"Selected Class Braking");
-            values.Add(m_Setting.GetOptionDescLocaleID($"VehicleBraking"), $"Braking for vehicles of this class. Impacts how fast the vehicle can stop.");
 
-            // TODO: Values for planes and other vehicle types
-            
             // TODO: Move to Locale.json
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Verbose), "Verbose (Log EVERYTHING)");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Trace), "Trace (Extended Debug)");
@@ -795,7 +390,7 @@ public bool DisableSpeedLimitUpdate { get; set; } = false;*/
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Warning), "Warning");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Error), "Error");
             values.Add(m_Setting.GetEnumValueLocaleID(LogLevel.Disabled), "Disabled (No Logging)");
-            
+
             return values;
         }
 

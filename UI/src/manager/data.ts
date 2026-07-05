@@ -24,6 +24,13 @@ export interface PrefabNode {
 
 export interface ClassNode {
   name: string;
+  editable?: boolean;
+  custom?: boolean;
+  // Class-level override state (only present from the backend, not in mock data).
+  probability?: AttrState;
+  maxSpeed?: AttrState;
+  acceleration?: AttrState;
+  braking?: AttrState;
   prefabs: PrefabNode[];
 }
 
