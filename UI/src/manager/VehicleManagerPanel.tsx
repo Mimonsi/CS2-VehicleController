@@ -3,7 +3,7 @@ import { FOCUS_DISABLED } from "cs2/input";
 // PanelSection/PanelSectionRow/PanelFoldout are the runtime-safe *alias* exports
 // of the game's InfoSection/InfoRow/InfoSectionFoldout (see ui.d.ts). Importing
 // InfoRow/InfoSection directly from cs2/ui fails at runtime, the aliases work.
-import { Dropdown, DropdownToggle, Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Portal, Scrollable } from "cs2/ui";
+import { Dropdown, DropdownToggle, Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Scrollable } from "cs2/ui";
 import * as CS2UI from "cs2/ui";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
@@ -113,7 +113,13 @@ function filterTree(
   const q = search.trim().toLowerCase();
   if (!q && !inPackOnly) return tree;
   const matchPrefab = (p: PrefabNode) => {
-    if (q && !p.name.toLowerCase().includes(q) && !p.className.toLowerCase().includes(q)) return false;
+    if (
+      q &&
+      !p.name.toLowerCase().includes(q) &&
+      !p.id.toLowerCase().includes(q) &&
+      !p.className.toLowerCase().includes(q)
+    )
+      return false;
     if (inPackOnly && !isInPack(p, customClasses)) return false;
     return true;
   };
@@ -269,10 +275,12 @@ const Chip = ({ label, active, onClick }: { label: string; active?: boolean; onC
 const PrefabRow = ({
   prefab,
   selected,
+  showInternal,
   onSelect,
 }: {
   prefab: PrefabNode;
   selected: boolean;
+  showInternal: boolean;
   onSelect: (additive: boolean) => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -302,7 +310,7 @@ const PrefabRow = ({
       }}
     >
       {prefab.custom ? "◆ " : ""}
-      {prefab.name}
+      {showInternal ? prefab.id : prefab.name}
     </div>
   );
 };
@@ -474,7 +482,15 @@ const ClassAdminRow = ({ name }: { name: string }) => {
 };
 
 // Detail panel for the current selection of one *or many* vehicles. Editing applies to all of them.
-const DetailPanel = ({ prefabs, classes }: { prefabs: PrefabNode[]; classes: ClassInfo[] }) => {
+const DetailPanel = ({
+  prefabs,
+  classes,
+  showInternal,
+}: {
+  prefabs: PrefabNode[];
+  classes: ClassInfo[];
+  showInternal: boolean;
+}) => {
   if (prefabs.length === 0) {
     return (
       <div style={{ padding: "20rem", color: DIM_COLOR }}>
@@ -536,7 +552,7 @@ const DetailPanel = ({ prefabs, classes }: { prefabs: PrefabNode[]; classes: Cla
             />
           ) : null}
           <div>
-            <div style={{ fontSize: "15rem" }}>{prefabs[0].name}</div>
+            <div style={{ fontSize: "15rem" }}>{showInternal ? prefabs[0].id : prefabs[0].name}</div>
             <div style={{ fontSize: "12rem", color: DIM_COLOR }}>{prefabs[0].className}</div>
           </div>
         </div>
@@ -701,6 +717,7 @@ const Tree = ({
   selectedClassName,
   expandAll,
   filterKey,
+  showInternal,
   onSelectPrefab,
   onSelectClass,
 }: {
@@ -709,6 +726,7 @@ const Tree = ({
   selectedClassName: string | null;
   expandAll: boolean;
   filterKey: string;
+  showInternal: boolean;
   onSelectPrefab: (id: string, additive: boolean) => void;
   onSelectClass: (name: string) => void;
 }) => (
@@ -774,6 +792,7 @@ const Tree = ({
                 key={prefab.id}
                 prefab={prefab}
                 selected={selectedIds.has(prefab.id)}
+                showInternal={showInternal}
                 onSelect={additive => onSelectPrefab(prefab.id, additive)}
               />
             ))}
@@ -857,29 +876,9 @@ export const VehicleManagerPanel = ({
   // Tree filters.
   const [search, setSearch] = useState("");
   const [inPackOnly, setInPackOnly] = useState(false);
+  // Show internal prefab ids instead of localized names (many vehicles share a display name).
+  const [showInternal, setShowInternal] = useState(false);
 
-  // Resizable window: a full-screen overlay captures the drag reliably (global document listeners
-  // are unreliable in Gameface). A hidden ruler gives px-per-rem so the drag tracks the cursor 1:1.
-  const [width, setWidth] = useState(720);
-  const [bodyHeight, setBodyHeight] = useState(440);
-  const [resizing, setResizing] = useState(false);
-  const rulerRef = useRef<HTMLDivElement>(null);
-  const resizeStart = useRef<{ x: number; y: number; w: number; h: number; ppr: number } | null>(null);
-
-  const onHandleDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const ppr = rulerRef.current ? rulerRef.current.getBoundingClientRect().width / 100 : 1;
-    resizeStart.current = { x: e.clientX, y: e.clientY, w: width, h: bodyHeight, ppr: ppr || 1 };
-    setResizing(true);
-  };
-  const onOverlayMove = (e: React.MouseEvent) => {
-    const s = resizeStart.current;
-    if (!s) return;
-    setWidth(Math.max(520, s.w + (e.clientX - s.x) / s.ppr));
-    setBodyHeight(Math.max(260, s.h + (e.clientY - s.y) / s.ppr));
-  };
-  const endResize = () => setResizing(false);
 
   const selectPrefab = (id: string, additive: boolean) => {
     setSelectedClassName(null);
@@ -981,21 +980,8 @@ export const VehicleManagerPanel = ({
       header={<span>Vehicle manager</span>}
       onClose={onClose}
       initialPosition={{ x: 0.3, y: 0.15 }}
-      style={{ width: width + "rem" }}
+      style={{ width: "760rem" }}
     >
-      {/* Hidden ruler: measures px-per-rem for the resize handle. */}
-      <div ref={rulerRef} style={{ width: "100rem", height: "0", position: "absolute", opacity: 0 }} />
-      {resizing && (
-        <Portal>
-          <div
-            onMouseMove={onOverlayMove}
-            onMouseUp={endResize}
-            onMouseLeave={endResize}
-            style={{ position: "fixed", left: 0, top: 0, right: 0, bottom: 0, zIndex: 9999, cursor: "nwse-resize" }}
-          />
-        </Portal>
-      )}
-
       <PackBar active={packInfo.active} packs={packInfo.packs} />
 
       {/* Search + scope filter (categories are the tree's top-level grouping). */}
@@ -1009,6 +995,7 @@ export const VehicleManagerPanel = ({
         />
         <span style={{ marginLeft: "12rem", color: DIM_COLOR, fontSize: "12rem" }}>Show</span>
         <Chip label={"In this pack"} active={inPackOnly} onClick={() => setInPackOnly(v => !v)} />
+        <Chip label={"Internal names"} active={showInternal} onClick={() => setShowInternal(v => !v)} />
       </div>
 
       <GlobalBar g={global} />
@@ -1018,7 +1005,7 @@ export const VehicleManagerPanel = ({
         <Scrollable
           vertical
           trackVisibility={"scrollable"}
-          style={{ width: "260rem", maxHeight: bodyHeight + "rem", borderRight: "1rem solid rgba(255,255,255,0.1)" }}
+          style={{ width: "260rem", maxHeight: "480rem", borderRight: "1rem solid rgba(255,255,255,0.1)" }}
         >
           <Tree
             tree={filteredTree}
@@ -1026,6 +1013,7 @@ export const VehicleManagerPanel = ({
             selectedClassName={selectedClassName}
             expandAll={filterActive}
             filterKey={filterKey}
+            showInternal={showInternal}
             onSelectPrefab={selectPrefab}
             onSelectClass={selectClass}
           />
@@ -1033,29 +1021,21 @@ export const VehicleManagerPanel = ({
         <Scrollable
           vertical
           trackVisibility={"scrollable"}
-          style={{ flex: 1, minWidth: "0", maxHeight: bodyHeight + "rem" }}
+          style={{ flex: 1, minWidth: "0", maxHeight: "480rem" }}
         >
           {selectedClassName ? (
             <ClassDetail cls={selectedClass} />
           ) : (
-            <DetailPanel prefabs={selectedPrefabs} classes={classes} />
+            <DetailPanel prefabs={selectedPrefabs} classes={classes} showInternal={showInternal} />
           )}
         </Scrollable>
       </div>
 
-      {/* Status line + resize grip */}
+      {/* Status line */}
       <PanelSection>
         <PanelSectionRow
           disableFocus
           left={`Changes apply live and auto-save to "${packInfo.active}".`}
-          right={
-            <div
-              onMouseDown={onHandleDown}
-              style={{ cursor: "nwse-resize", color: DIM_COLOR, fontSize: "18rem", padding: "0 4rem", lineHeight: "1" }}
-            >
-              ⤡
-            </div>
-          }
         />
       </PanelSection>
     </Panel>
