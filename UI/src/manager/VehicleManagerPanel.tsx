@@ -806,13 +806,34 @@ const Tree = ({
 // Pack bar: switch active pack, create/duplicate/rename/delete, export/import (clipboard).
 const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
   const [prompt, setPrompt] = useState<{ op: "new" | "duplicate" | "rename"; value: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const startPrompt = (op: "new" | "duplicate" | "rename", value: string) => setPrompt({ op, value });
+  const startPrompt = (op: "new" | "duplicate" | "rename", value: string) => {
+    setConfirmDelete(false);
+    setError(null);
+    setPrompt({ op, value });
+  };
+  const cancelPrompt = () => {
+    setPrompt(null);
+    setError(null);
+  };
   const confirmPrompt = () => {
     if (!prompt) return;
     const v = prompt.value.trim();
-    if (v) sendPackCmd(prompt.op, v);
-    setPrompt(null);
+    if (!v) return;
+    // Renaming to the same name is a no-op.
+    if (prompt.op === "rename" && v === active) {
+      cancelPrompt();
+      return;
+    }
+    // Guard against silently overwriting an existing pack.
+    if (packs.includes(v)) {
+      setError(`A pack named "${v}" already exists.`);
+      return;
+    }
+    sendPackCmd(prompt.op, v);
+    cancelPrompt();
   };
   const btn = (label: string, onClick: () => void, danger?: boolean) => (
     <TxtButton onClick={onClick} danger={danger}>
@@ -835,27 +856,48 @@ const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
             {btn("New", () => startPrompt("new", ""))}
             {btn("Duplicate", () => startPrompt("duplicate", active + " copy"))}
             {btn("Rename", () => startPrompt("rename", active))}
-            {btn("Delete", () => sendPackCmd("delete", active), true)}
+            {btn("Delete", () => {
+              cancelPrompt();
+              setConfirmDelete(true);
+            }, true)}
             {btn("Export", () => sendPackCmd("export", ""))}
             {btn("Import", () => sendPackCmd("import", ""))}
           </div>
         }
       />
       {prompt && (
+        <div style={{ padding: "2rem 14rem 8rem" }}>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <input
+              type="text"
+              value={prompt.value}
+              placeholder={"Pack name"}
+              onChange={e => {
+                setPrompt({ ...prompt, value: e.currentTarget.value });
+                setError(null);
+              }}
+              onKeyDown={e => {
+                if (e.key === "Enter") confirmPrompt();
+                if (e.key === "Escape") cancelPrompt();
+              }}
+              style={{ ...textInputStyle, flex: 1, textAlign: "left" }}
+            />
+            {btn("OK", confirmPrompt)}
+            {btn("Cancel", cancelPrompt)}
+          </div>
+          {error && (
+            <div style={{ marginTop: "4rem", fontSize: "12rem", color: "rgba(255, 140, 140, 1)" }}>{error}</div>
+          )}
+        </div>
+      )}
+      {confirmDelete && (
         <div style={{ display: "flex", alignItems: "center", padding: "2rem 14rem 8rem" }}>
-          <input
-            type="text"
-            value={prompt.value}
-            placeholder={"Pack name"}
-            onChange={e => setPrompt({ ...prompt, value: e.currentTarget.value })}
-            onKeyDown={e => {
-              if (e.key === "Enter") confirmPrompt();
-              if (e.key === "Escape") setPrompt(null);
-            }}
-            style={{ ...textInputStyle, flex: 1, textAlign: "left" }}
-          />
-          {btn("OK", confirmPrompt)}
-          {btn("Cancel", () => setPrompt(null))}
+          <span style={{ fontSize: "13rem" }}>Delete pack "{active}"?</span>
+          {btn("Delete", () => {
+            sendPackCmd("delete", active);
+            setConfirmDelete(false);
+          }, true)}
+          {btn("Cancel", () => setConfirmDelete(false))}
         </div>
       )}
     </PanelSection>
