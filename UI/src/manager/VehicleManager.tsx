@@ -1,16 +1,35 @@
+import { bindValue, useValue } from "cs2/api";
 import { FloatingButton, Portal } from "cs2/ui";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { VehicleManagerPanel } from "./VehicleManagerPanel";
 import vcLogo from "../images/VC.png";
 
 const buttonSrc = vcLogo;
+const managerGroup = "VehicleController.VehicleManager";
+// A vehicle's Selected-Info panel can request opening the manager focused on its prefab.
+const openRequest$ = bindValue<string>(managerGroup, "openRequest", "{}");
 
-// Appended to "GameTopRight": a toggle button that opens the floating
-// Vehicle Manager window. Open state lives here (M2 prototype has no C# yet);
-// the panel is rendered through a Portal so it floats above the game UI.
+// Appended to "GameTopLeft": a toggle button that opens the floating Vehicle Manager window.
+// The panel is rendered through a Portal so it floats above the game UI.
 export const VehicleManager = () => {
   const [open, setOpen] = useState(false);
+  const [focusPrefab, setFocusPrefab] = useState<string | null>(null);
+  const lastNonce = useRef(0);
+
+  const openReq = useValue(openRequest$);
+  useEffect(() => {
+    try {
+      const r = JSON.parse(openReq);
+      if (r && typeof r.nonce === "number" && r.nonce !== lastNonce.current) {
+        lastNonce.current = r.nonce;
+        setFocusPrefab(r.prefab ?? null);
+        setOpen(true);
+      }
+    } catch (e) {
+      // ignore malformed requests
+    }
+  }, [openReq]);
 
   return (
     <>
@@ -23,7 +42,13 @@ export const VehicleManager = () => {
       />
       {open && (
         <Portal>
-          <VehicleManagerPanel onClose={() => setOpen(false)} />
+          <VehicleManagerPanel
+            onClose={() => {
+              setOpen(false);
+              setFocusPrefab(null);
+            }}
+            focusPrefab={focusPrefab}
+          />
         </Portal>
       )}
     </>

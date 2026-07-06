@@ -61,6 +61,7 @@ namespace VehicleController
             {
                 updateSystem.UpdateAt<VehicleConfigSystem>(SystemUpdatePhase.MainLoop);
                 updateSystem.UpdateAt<VehicleManagerUISystem>(SystemUpdatePhase.UIUpdate);
+                updateSystem.UpdateAt<VehicleManagerLinkSection>(SystemUpdatePhase.UIUpdate);
             }
             if (EnableVehicleCounterSystem)
                 updateSystem.UpdateAt<VehicleCounterSystem>(SystemUpdatePhase.MainLoop);

@@ -147,7 +147,8 @@ Everything type-checks: `cd UI && npx tsc --noEmit` → 0 errors. C# builds on t
 | Editable per-pack classes (assign/create/rename/delete) | ✅ |
 | Cutover (retire legacy systems) | ✅ |
 | Pack bar (switch/new/duplicate/rename/delete, clipboard export/import=merge) | ✅ |
-| SIP deep-link | ⬜ **next** |
+| Vanilla dropdowns (pack switcher + class assign) | ✅ |
+| SIP deep-link ("Open in Vehicle Manager" button on a selected vehicle) | ✅ |
 | M1 — per-vehicle SIP panel | ⬜ |
 | Settings redesign / remove empty tabs | ⬜ |
 | Polish | ⬜ |

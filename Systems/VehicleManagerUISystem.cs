@@ -39,6 +39,8 @@ namespace VehicleController.Systems
         private ValueBinding<string> _globalJson;
         private ValueBinding<string> _classesJson;
         private ValueBinding<string> _packsJson;
+        private ValueBinding<string> _openRequest;
+        private int _openNonce;
 
         // ---- DTOs (serialized to the UI; camelCased by the resolver) ------------
 
@@ -100,6 +102,9 @@ namespace VehicleController.Systems
             AddBinding(_classesJson);
             _packsJson = new ValueBinding<string>(Group, "packsJson", "{}");
             AddBinding(_packsJson);
+            _openRequest = new ValueBinding<string>(Group, "openRequest", "{}");
+            AddBinding(_openRequest);
+            AddBinding(new TriggerBinding<string>(Group, "openManager", OnOpenManager));
             AddBinding(new TriggerBinding(Group, "refresh", RequestTreeUpdate));
             AddBinding(new TriggerBinding<string>(Group, "edit", OnEdit));
             AddBinding(new TriggerBinding<string>(Group, "classCmd", OnClassCmd));
@@ -193,6 +198,14 @@ namespace VehicleController.Systems
             {
                 log.Warn($"Failed to apply pack command '{json}': {x.Message}");
             }
+        }
+
+        // Requested from a vehicle's Selected-Info panel: open the manager focused on this prefab.
+        // A bumped nonce lets the UI react even when the same prefab is requested twice.
+        private void OnOpenManager(string prefabName)
+        {
+            _openNonce++;
+            _openRequest.Update(JsonConvert.SerializeObject(new { prefab = prefabName, nonce = _openNonce }));
         }
 
         /// <summary>Rebuilds the tree JSON and pushes it to the UI. Safe to call at any time.</summary>

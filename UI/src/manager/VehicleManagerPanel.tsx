@@ -693,10 +693,23 @@ const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
   );
 };
 
-export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
-  const [selection, setSelection] = useState<Selection | null>(null);
+export const VehicleManagerPanel = ({
+  onClose,
+  focusPrefab,
+}: {
+  onClose: () => void;
+  focusPrefab?: string | null;
+}) => {
+  const [selection, setSelection] = useState<Selection | null>(
+    focusPrefab ? { kind: "prefab", id: focusPrefab } : null
+  );
   const selectedPrefabId = selection?.kind === "prefab" ? selection.id : null;
   const selectedClassName = selection?.kind === "class" ? selection.name : null;
+
+  // Select the prefab requested from a vehicle's info panel (deep-link).
+  useEffect(() => {
+    if (focusPrefab) setSelection({ kind: "prefab", id: focusPrefab });
+  }, [focusPrefab]);
 
   // Real tree from the backend; falls back to mock data when empty or unparsable.
   const treeJson = useValue(treeJson$);
