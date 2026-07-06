@@ -3,7 +3,8 @@ import { FOCUS_DISABLED } from "cs2/input";
 // PanelSection/PanelSectionRow/PanelFoldout are the runtime-safe *alias* exports
 // of the game's InfoSection/InfoRow/InfoSectionFoldout (see ui.d.ts). Importing
 // InfoRow/InfoSection directly from cs2/ui fails at runtime, the aliases work.
-import { Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Scrollable } from "cs2/ui";
+import { Dropdown, DropdownToggle, Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Scrollable } from "cs2/ui";
+import * as CS2UI from "cs2/ui";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { ModuleResolver } from "../ModuleResolver";
@@ -268,105 +269,46 @@ const miniBtnStyle: React.CSSProperties = {
   fontSize: "12rem",
 };
 
-// Popup to assign to an existing class, create a new one, or unassign.
-// New-class input and Unassign stay pinned at the top; the class list scrolls below.
-const ClassDropdownButton = ({
-  label,
-  classes,
-  onPick,
+// The `DropdownItem` name in cs2/ui's types is an interface; the runtime component is only
+// reachable via the module namespace, so grab it as a value here.
+const DropdownItemComp: any = (CS2UI as any).DropdownItem;
+
+// Reusable vanilla dropdown built from the game's Dropdown/DropdownToggle/DropdownItem + theme.
+const VDropdown = ({
+  value,
+  items,
+  onSelect,
 }: {
-  label: string;
-  classes: ClassInfo[];
-  onPick: (className: string) => void;
+  value: string;
+  items: { value: string; label: string }[];
+  onSelect: (v: string) => void;
 }) => {
-  const [open, setOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const pick = (name: string) => {
-    onPick(name);
-    setOpen(false);
-    setNewName("");
-  };
-  const addNew = () => {
-    const t = newName.trim();
-    if (t) pick(t);
-  };
-
-  const itemStyle: React.CSSProperties = { cursor: "pointer", padding: "5rem 10rem", fontSize: "13rem" };
-
+  const theme = ModuleResolver.instance.DropdownClasses;
   return (
-    <div style={{ position: "relative" }}>
-      <div
-        onClick={() => setOpen(o => !o)}
-        style={{
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          padding: "3rem 8rem",
-          borderRadius: "3rem",
-          border: "1rem solid rgba(255, 255, 255, 0.25)",
-          fontSize: "13rem",
-        }}
-      >
-        {label}
-        <span style={{ marginLeft: "6rem", color: DIM_COLOR }}>▾</span>
-      </div>
-      {open && (
-        <div
-          style={{
-            position: "absolute",
-            top: "100%",
-            right: 0,
-            marginTop: "4rem",
-            minWidth: "200rem",
-            background: "rgba(22, 27, 34, 0.98)",
-            border: "1rem solid rgba(255, 255, 255, 0.2)",
-            borderRadius: "4rem",
-            zIndex: 50,
-          }}
+    <Dropdown
+      focusKey={ModuleResolver.instance.FOCUS_DISABLED}
+      theme={theme}
+      content={items.map(it => (
+        <DropdownItemComp
+          key={it.value}
+          theme={theme}
+          value={it.value}
+          selected={it.value === value}
+          closeOnSelect
+          onChange={() => onSelect(it.value)}
         >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              padding: "6rem",
-              borderBottom: "1rem solid rgba(255, 255, 255, 0.12)",
-            }}
-          >
-            <input
-              type="text"
-              value={newName}
-              placeholder={"New class…"}
-              onChange={e => setNewName(e.currentTarget.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter") addNew();
-              }}
-              style={{ ...textInputStyle, flex: 1, textAlign: "left" }}
-            />
-            <div onClick={addNew} style={miniBtnStyle}>
-              Add
-            </div>
-          </div>
-          <div
-            onClick={() => pick("")}
-            style={{ ...itemStyle, color: DIM_COLOR, borderBottom: "1rem solid rgba(255, 255, 255, 0.12)" }}
-          >
-            Unassign
-          </div>
-          <div style={{ maxHeight: "180rem", overflowY: "auto" }}>
-            {classes.map(c => (
-              <div key={c.name} onClick={() => pick(c.name)} style={itemStyle}>
-                {c.name}
-                {c.custom ? <span style={{ color: DIM_COLOR, fontSize: "11rem" }}> · custom</span> : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+          {it.label}
+        </DropdownItemComp>
+      ))}
+    >
+      <DropdownToggle theme={theme}>
+        {items.find(i => i.value === value)?.label ?? value}
+      </DropdownToggle>
+    </Dropdown>
   );
 };
 
-// Assign a single selected prefab to a class.
+// Assign a single selected prefab to a class (existing / new / unassign).
 const ClassPicker = ({
   prefabId,
   current,
@@ -375,13 +317,45 @@ const ClassPicker = ({
   prefabId: string;
   current: string;
   classes: ClassInfo[];
-}) => (
-  <ClassDropdownButton
-    label={current || "Unclassified"}
-    classes={classes}
-    onPick={name => sendAssign(prefabId, name)}
-  />
-);
+}) => {
+  const [newOpen, setNewOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const addNew = () => {
+    const t = newName.trim();
+    if (t) {
+      sendAssign(prefabId, t);
+      setNewName("");
+      setNewOpen(false);
+    }
+  };
+  // Custom classes first so freshly created ones are easy to find.
+  const items = [
+    { value: "", label: "Unassign" },
+    ...classes.filter(c => c.custom).map(c => ({ value: c.name, label: c.name + " · custom" })),
+    ...classes.filter(c => !c.custom).map(c => ({ value: c.name, label: c.name })),
+  ];
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <VDropdown value={current} items={items} onSelect={name => sendAssign(prefabId, name)} />
+      <div onClick={() => setNewOpen(o => !o)} style={miniBtnStyle}>
+        + New
+      </div>
+      {newOpen && (
+        <input
+          type="text"
+          value={newName}
+          placeholder={"New class"}
+          onChange={e => setNewName(e.currentTarget.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter") addNew();
+            if (e.key === "Escape") setNewOpen(false);
+          }}
+          style={{ ...textInputStyle, marginLeft: "6rem", width: "120rem", textAlign: "left" }}
+        />
+      )}
+    </div>
+  );
+};
 
 // Rename / delete controls for a custom (pack) class.
 const ClassAdminRow = ({ name }: { name: string }) => {
@@ -662,13 +636,9 @@ const Tree = ({
 
 // Pack bar: switch active pack, create/duplicate/rename/delete, export/import (clipboard).
 const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
-  const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState<{ op: "new" | "duplicate" | "rename"; value: string } | null>(null);
 
-  const startPrompt = (op: "new" | "duplicate" | "rename", value: string) => {
-    setPrompt({ op, value });
-    setOpen(false);
-  };
+  const startPrompt = (op: "new" | "duplicate" | "rename", value: string) => setPrompt({ op, value });
   const confirmPrompt = () => {
     if (!prompt) return;
     const v = prompt.value.trim();
@@ -688,18 +658,11 @@ const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
         left={"Pack"}
         right={
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
-            <div
-              onClick={() => setOpen(o => !o)}
-              style={{
-                cursor: "pointer",
-                padding: "3rem 8rem",
-                borderRadius: "3rem",
-                border: "1rem solid rgba(255, 255, 255, 0.25)",
-                fontSize: "13rem",
-              }}
-            >
-              {active} <span style={{ color: DIM_COLOR }}>▾</span>
-            </div>
+            <VDropdown
+              value={active}
+              items={packs.map(p => ({ value: p, label: p }))}
+              onSelect={p => sendPackCmd("switch", p)}
+            />
             {btn("New", () => startPrompt("new", ""))}
             {btn("Duplicate", () => startPrompt("duplicate", active + " copy"))}
             {btn("Rename", () => startPrompt("rename", active))}
@@ -709,27 +672,6 @@ const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
           </div>
         }
       />
-      {open && (
-        <div style={{ padding: "2rem 14rem 6rem" }}>
-          {packs.map(p => (
-            <div
-              key={p}
-              onClick={() => {
-                sendPackCmd("switch", p);
-                setOpen(false);
-              }}
-              style={{
-                cursor: "pointer",
-                padding: "4rem 8rem",
-                fontSize: "13rem",
-                color: p === active ? OVERRIDE_COLOR : undefined,
-              }}
-            >
-              {p}
-            </div>
-          ))}
-        </div>
-      )}
       {prompt && (
         <div style={{ display: "flex", alignItems: "center", padding: "2rem 14rem 8rem" }}>
           <input
