@@ -43,9 +43,9 @@ namespace VehicleController
     /// Stores all mod settings and exposes them to the game UI.
     /// </summary>
     [FileLocation("ModsSettings/VehicleController/VehicleController")]
-    [SettingsUITabOrder(MainSection, SpawnBehaviorSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
-    [SettingsUIGroupOrder(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, RoadSpeedLimitGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
-    [SettingsUIShowGroupName(MainGroup, VehicleProbabilityPackGroup, VehicleProbabilityGroup, VehicleStiffnessGroup, VehiclePropertyPackGroup, VehiclePropertiesGroup, RoadSpeedLimitGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUITabOrder(MainSection, VehiclePropertiesSection, VehicleSelectionSection, AboutSection, DebugSection)]
+    [SettingsUIGroupOrder(MainGroup, VehicleStiffnessGroup, RoadSpeedLimitGroup, VehicleSelectionGroup, InfoGroup, DebugGeneralGroup, DebugComponentsGroup)]
+    [SettingsUIShowGroupName(MainGroup, VehicleStiffnessGroup, RoadSpeedLimitGroup, VehicleSelectionGroup, DebugGeneralGroup, DebugComponentsGroup)]
     public class Setting : ModSetting
     {
         public static Setting Instance;
@@ -53,14 +53,8 @@ namespace VehicleController
         public const string MainSection = "Settings";
         public const string MainGroup = "General Settings";
 
-        public const string SpawnBehaviorSection = "Spawning Behavior";
-        public const string VehicleProbabilityPackGroup = "Probability Settings";
-        public const string VehicleProbabilityGroup = "Probability Settings";
-
         public const string VehiclePropertiesSection = "Vehicle Properties";
-        public const string VehiclePropertiesGroup = "Vehicle Properties";
         public const string VehicleStiffnessGroup = "Vehicle Stiffness";
-        public const string VehiclePropertyPackGroup = "Vehicle Property Pack";
         public const string RoadSpeedLimitGroup = "Road Speed Limits";
 
         public const string VehicleSelectionSection = "Vehicle Selection";

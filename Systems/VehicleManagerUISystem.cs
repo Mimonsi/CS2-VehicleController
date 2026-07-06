@@ -342,7 +342,8 @@ namespace VehicleController.Systems
                 var prefabDto = new PrefabDto
                 {
                     Id = prefabName,
-                    Name = prefabName,
+                    // Display the localized asset name (e.g. "Astra") instead of the internal id.
+                    Name = LocaleHelper.Translate($"Assets.NAME[{prefabName}]", prefabName) ?? prefabName,
                     ClassName = className,
                     Thumbnail = thumbnail,
                     // Real "custom asset" (mod) detection needs prefab source info; not mislabeling

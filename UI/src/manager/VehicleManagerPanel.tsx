@@ -91,6 +91,43 @@ const classHasSelected = (cls: ClassNode, ids: Set<string>): boolean =>
 const categoryHasSelected = (cat: CategoryNode, ids: Set<string>): boolean =>
   cat.classes.some(cls => classHasSelected(cls, ids));
 
+// A prefab is "in this pack" if it has a prefab-level override or belongs to a custom class.
+const isInPack = (p: PrefabNode, customClasses: Set<string>): boolean =>
+  p.probability.overridden ||
+  p.maxSpeed.overridden ||
+  p.acceleration.overridden ||
+  p.braking.overridden ||
+  customClasses.has(p.className);
+
+type CategoryFilter = "all" | "cars" | "trains" | "service";
+
+// Filter the tree by search text, category, and "in this pack" scope. Returns the full tree
+// (same reference) when nothing is filtered so foldout state is preserved.
+function filterTree(
+  tree: CategoryNode[],
+  search: string,
+  cat: CategoryFilter,
+  inPackOnly: boolean,
+  customClasses: Set<string>
+): CategoryNode[] {
+  const q = search.trim().toLowerCase();
+  if (!q && cat === "all" && !inPackOnly) return tree;
+  const matchPrefab = (p: PrefabNode) => {
+    if (q && !p.name.toLowerCase().includes(q) && !p.className.toLowerCase().includes(q)) return false;
+    if (inPackOnly && !isInPack(p, customClasses)) return false;
+    return true;
+  };
+  return tree
+    .filter(c => cat === "all" || c.key === cat)
+    .map(c => ({
+      ...c,
+      classes: c.classes
+        .map(cls => ({ ...cls, prefabs: cls.prefabs.filter(matchPrefab) }))
+        .filter(cls => cls.prefabs.length > 0),
+    }))
+    .filter(c => c.classes.length > 0);
+}
+
 const Badge = ({ state, inheritedLabel = "Inherited" }: { state: AttrState; inheritedLabel?: string }) => (
   <span
     style={{
@@ -213,13 +250,15 @@ const GlobalBar = ({ g }: { g: GlobalFactors }) => (
   </div>
 );
 
-const Chip = ({ label, active }: { label: string; active?: boolean }) => (
+const Chip = ({ label, active, onClick }: { label: string; active?: boolean; onClick?: () => void }) => (
   <span
+    onClick={onClick}
     style={{
       fontSize: "12rem",
       padding: "4rem 10rem",
       marginLeft: "6rem",
       borderRadius: "20rem",
+      cursor: onClick ? "pointer" : undefined,
       color: active ? OVERRIDE_COLOR : DIM_COLOR,
       border: "1rem solid " + (active ? OVERRIDE_COLOR : DIM_COLOR),
     }}
@@ -633,20 +672,24 @@ const Tree = ({
   tree,
   selectedIds,
   selectedClassName,
+  expandAll,
+  filterKey,
   onSelectPrefab,
   onSelectClass,
 }: {
   tree: CategoryNode[];
   selectedIds: Set<string>;
   selectedClassName: string | null;
+  expandAll: boolean;
+  filterKey: string;
   onSelectPrefab: (id: string, additive: boolean) => void;
   onSelectClass: (name: string) => void;
 }) => (
   <>
     {tree.map(category => (
       <PanelFoldout
-        key={category.key}
-        initialExpanded={categoryHasSelected(category, selectedIds) || category.key === "cars"}
+        key={category.key + filterKey}
+        initialExpanded={expandAll || categoryHasSelected(category, selectedIds) || category.key === "cars"}
         expandFromContent={false}
         focusKey={FOCUS_DISABLED}
         header={
@@ -664,8 +707,8 @@ const Tree = ({
       >
         {category.classes.map(cls => (
           <PanelFoldout
-            key={cls.name}
-            initialExpanded={classHasSelected(cls, selectedIds) || cls.name === "Sedan"}
+            key={cls.name + filterKey}
+            initialExpanded={expandAll || classHasSelected(cls, selectedIds) || cls.name === "Sedan"}
             expandFromContent={false}
             focusKey={FOCUS_DISABLED}
             header={
@@ -783,6 +826,11 @@ export const VehicleManagerPanel = ({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(focusPrefab ? new Set([focusPrefab]) : new Set());
   const [selectedClassName, setSelectedClassName] = useState<string | null>(null);
 
+  // Tree filters.
+  const [search, setSearch] = useState("");
+  const [catFilter, setCatFilter] = useState<CategoryFilter>("all");
+  const [inPackOnly, setInPackOnly] = useState(false);
+
   const selectPrefab = (id: string, additive: boolean) => {
     setSelectedClassName(null);
     setSelectedIds(prev => {
@@ -852,6 +900,14 @@ export const VehicleManagerPanel = ({
     return [];
   }, [classesJson]);
 
+  const customClasses = useMemo(() => new Set(classes.filter(c => c.custom).map(c => c.name)), [classes]);
+  const filteredTree = useMemo(
+    () => filterTree(tree, search, catFilter, inPackOnly, customClasses),
+    [tree, search, catFilter, inPackOnly, customClasses]
+  );
+  const filterActive = search.trim() !== "" || catFilter !== "all" || inPackOnly;
+  const filterKey = filterActive ? `${search}|${catFilter}|${inPackOnly}` : "";
+
   const packsJson = useValue(packsJson$);
   const packInfo = useMemo<PacksInfo>(() => {
     try {
@@ -884,14 +940,21 @@ export const VehicleManagerPanel = ({
     >
       <PackBar active={packInfo.active} packs={packInfo.packs} />
 
-      {/* Search + category / scope chips (visual only) */}
+      {/* Search + category / scope filters */}
       <div style={{ display: "flex", alignItems: "center", padding: "8rem 14rem", flexWrap: "wrap" }}>
-        <Chip label={"All"} active />
-        <Chip label={"Cars"} />
-        <Chip label={"Trains"} />
-        <Chip label={"Service"} />
+        <input
+          type="text"
+          value={search}
+          placeholder={"Search vehicles"}
+          onChange={e => setSearch(e.currentTarget.value)}
+          style={{ ...textInputStyle, width: "160rem", textAlign: "left", marginRight: "6rem" }}
+        />
+        <Chip label={"All"} active={catFilter === "all"} onClick={() => setCatFilter("all")} />
+        <Chip label={"Cars"} active={catFilter === "cars"} onClick={() => setCatFilter("cars")} />
+        <Chip label={"Trains"} active={catFilter === "trains"} onClick={() => setCatFilter("trains")} />
+        <Chip label={"Service"} active={catFilter === "service"} onClick={() => setCatFilter("service")} />
         <span style={{ marginLeft: "12rem", color: DIM_COLOR, fontSize: "12rem" }}>Show</span>
-        <Chip label={"In this pack"} />
+        <Chip label={"In this pack"} active={inPackOnly} onClick={() => setInPackOnly(v => !v)} />
       </div>
 
       <GlobalBar g={global} />
@@ -904,9 +967,11 @@ export const VehicleManagerPanel = ({
           style={{ width: "260rem", maxHeight: "440rem", borderRight: "1rem solid rgba(255,255,255,0.1)" }}
         >
           <Tree
-            tree={tree}
+            tree={filteredTree}
             selectedIds={selectedIds}
             selectedClassName={selectedClassName}
+            expandAll={filterActive}
+            filterKey={filterKey}
             onSelectPrefab={selectPrefab}
             onSelectClass={selectClass}
           />
