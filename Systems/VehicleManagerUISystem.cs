@@ -38,6 +38,7 @@ namespace VehicleController.Systems
         private ValueBinding<string> _treeJson;
         private ValueBinding<string> _globalJson;
         private ValueBinding<string> _classesJson;
+        private ValueBinding<string> _packsJson;
 
         // ---- DTOs (serialized to the UI; camelCased by the resolver) ------------
 
@@ -97,9 +98,12 @@ namespace VehicleController.Systems
             AddBinding(_globalJson);
             _classesJson = new ValueBinding<string>(Group, "classesJson", "[]");
             AddBinding(_classesJson);
+            _packsJson = new ValueBinding<string>(Group, "packsJson", "{}");
+            AddBinding(_packsJson);
             AddBinding(new TriggerBinding(Group, "refresh", RequestTreeUpdate));
             AddBinding(new TriggerBinding<string>(Group, "edit", OnEdit));
             AddBinding(new TriggerBinding<string>(Group, "classCmd", OnClassCmd));
+            AddBinding(new TriggerBinding<string>(Group, "packCmd", OnPackCmd));
 
             log.Info($"VehicleManagerUISystem created with group {Group}.");
         }
@@ -159,6 +163,38 @@ namespace VehicleController.Systems
             }
         }
 
+        private class PackCmd
+        {
+            public string Op;
+            public string Name;
+        }
+
+        /// <summary>Applies a pack-bar command (switch / new / duplicate / rename / delete / export / import).</summary>
+        private void OnPackCmd(string json)
+        {
+            try
+            {
+                var cmd = JsonConvert.DeserializeObject<PackCmd>(json);
+                var config = VehicleConfigSystem.Instance;
+                if (cmd == null || config == null)
+                    return;
+                switch (cmd.Op)
+                {
+                    case "switch": config.SwitchPack(cmd.Name); break;
+                    case "new": config.NewPack(cmd.Name); break;
+                    case "duplicate": config.DuplicatePack(cmd.Name); break;
+                    case "rename": config.RenamePack(cmd.Name); break;
+                    case "delete": config.DeletePack(cmd.Name); break;
+                    case "export": config.ExportActiveToClipboard(); break;
+                    case "import": config.ImportFromClipboard(); break;
+                }
+            }
+            catch (Exception x)
+            {
+                log.Warn($"Failed to apply pack command '{json}': {x.Message}");
+            }
+        }
+
         /// <summary>Rebuilds the tree JSON and pushes it to the UI. Safe to call at any time.</summary>
         public void RequestTreeUpdate()
         {
@@ -167,6 +203,7 @@ namespace VehicleController.Systems
                 _treeJson.Update(BuildTreeJson());
                 _globalJson.Update(BuildGlobalJson());
                 _classesJson.Update(BuildClassesJson());
+                _packsJson.Update(BuildPacksJson());
             }
             catch (Exception x)
             {
@@ -187,6 +224,16 @@ namespace VehicleController.Systems
                 acceleration = g.AccelerationFactor,
                 braking = g.BrakingFactor,
             });
+        }
+
+        // Active pack name + all available pack names for the pack bar.
+        private static string BuildPacksJson()
+        {
+            var active = VehicleConfigSystem.Instance?.ActivePack?.Name ?? "Default";
+            var packs = VehiclePack.GetPackNames();
+            if (!packs.Contains(active))
+                packs.Insert(0, active); // the active pack may be new/unsaved
+            return JsonConvert.SerializeObject(new { active, packs });
         }
 
         // All assignable class names (built-in + this pack's custom classes) for the assign dropdown.

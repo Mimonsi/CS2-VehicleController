@@ -3,11 +3,11 @@ import { FOCUS_DISABLED } from "cs2/input";
 // PanelSection/PanelSectionRow/PanelFoldout are the runtime-safe *alias* exports
 // of the game's InfoSection/InfoRow/InfoSectionFoldout (see ui.d.ts). Importing
 // InfoRow/InfoSection directly from cs2/ui fails at runtime, the aliases work.
-import { Button, Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Scrollable } from "cs2/ui";
+import { Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Scrollable } from "cs2/ui";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { ModuleResolver } from "../ModuleResolver";
-import { AttrState, CategoryNode, ClassNode, MOCK_PACKS, PrefabNode, VEHICLE_TREE } from "./data";
+import { AttrState, CategoryNode, ClassNode, PrefabNode, VEHICLE_TREE } from "./data";
 // Icons must be imported so webpack emits them (to coui://ui-mods/images/…);
 // a bare string path is never emitted and won't resolve.
 import ambulanceIcon from "../images/ambulance.png";
@@ -19,10 +19,16 @@ const MANAGER_GROUP = "VehicleController.VehicleManager";
 const treeJson$ = bindValue<string>(MANAGER_GROUP, "treeJson", "[]");
 const globalJson$ = bindValue<string>(MANAGER_GROUP, "globalJson", "{}");
 const classesJson$ = bindValue<string>(MANAGER_GROUP, "classesJson", "[]");
+const packsJson$ = bindValue<string>(MANAGER_GROUP, "packsJson", "{}");
 
 interface ClassInfo {
   name: string;
   custom: boolean;
+}
+
+interface PacksInfo {
+  active: string;
+  packs: string[];
 }
 
 interface GlobalFactors {
@@ -47,6 +53,10 @@ const sendRenameClass = (className: string, newName: string) =>
   trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "rename", class: className, newName }));
 const sendDeleteClass = (className: string) =>
   trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "delete", class: className }));
+
+// UI → C#: pack bar (switch / new / duplicate / rename / delete / export / import).
+const sendPackCmd = (op: string, name: string) =>
+  trigger(MANAGER_GROUP, "packCmd", JSON.stringify({ op, name }));
 
 const MS_TO_KMH = 3.6;
 
@@ -650,6 +660,97 @@ const Tree = ({
   </>
 );
 
+// Pack bar: switch active pack, create/duplicate/rename/delete, export/import (clipboard).
+const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
+  const [open, setOpen] = useState(false);
+  const [prompt, setPrompt] = useState<{ op: "new" | "duplicate" | "rename"; value: string } | null>(null);
+
+  const startPrompt = (op: "new" | "duplicate" | "rename", value: string) => {
+    setPrompt({ op, value });
+    setOpen(false);
+  };
+  const confirmPrompt = () => {
+    if (!prompt) return;
+    const v = prompt.value.trim();
+    if (v) sendPackCmd(prompt.op, v);
+    setPrompt(null);
+  };
+  const btn = (label: string, onClick: () => void, danger?: boolean) => (
+    <div onClick={onClick} style={{ ...miniBtnStyle, marginLeft: "6rem", color: danger ? "rgba(255,140,140,1)" : undefined }}>
+      {label}
+    </div>
+  );
+
+  return (
+    <PanelSection>
+      <PanelSectionRow
+        disableFocus
+        left={"Pack"}
+        right={
+          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap" }}>
+            <div
+              onClick={() => setOpen(o => !o)}
+              style={{
+                cursor: "pointer",
+                padding: "3rem 8rem",
+                borderRadius: "3rem",
+                border: "1rem solid rgba(255, 255, 255, 0.25)",
+                fontSize: "13rem",
+              }}
+            >
+              {active} <span style={{ color: DIM_COLOR }}>▾</span>
+            </div>
+            {btn("New", () => startPrompt("new", ""))}
+            {btn("Duplicate", () => startPrompt("duplicate", active + " copy"))}
+            {btn("Rename", () => startPrompt("rename", active))}
+            {btn("Delete", () => sendPackCmd("delete", active), true)}
+            {btn("Export", () => sendPackCmd("export", ""))}
+            {btn("Import", () => sendPackCmd("import", ""))}
+          </div>
+        }
+      />
+      {open && (
+        <div style={{ padding: "2rem 14rem 6rem" }}>
+          {packs.map(p => (
+            <div
+              key={p}
+              onClick={() => {
+                sendPackCmd("switch", p);
+                setOpen(false);
+              }}
+              style={{
+                cursor: "pointer",
+                padding: "4rem 8rem",
+                fontSize: "13rem",
+                color: p === active ? OVERRIDE_COLOR : undefined,
+              }}
+            >
+              {p}
+            </div>
+          ))}
+        </div>
+      )}
+      {prompt && (
+        <div style={{ display: "flex", alignItems: "center", padding: "2rem 14rem 8rem" }}>
+          <input
+            type="text"
+            value={prompt.value}
+            placeholder={"Pack name"}
+            onChange={e => setPrompt({ ...prompt, value: e.currentTarget.value })}
+            onKeyDown={e => {
+              if (e.key === "Enter") confirmPrompt();
+              if (e.key === "Escape") setPrompt(null);
+            }}
+            style={{ ...textInputStyle, flex: 1, textAlign: "left" }}
+          />
+          {btn("OK", confirmPrompt)}
+          {btn("Cancel", () => setPrompt(null))}
+        </div>
+      )}
+    </PanelSection>
+  );
+};
+
 export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
   const [selection, setSelection] = useState<Selection | null>(null);
   const selectedPrefabId = selection?.kind === "prefab" ? selection.id : null;
@@ -695,13 +796,22 @@ export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
     return [];
   }, [classesJson]);
 
+  const packsJson = useValue(packsJson$);
+  const packInfo = useMemo<PacksInfo>(() => {
+    try {
+      const p = JSON.parse(packsJson);
+      if (p && typeof p === "object" && Array.isArray(p.packs))
+        return { active: p.active ?? "Default", packs: p.packs };
+    } catch (e) {
+      // fall through to default
+    }
+    return { active: "Default", packs: ["Default"] };
+  }, [packsJson]);
+
   // Ask the backend to (re)build the tree whenever the window mounts.
   useEffect(() => {
     trigger(MANAGER_GROUP, "refresh");
   }, []);
-
-  const allPacks = useMemo(() => [...MOCK_PACKS.yours, ...MOCK_PACKS.shared], []);
-  const [activePack] = useState(allPacks[0].name);
 
   return (
     <Panel
@@ -716,25 +826,7 @@ export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
       initialPosition={{ x: 0.35, y: 0.2 }}
       style={{ width: "640rem" }}
     >
-      {/* Pack bar (visual only for now) */}
-      <PanelSection>
-        <PanelSectionRow
-          disableFocus
-          left={"Pack"}
-          right={
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <Icon src={packSrc} />
-              <span style={{ margin: "0 8rem" }}>{activePack}</span>
-              <Button variant="flat" focusKey={FOCUS_DISABLED} onSelect={() => {}}>
-                Export
-              </Button>
-              <Button variant="flat" focusKey={FOCUS_DISABLED} onSelect={() => {}}>
-                Import
-              </Button>
-            </div>
-          }
-        />
-      </PanelSection>
+      <PackBar active={packInfo.active} packs={packInfo.packs} />
 
       {/* Search + category / scope chips (visual only) */}
       <div style={{ display: "flex", alignItems: "center", padding: "8rem 14rem", flexWrap: "wrap" }}>
@@ -776,7 +868,7 @@ export const VehicleManagerPanel = ({ onClose }: { onClose: () => void }) => {
       <PanelSection>
         <PanelSectionRow
           disableFocus
-          left={`Changes apply live and auto-save to "${activePack}".`}
+          left={`Changes apply live and auto-save to "${packInfo.active}".`}
         />
       </PanelSection>
     </Panel>

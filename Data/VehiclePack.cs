@@ -370,5 +370,38 @@ namespace VehicleController.Data
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToList();
         }
+
+        public string ToJson() => JsonConvert.SerializeObject(this, Formatting.Indented);
+
+        public static VehiclePack? FromJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+                return null;
+            return JsonConvert.DeserializeObject<VehiclePack>(json);
+        }
+
+        public static void DeleteFile(string name)
+        {
+            var path = Path.Combine(PackFolder(), name + ".json");
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+
+        // Remembers which pack is active across sessions (a plain-text marker, not a .json pack).
+        private static string ActiveMarkerPath() => Path.Combine(PackFolder(), "_active.txt");
+
+        public static void SaveActiveName(string name)
+        {
+            var folder = PackFolder();
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            File.WriteAllText(ActiveMarkerPath(), name);
+        }
+
+        public static string? LoadActiveName()
+        {
+            var path = ActiveMarkerPath();
+            return File.Exists(path) ? File.ReadAllText(path).Trim() : null;
+        }
     }
 }

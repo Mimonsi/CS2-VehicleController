@@ -316,6 +316,9 @@ namespace VehicleController.Systems
         {
             try
             {
+                var name = VehiclePack.LoadActiveName();
+                if (!string.IsNullOrEmpty(name))
+                    _active = new VehiclePack(name); // remember the last active pack name even if it has no file yet
                 if (VehiclePack.GetPackNames().Contains(_active.Name))
                     _active = VehiclePack.LoadFromFile(_active.Name);
             }
@@ -335,6 +338,86 @@ namespace VehicleController.Systems
             {
                 log.Warn($"Could not load vehicle pack '{name}': {x.Message}");
             }
+        }
+
+        // ---- Pack management ----------------------------------------------------
+
+        public void SwitchPack(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return;
+            try
+            {
+                _active = VehiclePack.GetPackNames().Contains(name)
+                    ? VehiclePack.LoadFromFile(name)
+                    : new VehiclePack(name);
+                VehiclePack.SaveActiveName(_active.Name);
+                ApplyAll();
+            }
+            catch (Exception x) { log.Warn($"Could not switch to pack '{name}': {x.Message}"); }
+        }
+
+        public void NewPack(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return;
+            _active = new VehiclePack(name);
+            Persist();
+            VehiclePack.SaveActiveName(_active.Name);
+            ApplyAll();
+        }
+
+        public void DuplicatePack(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName)) return;
+            _active = _active.Duplicate(newName);
+            Persist();
+            VehiclePack.SaveActiveName(_active.Name);
+            ApplyAll();
+        }
+
+        public void RenamePack(string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName) || newName == _active.Name) return;
+            var old = _active.Name;
+            _active.Name = newName;
+            Persist();
+            VehiclePack.DeleteFile(old);
+            VehiclePack.SaveActiveName(_active.Name);
+            ApplyAll();
+        }
+
+        public void DeletePack(string name)
+        {
+            VehiclePack.DeleteFile(name);
+            if (_active.Name == name)
+            {
+                _active = new VehiclePack("Default");
+                VehiclePack.SaveActiveName(_active.Name);
+            }
+            ApplyAll();
+        }
+
+        public void ExportActiveToClipboard()
+        {
+            try
+            {
+                UnityEngine.GUIUtility.systemCopyBuffer = _active.ToJson();
+                log.Info($"Exported vehicle pack '{_active.Name}' to clipboard.");
+            }
+            catch (Exception x) { log.Warn($"Could not export pack: {x.Message}"); }
+        }
+
+        public void ImportFromClipboard()
+        {
+            try
+            {
+                var incoming = VehiclePack.FromJson(UnityEngine.GUIUtility.systemCopyBuffer);
+                if (incoming == null) { log.Warn("Clipboard does not contain a valid vehicle pack."); return; }
+                _active.Merge(incoming, MergeConflictPolicy.TakeTheirs);
+                Persist();
+                ApplyAll();
+                log.Info($"Merged clipboard pack into '{_active.Name}'.");
+            }
+            catch (Exception x) { log.Warn($"Could not import pack: {x.Message}"); }
         }
 
         // ---- Debug helper -------------------------------------------------------

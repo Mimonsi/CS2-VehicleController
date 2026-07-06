@@ -146,19 +146,19 @@ Everything type-checks: `cd UI && npx tsc --noEmit` → 0 errors. C# builds on t
 | Window ↔ engine (read + edit prefab/global/class) | ✅ |
 | Editable per-pack classes (assign/create/rename/delete) | ✅ |
 | Cutover (retire legacy systems) | ✅ |
-| **Pack bar** (multiple packs) | ⬜ **next** |
-| SIP deep-link | ⬜ |
+| Pack bar (switch/new/duplicate/rename/delete, clipboard export/import=merge) | ✅ |
+| SIP deep-link | ⬜ **next** |
 | M1 — per-vehicle SIP panel | ⬜ |
 | Settings redesign / remove empty tabs | ⬜ |
 | Polish | ⬜ |
 
 ### Next (recommended order)
-1. **Pack bar** — currently everything auto-saves to a single `"Default"` pack. Build: list packs,
-   switch active, new/duplicate/rename/delete, **import = merge** (conflict handling), **export**
-   (clipboard string + file), shipped **read-only** templates that duplicate-to-edit. The engine
-   already has `Merge`/`Duplicate`/`LoadFromFile`/`GetPackNames`; needs C# triggers + a `packsJson`
-   binding + UI to make the (currently visual-only) pack bar real. Savegame should remember the active
-   pack name.
+1. **Pack bar** — ✅ done. Switch active pack (dropdown), New/Duplicate/Rename/Delete, Export/Import
+   via system clipboard (import = `Merge` with `TakeTheirs`). Active pack name persists across sessions
+   via a `packs/vehicle/_active.txt` marker. Still TODO here: per-entry import conflict dialog,
+   shipped **read-only** templates (duplicate-to-edit), file export/import (only clipboard for now),
+   delete confirmation, name-collision guard on new/duplicate/rename, and binding the active pack into
+   the savegame proper (currently a side marker file).
 2. **SIP deep-link** (user-requested): a button in a vehicle's Selected-Info panel that opens the
    Vehicle Manager scrolled/selected to that prefab, ready to edit.
 3. **M1** — rebuild `VehiclePropertiesSection` (the per-vehicle SIP) against `VehicleConfigSystem`.
