@@ -3,7 +3,7 @@ import { FOCUS_DISABLED } from "cs2/input";
 // PanelSection/PanelSectionRow/PanelFoldout are the runtime-safe *alias* exports
 // of the game's InfoSection/InfoRow/InfoSectionFoldout (see ui.d.ts). Importing
 // InfoRow/InfoSection directly from cs2/ui fails at runtime, the aliases work.
-import { Dropdown, DropdownToggle, Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Scrollable } from "cs2/ui";
+import { Dropdown, DropdownToggle, Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Portal, Scrollable } from "cs2/ui";
 import * as CS2UI from "cs2/ui";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
@@ -64,6 +64,10 @@ const sendDeleteClass = (className: string) =>
 const sendPackCmd = (op: string, name: string) =>
   trigger(MANAGER_GROUP, "packCmd", JSON.stringify({ op, name }));
 
+// Play the game's standard UI sounds (so our controls feel like native ones).
+const playClick = () => trigger("audio", "playSound", "select-item", 1);
+const playHover = () => trigger("audio", "playSound", "hover-item", 1);
+
 const MS_TO_KMH = 3.6;
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -73,7 +77,6 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const resetSrc = "coui://uil/Standard/Reset.svg";
-const packSrc = "coui://uil/Standard/BoxIcon.svg";
 
 const OVERRIDE_COLOR = "rgba(140, 190, 255, 1)";
 const DIM_COLOR = "rgba(255, 255, 255, 0.5)";
@@ -99,26 +102,22 @@ const isInPack = (p: PrefabNode, customClasses: Set<string>): boolean =>
   p.braking.overridden ||
   customClasses.has(p.className);
 
-type CategoryFilter = "all" | "cars" | "trains" | "service";
-
-// Filter the tree by search text, category, and "in this pack" scope. Returns the full tree
-// (same reference) when nothing is filtered so foldout state is preserved.
+// Filter the tree by search text and "in this pack" scope. Returns the full tree (same reference)
+// when nothing is filtered so foldout state is preserved. Categories stay as the tree's grouping.
 function filterTree(
   tree: CategoryNode[],
   search: string,
-  cat: CategoryFilter,
   inPackOnly: boolean,
   customClasses: Set<string>
 ): CategoryNode[] {
   const q = search.trim().toLowerCase();
-  if (!q && cat === "all" && !inPackOnly) return tree;
+  if (!q && !inPackOnly) return tree;
   const matchPrefab = (p: PrefabNode) => {
     if (q && !p.name.toLowerCase().includes(q) && !p.className.toLowerCase().includes(q)) return false;
     if (inPackOnly && !isInPack(p, customClasses)) return false;
     return true;
   };
   return tree
-    .filter(c => cat === "all" || c.key === cat)
     .map(c => ({
       ...c,
       classes: c.classes
@@ -252,7 +251,7 @@ const GlobalBar = ({ g }: { g: GlobalFactors }) => (
 
 const Chip = ({ label, active, onClick }: { label: string; active?: boolean; onClick?: () => void }) => (
   <span
-    onClick={onClick}
+    onClick={onClick ? () => { playClick(); onClick(); } : undefined}
     style={{
       fontSize: "12rem",
       padding: "4rem 10rem",
@@ -290,7 +289,10 @@ const PrefabRow = ({
   return (
     <div
       ref={ref}
-      onClick={e => onSelect(e.ctrlKey || e.metaKey)}
+      onClick={e => {
+        playClick();
+        onSelect(e.ctrlKey || e.metaKey);
+      }}
       style={{
         padding: "6rem 10rem 6rem 34rem",
         cursor: "pointer",
@@ -314,13 +316,42 @@ const textInputStyle: React.CSSProperties = {
   fontSize: "13rem",
 };
 
-const miniBtnStyle: React.CSSProperties = {
-  cursor: "pointer",
-  marginLeft: "8rem",
-  padding: "2rem 8rem",
-  borderRadius: "3rem",
-  border: "1rem solid rgba(255, 255, 255, 0.2)",
-  fontSize: "12rem",
+// Small text button with hover highlight + native click/hover sounds.
+const TxtButton = ({
+  children,
+  onClick,
+  danger,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  danger?: boolean;
+}) => {
+  const [hover, setHover] = useState(false);
+  return (
+    <div
+      onClick={() => {
+        playClick();
+        onClick();
+      }}
+      onMouseEnter={() => {
+        setHover(true);
+        playHover();
+      }}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        cursor: "pointer",
+        marginLeft: "6rem",
+        padding: "3rem 9rem",
+        borderRadius: "4rem",
+        fontSize: "12rem",
+        color: danger ? "rgba(255, 140, 140, 1)" : "white",
+        border: "1rem solid rgba(255, 255, 255, 0.25)",
+        backgroundColor: hover ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.04)",
+      }}
+    >
+      {children}
+    </div>
+  );
 };
 
 // The `DropdownItem` name in cs2/ui's types is an interface; the runtime component is only
@@ -396,9 +427,7 @@ const ClassPicker = ({
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       <VDropdown value={current} toggleLabel={toggleLabel} items={classItems(classes)} onSelect={name => sendAssignMany(ids, name)} />
-      <div onClick={() => setNewOpen(o => !o)} style={miniBtnStyle}>
-        + New
-      </div>
+      <TxtButton onClick={() => setNewOpen(o => !o)}>+ New</TxtButton>
       {newOpen && (
         <input
           type="text"
@@ -436,12 +465,10 @@ const ClassAdminRow = ({ name }: { name: string }) => {
         onBlur={doRename}
         style={{ ...textInputStyle, width: "150rem" }}
       />
-      <div onClick={doRename} style={miniBtnStyle}>
-        Rename
-      </div>
-      <div onClick={() => sendDeleteClass(name)} style={{ ...miniBtnStyle, color: "rgba(255, 140, 140, 1)" }}>
+      <TxtButton onClick={doRename}>Rename</TxtButton>
+      <TxtButton onClick={() => sendDeleteClass(name)} danger>
         Delete
-      </div>
+      </TxtButton>
     </div>
   );
 };
@@ -725,6 +752,7 @@ const Tree = ({
                     <div
                       onClick={e => {
                         e.stopPropagation();
+                        playClick();
                         onSelectClass(cls.name);
                       }}
                       style={{
@@ -768,9 +796,9 @@ const PackBar = ({ active, packs }: { active: string; packs: string[] }) => {
     setPrompt(null);
   };
   const btn = (label: string, onClick: () => void, danger?: boolean) => (
-    <div onClick={onClick} style={{ ...miniBtnStyle, marginLeft: "6rem", color: danger ? "rgba(255,140,140,1)" : undefined }}>
+    <TxtButton onClick={onClick} danger={danger}>
       {label}
-    </div>
+    </TxtButton>
   );
 
   return (
@@ -828,8 +856,30 @@ export const VehicleManagerPanel = ({
 
   // Tree filters.
   const [search, setSearch] = useState("");
-  const [catFilter, setCatFilter] = useState<CategoryFilter>("all");
   const [inPackOnly, setInPackOnly] = useState(false);
+
+  // Resizable window: a full-screen overlay captures the drag reliably (global document listeners
+  // are unreliable in Gameface). A hidden ruler gives px-per-rem so the drag tracks the cursor 1:1.
+  const [width, setWidth] = useState(720);
+  const [bodyHeight, setBodyHeight] = useState(440);
+  const [resizing, setResizing] = useState(false);
+  const rulerRef = useRef<HTMLDivElement>(null);
+  const resizeStart = useRef<{ x: number; y: number; w: number; h: number; ppr: number } | null>(null);
+
+  const onHandleDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const ppr = rulerRef.current ? rulerRef.current.getBoundingClientRect().width / 100 : 1;
+    resizeStart.current = { x: e.clientX, y: e.clientY, w: width, h: bodyHeight, ppr: ppr || 1 };
+    setResizing(true);
+  };
+  const onOverlayMove = (e: React.MouseEvent) => {
+    const s = resizeStart.current;
+    if (!s) return;
+    setWidth(Math.max(520, s.w + (e.clientX - s.x) / s.ppr));
+    setBodyHeight(Math.max(260, s.h + (e.clientY - s.y) / s.ppr));
+  };
+  const endResize = () => setResizing(false);
 
   const selectPrefab = (id: string, additive: boolean) => {
     setSelectedClassName(null);
@@ -902,11 +952,11 @@ export const VehicleManagerPanel = ({
 
   const customClasses = useMemo(() => new Set(classes.filter(c => c.custom).map(c => c.name)), [classes]);
   const filteredTree = useMemo(
-    () => filterTree(tree, search, catFilter, inPackOnly, customClasses),
-    [tree, search, catFilter, inPackOnly, customClasses]
+    () => filterTree(tree, search, inPackOnly, customClasses),
+    [tree, search, inPackOnly, customClasses]
   );
-  const filterActive = search.trim() !== "" || catFilter !== "all" || inPackOnly;
-  const filterKey = filterActive ? `${search}|${catFilter}|${inPackOnly}` : "";
+  const filterActive = search.trim() !== "" || inPackOnly;
+  const filterKey = filterActive ? `${search}|${inPackOnly}` : "";
 
   const packsJson = useValue(packsJson$);
   const packInfo = useMemo<PacksInfo>(() => {
@@ -928,43 +978,47 @@ export const VehicleManagerPanel = ({
   return (
     <Panel
       draggable
-      header={
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Icon src={packSrc} />
-          <span style={{ marginLeft: "8rem" }}>Vehicle manager</span>
-        </div>
-      }
+      header={<span>Vehicle manager</span>}
       onClose={onClose}
-      initialPosition={{ x: 0.35, y: 0.2 }}
-      style={{ width: "640rem" }}
+      initialPosition={{ x: 0.3, y: 0.15 }}
+      style={{ width: width + "rem" }}
     >
+      {/* Hidden ruler: measures px-per-rem for the resize handle. */}
+      <div ref={rulerRef} style={{ width: "100rem", height: "0", position: "absolute", opacity: 0 }} />
+      {resizing && (
+        <Portal>
+          <div
+            onMouseMove={onOverlayMove}
+            onMouseUp={endResize}
+            onMouseLeave={endResize}
+            style={{ position: "fixed", left: 0, top: 0, right: 0, bottom: 0, zIndex: 9999, cursor: "nwse-resize" }}
+          />
+        </Portal>
+      )}
+
       <PackBar active={packInfo.active} packs={packInfo.packs} />
 
-      {/* Search + category / scope filters */}
+      {/* Search + scope filter (categories are the tree's top-level grouping). */}
       <div style={{ display: "flex", alignItems: "center", padding: "8rem 14rem", flexWrap: "wrap" }}>
         <input
           type="text"
           value={search}
           placeholder={"Search vehicles"}
           onChange={e => setSearch(e.currentTarget.value)}
-          style={{ ...textInputStyle, width: "160rem", textAlign: "left", marginRight: "6rem" }}
+          style={{ ...textInputStyle, width: "180rem", textAlign: "left" }}
         />
-        <Chip label={"All"} active={catFilter === "all"} onClick={() => setCatFilter("all")} />
-        <Chip label={"Cars"} active={catFilter === "cars"} onClick={() => setCatFilter("cars")} />
-        <Chip label={"Trains"} active={catFilter === "trains"} onClick={() => setCatFilter("trains")} />
-        <Chip label={"Service"} active={catFilter === "service"} onClick={() => setCatFilter("service")} />
         <span style={{ marginLeft: "12rem", color: DIM_COLOR, fontSize: "12rem" }}>Show</span>
         <Chip label={"In this pack"} active={inPackOnly} onClick={() => setInPackOnly(v => !v)} />
       </div>
 
       <GlobalBar g={global} />
 
-      {/* Body: tree (scrollable) + detail */}
+      {/* Body: tree (scrollable) + detail (scrollable) */}
       <div style={{ display: "flex" }}>
         <Scrollable
           vertical
           trackVisibility={"scrollable"}
-          style={{ width: "260rem", maxHeight: "440rem", borderRight: "1rem solid rgba(255,255,255,0.1)" }}
+          style={{ width: "260rem", maxHeight: bodyHeight + "rem", borderRight: "1rem solid rgba(255,255,255,0.1)" }}
         >
           <Tree
             tree={filteredTree}
@@ -976,20 +1030,32 @@ export const VehicleManagerPanel = ({
             onSelectClass={selectClass}
           />
         </Scrollable>
-        <div style={{ flex: 1, minWidth: "0" }}>
+        <Scrollable
+          vertical
+          trackVisibility={"scrollable"}
+          style={{ flex: 1, minWidth: "0", maxHeight: bodyHeight + "rem" }}
+        >
           {selectedClassName ? (
             <ClassDetail cls={selectedClass} />
           ) : (
             <DetailPanel prefabs={selectedPrefabs} classes={classes} />
           )}
-        </div>
+        </Scrollable>
       </div>
 
-      {/* Status line */}
+      {/* Status line + resize grip */}
       <PanelSection>
         <PanelSectionRow
           disableFocus
           left={`Changes apply live and auto-save to "${packInfo.active}".`}
+          right={
+            <div
+              onMouseDown={onHandleDown}
+              style={{ cursor: "nwse-resize", color: DIM_COLOR, fontSize: "18rem", padding: "0 4rem", lineHeight: "1" }}
+            >
+              ⤡
+            </div>
+          }
         />
       </PanelSection>
     </Panel>
