@@ -149,6 +149,8 @@ Everything type-checks: `cd UI && npx tsc --noEmit` → 0 errors. C# builds on t
 | Pack bar (switch/new/duplicate/rename/delete, clipboard export/import=merge) | ✅ |
 | Vanilla dropdowns (pack switcher + class assign) | ✅ |
 | SIP deep-link ("Open in Vehicle Manager" button on a selected vehicle) | ✅ |
+| Vehicle thumbnails in detail panel (ImageSystem.GetThumbnail) | ✅ |
+| Multi-select + bulk class assignment (vanilla checkbox + BulkBar) | ✅ |
 | M1 — per-vehicle SIP panel | ⬜ |
 | Settings redesign / remove empty tabs | ⬜ |
 | Polish | ⬜ |

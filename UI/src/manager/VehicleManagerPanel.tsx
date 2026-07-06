@@ -50,6 +50,8 @@ const sendReset = (level: EditLevel, key: string, field: string) =>
 // UI → C#: class management (assign / rename / delete). Empty class name = unassign.
 const sendAssign = (prefab: string, className: string) =>
   trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "assign", prefab, class: className }));
+const sendAssignMany = (prefabs: string[], className: string) =>
+  trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "assignMany", prefabs, class: className }));
 const sendRenameClass = (className: string, newName: string) =>
   trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "rename", class: className, newName }));
 const sendDeleteClass = (className: string) =>
@@ -232,14 +234,43 @@ const Chip = ({ label, active }: { label: string; active?: boolean }) => (
   </span>
 );
 
+// Vanilla-styled checkbox (a raw <input type="checkbox"> renders as an ugly white box in Gameface).
+const Checkbox = ({ checked, onToggle }: { checked: boolean; onToggle: () => void }) => (
+  <div
+    onClick={e => {
+      e.stopPropagation();
+      onToggle();
+    }}
+    style={{
+      width: "16rem",
+      height: "16rem",
+      flexShrink: 0,
+      marginRight: "8rem",
+      borderRadius: "3rem",
+      border: "1rem solid " + (checked ? OVERRIDE_COLOR : "rgba(255, 255, 255, 0.4)"),
+      backgroundColor: checked ? OVERRIDE_COLOR : "transparent",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+    }}
+  >
+    {checked ? <span style={{ color: "white", fontSize: "12rem", lineHeight: "1" }}>✓</span> : null}
+  </div>
+);
+
 const PrefabRow = ({
   prefab,
   selected,
+  checked,
   onSelect,
+  onToggleCheck,
 }: {
   prefab: PrefabNode;
   selected: boolean;
+  checked: boolean;
   onSelect: () => void;
+  onToggleCheck: () => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   // Scroll the selected row into view (e.g. after a deep-link from a vehicle's info panel).
@@ -255,17 +286,22 @@ const PrefabRow = ({
   return (
     <div
       ref={ref}
-      onClick={onSelect}
       style={{
-        padding: "6rem 10rem 6rem 34rem",
-        cursor: "pointer",
-        color: selected ? OVERRIDE_COLOR : undefined,
+        display: "flex",
+        alignItems: "center",
+        paddingLeft: "20rem",
         backgroundColor: selected ? "rgba(140, 190, 255, 0.15)" : undefined,
         borderLeft: selected ? "3rem solid " + OVERRIDE_COLOR : "3rem solid transparent",
       }}
     >
-      {prefab.custom ? "◆ " : ""}
-      {prefab.name}
+      <Checkbox checked={checked} onToggle={onToggleCheck} />
+      <div
+        onClick={onSelect}
+        style={{ flex: 1, padding: "6rem 10rem 6rem 0", cursor: "pointer", color: selected ? OVERRIDE_COLOR : undefined }}
+      >
+        {prefab.custom ? "◆ " : ""}
+        {prefab.name}
+      </div>
     </div>
   );
 };
@@ -292,15 +328,24 @@ const miniBtnStyle: React.CSSProperties = {
 // reachable via the module namespace, so grab it as a value here.
 const DropdownItemComp: any = (CS2UI as any).DropdownItem;
 
+// Class items for the assign dropdowns: Unassign, then custom classes first, then built-in.
+const classItems = (classes: ClassInfo[]) => [
+  { value: "", label: "Unassign" },
+  ...classes.filter(c => c.custom).map(c => ({ value: c.name, label: c.name + " · custom" })),
+  ...classes.filter(c => !c.custom).map(c => ({ value: c.name, label: c.name })),
+];
+
 // Reusable vanilla dropdown built from the game's Dropdown/DropdownToggle/DropdownItem + theme.
 const VDropdown = ({
   value,
   items,
   onSelect,
+  toggleLabel,
 }: {
   value: string;
   items: { value: string; label: string }[];
   onSelect: (v: string) => void;
+  toggleLabel?: string;
 }) => {
   const theme = ModuleResolver.instance.DropdownClasses;
   return (
@@ -321,7 +366,7 @@ const VDropdown = ({
       ))}
     >
       <DropdownToggle theme={theme}>
-        {items.find(i => i.value === value)?.label ?? value}
+        {toggleLabel ?? items.find(i => i.value === value)?.label ?? value}
       </DropdownToggle>
     </Dropdown>
   );
@@ -347,15 +392,9 @@ const ClassPicker = ({
       setNewOpen(false);
     }
   };
-  // Custom classes first so freshly created ones are easy to find.
-  const items = [
-    { value: "", label: "Unassign" },
-    ...classes.filter(c => c.custom).map(c => ({ value: c.name, label: c.name + " · custom" })),
-    ...classes.filter(c => !c.custom).map(c => ({ value: c.name, label: c.name })),
-  ];
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
-      <VDropdown value={current} items={items} onSelect={name => sendAssign(prefabId, name)} />
+      <VDropdown value={current} items={classItems(classes)} onSelect={name => sendAssign(prefabId, name)} />
       <div onClick={() => setNewOpen(o => !o)} style={miniBtnStyle}>
         + New
       </div>
@@ -372,6 +411,59 @@ const ClassPicker = ({
           style={{ ...textInputStyle, marginLeft: "6rem", width: "120rem", textAlign: "left" }}
         />
       )}
+    </div>
+  );
+};
+
+// Bulk action bar (shown when vehicles are checked): assign all selected to a class.
+const BulkBar = ({ ids, classes, onClear }: { ids: string[]; classes: ClassInfo[]; onClear: () => void }) => {
+  const [newOpen, setNewOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const assign = (name: string) => {
+    sendAssignMany(ids, name);
+    onClear();
+  };
+  const addNew = () => {
+    const t = newName.trim();
+    if (t) {
+      assign(t);
+      setNewName("");
+      setNewOpen(false);
+    }
+  };
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        flexWrap: "wrap",
+        padding: "6rem 14rem",
+        backgroundColor: "rgba(140, 190, 255, 0.12)",
+        borderTop: "1rem solid rgba(255, 255, 255, 0.08)",
+      }}
+    >
+      <span style={{ fontSize: "12rem", color: OVERRIDE_COLOR }}>{ids.length} selected</span>
+      <span style={{ marginLeft: "10rem", marginRight: "8rem", fontSize: "12rem", color: DIM_COLOR }}>Assign to</span>
+      <VDropdown value={" "} toggleLabel={"class"} items={classItems(classes)} onSelect={assign} />
+      <div onClick={() => setNewOpen(o => !o)} style={miniBtnStyle}>
+        + New
+      </div>
+      {newOpen && (
+        <input
+          type="text"
+          value={newName}
+          placeholder={"New class"}
+          onChange={e => setNewName(e.currentTarget.value)}
+          onKeyDown={e => {
+            if (e.key === "Enter") addNew();
+            if (e.key === "Escape") setNewOpen(false);
+          }}
+          style={{ ...textInputStyle, marginLeft: "6rem", width: "120rem", textAlign: "left" }}
+        />
+      )}
+      <div onClick={onClear} style={miniBtnStyle}>
+        Clear
+      </div>
     </div>
   );
 };
@@ -581,14 +673,18 @@ const Tree = ({
   tree,
   selectedPrefabId,
   selectedClassName,
+  checkedIds,
   onSelectPrefab,
   onSelectClass,
+  onToggleCheck,
 }: {
   tree: CategoryNode[];
   selectedPrefabId: string | null;
   selectedClassName: string | null;
+  checkedIds: Set<string>;
   onSelectPrefab: (id: string) => void;
   onSelectClass: (name: string) => void;
+  onToggleCheck: (id: string) => void;
 }) => (
   <>
     {tree.map(category => (
@@ -651,7 +747,9 @@ const Tree = ({
                 key={prefab.id}
                 prefab={prefab}
                 selected={prefab.id === selectedPrefabId}
+                checked={checkedIds.has(prefab.id)}
                 onSelect={() => onSelectPrefab(prefab.id)}
+                onToggleCheck={() => onToggleCheck(prefab.id)}
               />
             ))}
           </PanelFoldout>
@@ -732,6 +830,17 @@ export const VehicleManagerPanel = ({
   );
   const selectedPrefabId = selection?.kind === "prefab" ? selection.id : null;
   const selectedClassName = selection?.kind === "class" ? selection.name : null;
+
+  // Multi-select (checkboxes) for bulk class assignment, independent of the single edit selection.
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+  const toggleCheck = (id: string) =>
+    setCheckedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const clearChecked = () => setCheckedIds(new Set());
 
   // Select the prefab requested from a vehicle's info panel (deep-link).
   useEffect(() => {
@@ -822,6 +931,10 @@ export const VehicleManagerPanel = ({
 
       <GlobalBar g={global} />
 
+      {checkedIds.size > 0 && (
+        <BulkBar ids={[...checkedIds]} classes={classes} onClear={clearChecked} />
+      )}
+
       {/* Body: tree (scrollable) + detail */}
       <div style={{ display: "flex" }}>
         <Scrollable
@@ -833,8 +946,10 @@ export const VehicleManagerPanel = ({
             tree={tree}
             selectedPrefabId={selectedPrefabId}
             selectedClassName={selectedClassName}
+            checkedIds={checkedIds}
             onSelectPrefab={id => setSelection({ kind: "prefab", id })}
             onSelectClass={name => setSelection({ kind: "class", name })}
+            onToggleCheck={toggleCheck}
           />
         </Scrollable>
         <div style={{ flex: 1, minWidth: "0" }}>

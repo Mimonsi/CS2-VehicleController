@@ -143,6 +143,7 @@ namespace VehicleController.Systems
         {
             public string Op;
             public string Prefab;
+            public string[] Prefabs;
             public string Class;
             public string NewName;
         }
@@ -159,6 +160,7 @@ namespace VehicleController.Systems
                 switch (cmd.Op)
                 {
                     case "assign": config.AssignClass(cmd.Prefab, cmd.Class ?? ""); break;
+                    case "assignMany": config.AssignClassMany(cmd.Prefabs, cmd.Class ?? ""); break;
                     case "rename": config.RenameClass(cmd.Class, cmd.NewName); break;
                     case "delete": config.DeleteClass(cmd.Class); break;
                 }
