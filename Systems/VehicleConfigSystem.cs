@@ -298,6 +298,22 @@ namespace VehicleController.Systems
             ApplyAll();
         }
 
+        /// <summary>Applies the same field edit to many prefabs at once (persist + apply once).</summary>
+        public void EditManyPrefabs(string[] prefabs, string field, bool reset, float value)
+        {
+            if (prefabs == null)
+                return;
+            foreach (var prefabName in prefabs)
+            {
+                _active.PrefabOverrides.TryGetValue(prefabName, out var over);
+                over ??= new VehicleOverride();
+                SetOverrideField(over, field, reset, value);
+                _active.SetPrefabOverride(prefabName, over);
+            }
+            Persist();
+            ApplyAll();
+        }
+
         private static void SetOverrideField(VehicleOverride over, string field, bool reset, float value)
         {
             switch (field)

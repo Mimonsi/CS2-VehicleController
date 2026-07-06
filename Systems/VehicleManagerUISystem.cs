@@ -119,6 +119,7 @@ namespace VehicleController.Systems
             public string Op;
             public string Level;
             public string Key;
+            public string[] Prefabs;
             public string Field;
             public float Value;
         }
@@ -129,9 +130,14 @@ namespace VehicleController.Systems
             try
             {
                 var cmd = JsonConvert.DeserializeObject<EditCmd>(json);
-                if (cmd == null)
+                var config = VehicleConfigSystem.Instance;
+                if (cmd == null || config == null)
                     return;
-                VehicleConfigSystem.Instance?.Edit(cmd.Level, cmd.Key, cmd.Field, cmd.Op == "reset", cmd.Value);
+                bool reset = cmd.Op == "reset";
+                if (cmd.Level == "prefab" && cmd.Prefabs != null)
+                    config.EditManyPrefabs(cmd.Prefabs, cmd.Field, reset, cmd.Value);
+                else
+                    config.Edit(cmd.Level, cmd.Key, cmd.Field, reset, cmd.Value);
             }
             catch (Exception x)
             {

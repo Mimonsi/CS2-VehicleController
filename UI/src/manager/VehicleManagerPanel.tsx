@@ -40,16 +40,19 @@ interface GlobalFactors {
 }
 const DEFAULT_GLOBAL: GlobalFactors = { probability: 1, speed: 1, acceleration: 1, braking: 1 };
 
-// UI → C#: one edit command carries op/level/key/field/value as JSON.
-type EditLevel = "prefab" | "class" | "global";
+// UI → C#: edit commands. Class/global use `key`; prefab edits carry a `prefabs` array so one
+// command edits the whole selection at once.
+type EditLevel = "class" | "global";
 const sendSet = (level: EditLevel, key: string, field: string, value: number) =>
   trigger(MANAGER_GROUP, "edit", JSON.stringify({ op: "set", level, key, field, value }));
 const sendReset = (level: EditLevel, key: string, field: string) =>
   trigger(MANAGER_GROUP, "edit", JSON.stringify({ op: "reset", level, key, field }));
+const sendEditMany = (prefabs: string[], field: string, value: number) =>
+  trigger(MANAGER_GROUP, "edit", JSON.stringify({ op: "set", level: "prefab", prefabs, field, value }));
+const sendResetMany = (prefabs: string[], field: string) =>
+  trigger(MANAGER_GROUP, "edit", JSON.stringify({ op: "reset", level: "prefab", prefabs, field }));
 
-// UI → C#: class management (assign / rename / delete). Empty class name = unassign.
-const sendAssign = (prefab: string, className: string) =>
-  trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "assign", prefab, class: className }));
+// UI → C#: class management. Empty class name = unassign.
 const sendAssignMany = (prefabs: string[], className: string) =>
   trigger(MANAGER_GROUP, "classCmd", JSON.stringify({ op: "assignMany", prefabs, class: className }));
 const sendRenameClass = (className: string, newName: string) =>
@@ -63,7 +66,6 @@ const sendPackCmd = (op: string, name: string) =>
 
 const MS_TO_KMH = 3.6;
 
-// The backend tree has no icons; map category keys to icons on the client.
 const CATEGORY_ICONS: Record<string, string> = {
   cars: carIcon,
   trains: trainIcon,
@@ -76,17 +78,6 @@ const packSrc = "coui://uil/Standard/BoxIcon.svg";
 const OVERRIDE_COLOR = "rgba(140, 190, 255, 1)";
 const DIM_COLOR = "rgba(255, 255, 255, 0.5)";
 
-type Selection = { kind: "prefab"; id: string } | { kind: "class"; name: string };
-
-function findPrefab(tree: CategoryNode[], id: string | null): PrefabNode | null {
-  if (!id) return null;
-  for (const c of tree)
-    for (const cls of c.classes)
-      for (const p of cls.prefabs)
-        if (p.id === id) return p;
-  return null;
-}
-
 function findClass(tree: CategoryNode[], name: string | null): ClassNode | null {
   if (!name) return null;
   for (const c of tree)
@@ -95,10 +86,10 @@ function findClass(tree: CategoryNode[], name: string | null): ClassNode | null 
   return null;
 }
 
-const classHasPrefab = (cls: ClassNode, id: string | null): boolean =>
-  !!id && cls.prefabs.some(p => p.id === id);
-const categoryHasPrefab = (cat: CategoryNode, id: string | null): boolean =>
-  !!id && cat.classes.some(cls => classHasPrefab(cls, id));
+const classHasSelected = (cls: ClassNode, ids: Set<string>): boolean =>
+  cls.prefabs.some(p => ids.has(p.id));
+const categoryHasSelected = (cat: CategoryNode, ids: Set<string>): boolean =>
+  cat.classes.some(cls => classHasSelected(cls, ids));
 
 const Badge = ({ state, inheritedLabel = "Inherited" }: { state: AttrState; inheritedLabel?: string }) => (
   <span
@@ -116,6 +107,7 @@ const Badge = ({ state, inheritedLabel = "Inherited" }: { state: AttrState; inhe
 );
 
 // Editable number field. Commits on blur / Enter; reverts to the incoming value on invalid input.
+// A non-finite value renders as an empty field (e.g. when a multi-selection has mixed values).
 const EditableNumber = ({ value, onCommit }: { value: number; onCommit: (v: number) => void }) => {
   const display = (v: number) => (Number.isFinite(v) ? String(v) : "");
   const [text, setText] = useState(display(value));
@@ -159,6 +151,7 @@ const EditRow = ({
   onCommit,
   onReset,
   inheritedLabel,
+  canReset,
 }: {
   label: string;
   state: AttrState;
@@ -167,6 +160,7 @@ const EditRow = ({
   onCommit: (displayValue: number) => void;
   onReset: () => void;
   inheritedLabel?: string;
+  canReset?: boolean;
 }) => (
   <PanelSectionRow
     disableFocus
@@ -181,7 +175,7 @@ const EditRow = ({
           <ModuleResolver.instance.ToolButton
             src={resetSrc}
             focusKey={ModuleResolver.instance.FOCUS_DISABLED}
-            disabled={!state.overridden}
+            disabled={!(canReset ?? state.overridden)}
             tooltip={"Reset to inherited"}
             className={ModuleResolver.instance.toolButtonTheme.button}
             onSelect={onReset}
@@ -234,43 +228,14 @@ const Chip = ({ label, active }: { label: string; active?: boolean }) => (
   </span>
 );
 
-// Vanilla-styled checkbox (a raw <input type="checkbox"> renders as an ugly white box in Gameface).
-const Checkbox = ({ checked, onToggle }: { checked: boolean; onToggle: () => void }) => (
-  <div
-    onClick={e => {
-      e.stopPropagation();
-      onToggle();
-    }}
-    style={{
-      width: "16rem",
-      height: "16rem",
-      flexShrink: 0,
-      marginRight: "8rem",
-      borderRadius: "3rem",
-      border: "1rem solid " + (checked ? OVERRIDE_COLOR : "rgba(255, 255, 255, 0.4)"),
-      backgroundColor: checked ? OVERRIDE_COLOR : "transparent",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-    }}
-  >
-    {checked ? <span style={{ color: "white", fontSize: "12rem", lineHeight: "1" }}>✓</span> : null}
-  </div>
-);
-
 const PrefabRow = ({
   prefab,
   selected,
-  checked,
   onSelect,
-  onToggleCheck,
 }: {
   prefab: PrefabNode;
   selected: boolean;
-  checked: boolean;
-  onSelect: () => void;
-  onToggleCheck: () => void;
+  onSelect: (additive: boolean) => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   // Scroll the selected row into view (e.g. after a deep-link from a vehicle's info panel).
@@ -286,22 +251,17 @@ const PrefabRow = ({
   return (
     <div
       ref={ref}
+      onClick={e => onSelect(e.ctrlKey || e.metaKey)}
       style={{
-        display: "flex",
-        alignItems: "center",
-        paddingLeft: "20rem",
+        padding: "6rem 10rem 6rem 34rem",
+        cursor: "pointer",
+        color: selected ? OVERRIDE_COLOR : undefined,
         backgroundColor: selected ? "rgba(140, 190, 255, 0.15)" : undefined,
         borderLeft: selected ? "3rem solid " + OVERRIDE_COLOR : "3rem solid transparent",
       }}
     >
-      <Checkbox checked={checked} onToggle={onToggleCheck} />
-      <div
-        onClick={onSelect}
-        style={{ flex: 1, padding: "6rem 10rem 6rem 0", cursor: "pointer", color: selected ? OVERRIDE_COLOR : undefined }}
-      >
-        {prefab.custom ? "◆ " : ""}
-        {prefab.name}
-      </div>
+      {prefab.custom ? "◆ " : ""}
+      {prefab.name}
     </div>
   );
 };
@@ -372,29 +332,31 @@ const VDropdown = ({
   );
 };
 
-// Assign a single selected prefab to a class (existing / new / unassign).
+// Assign the selected vehicle(s) to a class (existing / new / unassign).
 const ClassPicker = ({
-  prefabId,
+  ids,
   current,
   classes,
+  toggleLabel,
 }: {
-  prefabId: string;
+  ids: string[];
   current: string;
   classes: ClassInfo[];
+  toggleLabel?: string;
 }) => {
   const [newOpen, setNewOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const addNew = () => {
     const t = newName.trim();
     if (t) {
-      sendAssign(prefabId, t);
+      sendAssignMany(ids, t);
       setNewName("");
       setNewOpen(false);
     }
   };
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
-      <VDropdown value={current} items={classItems(classes)} onSelect={name => sendAssign(prefabId, name)} />
+      <VDropdown value={current} toggleLabel={toggleLabel} items={classItems(classes)} onSelect={name => sendAssignMany(ids, name)} />
       <div onClick={() => setNewOpen(o => !o)} style={miniBtnStyle}>
         + New
       </div>
@@ -411,59 +373,6 @@ const ClassPicker = ({
           style={{ ...textInputStyle, marginLeft: "6rem", width: "120rem", textAlign: "left" }}
         />
       )}
-    </div>
-  );
-};
-
-// Bulk action bar (shown when vehicles are checked): assign all selected to a class.
-const BulkBar = ({ ids, classes, onClear }: { ids: string[]; classes: ClassInfo[]; onClear: () => void }) => {
-  const [newOpen, setNewOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const assign = (name: string) => {
-    sendAssignMany(ids, name);
-    onClear();
-  };
-  const addNew = () => {
-    const t = newName.trim();
-    if (t) {
-      assign(t);
-      setNewName("");
-      setNewOpen(false);
-    }
-  };
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        flexWrap: "wrap",
-        padding: "6rem 14rem",
-        backgroundColor: "rgba(140, 190, 255, 0.12)",
-        borderTop: "1rem solid rgba(255, 255, 255, 0.08)",
-      }}
-    >
-      <span style={{ fontSize: "12rem", color: OVERRIDE_COLOR }}>{ids.length} selected</span>
-      <span style={{ marginLeft: "10rem", marginRight: "8rem", fontSize: "12rem", color: DIM_COLOR }}>Assign to</span>
-      <VDropdown value={" "} toggleLabel={"class"} items={classItems(classes)} onSelect={assign} />
-      <div onClick={() => setNewOpen(o => !o)} style={miniBtnStyle}>
-        + New
-      </div>
-      {newOpen && (
-        <input
-          type="text"
-          value={newName}
-          placeholder={"New class"}
-          onChange={e => setNewName(e.currentTarget.value)}
-          onKeyDown={e => {
-            if (e.key === "Enter") addNew();
-            if (e.key === "Escape") setNewOpen(false);
-          }}
-          style={{ ...textInputStyle, marginLeft: "6rem", width: "120rem", textAlign: "left" }}
-        />
-      )}
-      <div onClick={onClear} style={miniBtnStyle}>
-        Clear
-      </div>
     </div>
   );
 };
@@ -498,70 +407,122 @@ const ClassAdminRow = ({ name }: { name: string }) => {
   );
 };
 
-const DetailPanel = ({ prefab, classes }: { prefab: PrefabNode | null; classes: ClassInfo[] }) => {
-  if (!prefab) {
+// Detail panel for the current selection of one *or many* vehicles. Editing applies to all of them.
+const DetailPanel = ({ prefabs, classes }: { prefabs: PrefabNode[]; classes: ClassInfo[] }) => {
+  if (prefabs.length === 0) {
     return (
       <div style={{ padding: "20rem", color: DIM_COLOR }}>
-        Select a vehicle on the left to edit its spawn probability and properties.
+        Select a vehicle on the left. Hold Ctrl to select several and edit them together.
       </div>
     );
   }
 
-  const id = prefab.id;
+  const ids = prefabs.map(p => p.id);
+  const multi = prefabs.length > 1;
+
+  // Combine a field across the selection: shared value or blank (mixed), and combined provenance.
+  const combine = (get: (p: PrefabNode) => AttrState) => {
+    const attrs = prefabs.map(get);
+    const allSameVal = attrs.every(a => a.value === attrs[0].value);
+    const allOver = attrs.every(a => a.overridden);
+    const noneOver = attrs.every(a => !a.overridden);
+    return {
+      state: { value: allSameVal ? attrs[0].value : NaN, overridden: allOver, source: "" } as AttrState,
+      inheritedLabel: noneOver ? "Inherited" : "Mixed",
+      anyOver: attrs.some(a => a.overridden),
+    };
+  };
+
+  const prob = combine(p => p.probability);
+  const spd = combine(p => p.maxSpeed);
+  const acc = combine(p => p.acceleration);
+  const brk = combine(p => p.braking);
+
+  const allSameClass = prefabs.every(p => p.className === prefabs[0].className);
+  const currentClass = allSameClass ? prefabs[0].className : " ";
+  const classToggleLabel = allSameClass ? undefined : "Mixed";
+  const round0 = (a: AttrState) => (Number.isFinite(a.value) ? Math.round(a.value) : NaN);
+  const round1 = (a: AttrState) => (Number.isFinite(a.value) ? Number(a.value.toFixed(1)) : NaN);
+
   return (
     <div style={{ padding: "10rem 14rem" }}>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "12rem" }}>
-        {prefab.thumbnail ? (
-          <img
-            src={prefab.thumbnail}
-            style={{ width: "90rem", height: "90rem", marginRight: "12rem", objectFit: "contain" }}
-          />
-        ) : null}
-        <div>
-          <div style={{ fontSize: "15rem" }}>{prefab.name}</div>
-          <div style={{ fontSize: "12rem", color: DIM_COLOR }}>{prefab.className}</div>
+      {multi ? (
+        <div style={{ marginBottom: "12rem" }}>
+          <div style={{ fontSize: "15rem", marginBottom: "6rem" }}>{prefabs.length} vehicles selected</div>
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {prefabs.slice(0, 16).map(p =>
+              p.thumbnail ? (
+                <img
+                  key={p.id}
+                  src={p.thumbnail}
+                  style={{ width: "40rem", height: "40rem", marginRight: "4rem", marginBottom: "4rem", objectFit: "contain" }}
+                />
+              ) : null
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "12rem" }}>
+          {prefabs[0].thumbnail ? (
+            <img
+              src={prefabs[0].thumbnail}
+              style={{ width: "90rem", height: "90rem", marginRight: "12rem", objectFit: "contain" }}
+            />
+          ) : null}
+          <div>
+            <div style={{ fontSize: "15rem" }}>{prefabs[0].name}</div>
+            <div style={{ fontSize: "12rem", color: DIM_COLOR }}>{prefabs[0].className}</div>
+          </div>
+        </div>
+      )}
 
       <PanelSectionRow
         disableFocus
         left={"Class"}
-        right={<ClassPicker prefabId={id} current={prefab.className} classes={classes} />}
+        right={<ClassPicker ids={ids} current={currentClass} toggleLabel={classToggleLabel} classes={classes} />}
       />
 
       <EditRow
         label={"Spawn probability"}
-        state={prefab.probability}
-        editValue={Math.round(prefab.probability.value)}
+        state={prob.state}
+        editValue={round0(prob.state)}
         unit={"%"}
-        onCommit={v => sendSet("prefab", id, "probability", v)}
-        onReset={() => sendReset("prefab", id, "probability")}
+        inheritedLabel={prob.inheritedLabel}
+        canReset={prob.anyOver}
+        onCommit={v => sendEditMany(ids, "probability", v)}
+        onReset={() => sendResetMany(ids, "probability")}
       />
 
       <div style={{ color: DIM_COLOR, fontSize: "12rem", margin: "10rem 0 2rem" }}>Properties</div>
       <EditRow
         label={"Max speed"}
-        state={prefab.maxSpeed}
-        editValue={Math.round(prefab.maxSpeed.value)}
+        state={spd.state}
+        editValue={round0(spd.state)}
         unit={"km/h"}
-        onCommit={kmh => sendSet("prefab", id, "maxSpeed", kmh / MS_TO_KMH)}
-        onReset={() => sendReset("prefab", id, "maxSpeed")}
+        inheritedLabel={spd.inheritedLabel}
+        canReset={spd.anyOver}
+        onCommit={kmh => sendEditMany(ids, "maxSpeed", kmh / MS_TO_KMH)}
+        onReset={() => sendResetMany(ids, "maxSpeed")}
       />
       <EditRow
         label={"Acceleration"}
-        state={prefab.acceleration}
-        editValue={Number(prefab.acceleration.value.toFixed(1))}
+        state={acc.state}
+        editValue={round1(acc.state)}
         unit={"m/s²"}
-        onCommit={v => sendSet("prefab", id, "acceleration", v)}
-        onReset={() => sendReset("prefab", id, "acceleration")}
+        inheritedLabel={acc.inheritedLabel}
+        canReset={acc.anyOver}
+        onCommit={v => sendEditMany(ids, "acceleration", v)}
+        onReset={() => sendResetMany(ids, "acceleration")}
       />
       <EditRow
         label={"Braking"}
-        state={prefab.braking}
-        editValue={Number(prefab.braking.value.toFixed(1))}
+        state={brk.state}
+        editValue={round1(brk.state)}
         unit={"m/s²"}
-        onCommit={v => sendSet("prefab", id, "braking", v)}
-        onReset={() => sendReset("prefab", id, "braking")}
+        inheritedLabel={brk.inheritedLabel}
+        canReset={brk.anyOver}
+        onCommit={v => sendEditMany(ids, "braking", v)}
+        onReset={() => sendResetMany(ids, "braking")}
       />
 
       <div
@@ -574,7 +535,9 @@ const DetailPanel = ({ prefab, classes }: { prefab: PrefabNode | null; classes: 
           fontSize: "12rem",
         }}
       >
-        Unset values inherit from class {prefab.className}, then the global default.
+        {multi
+          ? "Edits apply to all selected vehicles."
+          : `Unset values inherit from class ${prefabs[0].className}, then the global default.`}
       </div>
     </div>
   );
@@ -598,8 +561,7 @@ const ClassDetail = ({ cls }: { cls: ClassNode | null }) => {
 
   const name = cls.name;
   const attr = (a?: AttrState): AttrState => a ?? { value: NaN, overridden: false, source: "" };
-  const editVal = (a: AttrState, round: (n: number) => number) =>
-    a.overridden ? round(a.value) : NaN;
+  const editVal = (a: AttrState, round: (n: number) => number) => (a.overridden ? round(a.value) : NaN);
   const prob = attr(cls.probability);
   const spd = attr(cls.maxSpeed);
   const acc = attr(cls.acceleration);
@@ -608,9 +570,7 @@ const ClassDetail = ({ cls }: { cls: ClassNode | null }) => {
   return (
     <div style={{ padding: "10rem 14rem" }}>
       <div style={{ fontSize: "15rem", marginBottom: "2rem" }}>{name}</div>
-      <div style={{ fontSize: "12rem", color: DIM_COLOR, marginBottom: "12rem" }}>
-        Class · applies to all members
-      </div>
+      <div style={{ fontSize: "12rem", color: DIM_COLOR, marginBottom: "12rem" }}>Class · applies to all members</div>
 
       {cls.custom ? <ClassAdminRow name={name} /> : null}
 
@@ -671,26 +631,22 @@ const ClassDetail = ({ cls }: { cls: ClassNode | null }) => {
 
 const Tree = ({
   tree,
-  selectedPrefabId,
+  selectedIds,
   selectedClassName,
-  checkedIds,
   onSelectPrefab,
   onSelectClass,
-  onToggleCheck,
 }: {
   tree: CategoryNode[];
-  selectedPrefabId: string | null;
+  selectedIds: Set<string>;
   selectedClassName: string | null;
-  checkedIds: Set<string>;
-  onSelectPrefab: (id: string) => void;
+  onSelectPrefab: (id: string, additive: boolean) => void;
   onSelectClass: (name: string) => void;
-  onToggleCheck: (id: string) => void;
 }) => (
   <>
     {tree.map(category => (
       <PanelFoldout
         key={category.key}
-        initialExpanded={categoryHasPrefab(category, selectedPrefabId) || category.key === "cars"}
+        initialExpanded={categoryHasSelected(category, selectedIds) || category.key === "cars"}
         expandFromContent={false}
         focusKey={FOCUS_DISABLED}
         header={
@@ -709,7 +665,7 @@ const Tree = ({
         {category.classes.map(cls => (
           <PanelFoldout
             key={cls.name}
-            initialExpanded={classHasPrefab(cls, selectedPrefabId) || cls.name === "Sedan"}
+            initialExpanded={classHasSelected(cls, selectedIds) || cls.name === "Sedan"}
             expandFromContent={false}
             focusKey={FOCUS_DISABLED}
             header={
@@ -746,10 +702,8 @@ const Tree = ({
               <PrefabRow
                 key={prefab.id}
                 prefab={prefab}
-                selected={prefab.id === selectedPrefabId}
-                checked={checkedIds.has(prefab.id)}
-                onSelect={() => onSelectPrefab(prefab.id)}
-                onToggleCheck={() => onToggleCheck(prefab.id)}
+                selected={selectedIds.has(prefab.id)}
+                onSelect={additive => onSelectPrefab(prefab.id, additive)}
               />
             ))}
           </PanelFoldout>
@@ -825,26 +779,33 @@ export const VehicleManagerPanel = ({
   onClose: () => void;
   focusPrefab?: string | null;
 }) => {
-  const [selection, setSelection] = useState<Selection | null>(
-    focusPrefab ? { kind: "prefab", id: focusPrefab } : null
-  );
-  const selectedPrefabId = selection?.kind === "prefab" ? selection.id : null;
-  const selectedClassName = selection?.kind === "class" ? selection.name : null;
+  // Multi-select of prefabs (click = replace, Ctrl/Cmd-click = toggle). Class selection is separate.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(focusPrefab ? new Set([focusPrefab]) : new Set());
+  const [selectedClassName, setSelectedClassName] = useState<string | null>(null);
 
-  // Multi-select (checkboxes) for bulk class assignment, independent of the single edit selection.
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
-  const toggleCheck = (id: string) =>
-    setCheckedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const selectPrefab = (id: string, additive: boolean) => {
+    setSelectedClassName(null);
+    setSelectedIds(prev => {
+      if (additive) {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      }
+      return new Set([id]);
     });
-  const clearChecked = () => setCheckedIds(new Set());
+  };
+  const selectClass = (name: string) => {
+    setSelectedIds(new Set());
+    setSelectedClassName(name);
+  };
 
   // Select the prefab requested from a vehicle's info panel (deep-link).
   useEffect(() => {
-    if (focusPrefab) setSelection({ kind: "prefab", id: focusPrefab });
+    if (focusPrefab) {
+      setSelectedIds(new Set([focusPrefab]));
+      setSelectedClassName(null);
+    }
   }, [focusPrefab]);
 
   // Real tree from the backend; falls back to mock data when empty or unparsable.
@@ -862,7 +823,11 @@ export const VehicleManagerPanel = ({
   }, [treeJson]);
 
   // Derive the selection from the current tree so it reflects edits after a refresh.
-  const selectedPrefab = useMemo(() => findPrefab(tree, selectedPrefabId), [tree, selectedPrefabId]);
+  const selectedPrefabs = useMemo<PrefabNode[]>(() => {
+    const out: PrefabNode[] = [];
+    for (const c of tree) for (const cls of c.classes) for (const p of cls.prefabs) if (selectedIds.has(p.id)) out.push(p);
+    return out;
+  }, [tree, selectedIds]);
   const selectedClass = useMemo(() => findClass(tree, selectedClassName), [tree, selectedClassName]);
 
   const globalJson = useValue(globalJson$);
@@ -931,10 +896,6 @@ export const VehicleManagerPanel = ({
 
       <GlobalBar g={global} />
 
-      {checkedIds.size > 0 && (
-        <BulkBar ids={[...checkedIds]} classes={classes} onClear={clearChecked} />
-      )}
-
       {/* Body: tree (scrollable) + detail */}
       <div style={{ display: "flex" }}>
         <Scrollable
@@ -944,19 +905,17 @@ export const VehicleManagerPanel = ({
         >
           <Tree
             tree={tree}
-            selectedPrefabId={selectedPrefabId}
+            selectedIds={selectedIds}
             selectedClassName={selectedClassName}
-            checkedIds={checkedIds}
-            onSelectPrefab={id => setSelection({ kind: "prefab", id })}
-            onSelectClass={name => setSelection({ kind: "class", name })}
-            onToggleCheck={toggleCheck}
+            onSelectPrefab={selectPrefab}
+            onSelectClass={selectClass}
           />
         </Scrollable>
         <div style={{ flex: 1, minWidth: "0" }}>
-          {selection?.kind === "class" ? (
+          {selectedClassName ? (
             <ClassDetail cls={selectedClass} />
           ) : (
-            <DetailPanel prefab={selectedPrefab} classes={classes} />
+            <DetailPanel prefabs={selectedPrefabs} classes={classes} />
           )}
         </div>
       </div>
