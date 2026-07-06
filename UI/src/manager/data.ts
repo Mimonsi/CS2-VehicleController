@@ -16,6 +16,7 @@ export interface PrefabNode {
   name: string;
   className: string;
   custom?: boolean;
+  thumbnail?: string;
   probability: AttrState; // percent, 100 = vanilla
   maxSpeed: AttrState; // km/h
   acceleration: AttrState; // m/s^2

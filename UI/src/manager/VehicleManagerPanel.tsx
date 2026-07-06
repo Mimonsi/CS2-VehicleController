@@ -5,7 +5,7 @@ import { FOCUS_DISABLED } from "cs2/input";
 // InfoRow/InfoSection directly from cs2/ui fails at runtime, the aliases work.
 import { Dropdown, DropdownToggle, Icon, Panel, PanelFoldout, PanelSection, PanelSectionRow, Scrollable } from "cs2/ui";
 import * as CS2UI from "cs2/ui";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { ModuleResolver } from "../ModuleResolver";
 import { AttrState, CategoryNode, ClassNode, PrefabNode, VEHICLE_TREE } from "./data";
@@ -92,6 +92,11 @@ function findClass(tree: CategoryNode[], name: string | null): ClassNode | null 
       if (cls.name === name) return cls;
   return null;
 }
+
+const classHasPrefab = (cls: ClassNode, id: string | null): boolean =>
+  !!id && cls.prefabs.some(p => p.id === id);
+const categoryHasPrefab = (cat: CategoryNode, id: string | null): boolean =>
+  !!id && cat.classes.some(cls => classHasPrefab(cls, id));
 
 const Badge = ({ state, inheritedLabel = "Inherited" }: { state: AttrState; inheritedLabel?: string }) => (
   <span
@@ -235,21 +240,35 @@ const PrefabRow = ({
   prefab: PrefabNode;
   selected: boolean;
   onSelect: () => void;
-}) => (
-  <div
-    onClick={onSelect}
-    style={{
-      padding: "6rem 10rem 6rem 34rem",
-      cursor: "pointer",
-      color: selected ? OVERRIDE_COLOR : undefined,
-      backgroundColor: selected ? "rgba(140, 190, 255, 0.15)" : undefined,
-      borderLeft: selected ? "3rem solid " + OVERRIDE_COLOR : "3rem solid transparent",
-    }}
-  >
-    {prefab.custom ? "◆ " : ""}
-    {prefab.name}
-  </div>
-);
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+  // Scroll the selected row into view (e.g. after a deep-link from a vehicle's info panel).
+  useEffect(() => {
+    if (selected && ref.current) {
+      try {
+        ref.current.scrollIntoView({ block: "nearest" });
+      } catch (e) {
+        // scrollIntoView may be unsupported; ignore
+      }
+    }
+  }, [selected]);
+  return (
+    <div
+      ref={ref}
+      onClick={onSelect}
+      style={{
+        padding: "6rem 10rem 6rem 34rem",
+        cursor: "pointer",
+        color: selected ? OVERRIDE_COLOR : undefined,
+        backgroundColor: selected ? "rgba(140, 190, 255, 0.15)" : undefined,
+        borderLeft: selected ? "3rem solid " + OVERRIDE_COLOR : "3rem solid transparent",
+      }}
+    >
+      {prefab.custom ? "◆ " : ""}
+      {prefab.name}
+    </div>
+  );
+};
 
 const textInputStyle: React.CSSProperties = {
   background: "rgba(0, 0, 0, 0.25)",
@@ -399,9 +418,17 @@ const DetailPanel = ({ prefab, classes }: { prefab: PrefabNode | null; classes: 
   const id = prefab.id;
   return (
     <div style={{ padding: "10rem 14rem" }}>
-      <div style={{ fontSize: "15rem", marginBottom: "2rem" }}>{prefab.name}</div>
-      <div style={{ fontSize: "12rem", color: DIM_COLOR, marginBottom: "12rem" }}>
-        {prefab.className}
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "12rem" }}>
+        {prefab.thumbnail ? (
+          <img
+            src={prefab.thumbnail}
+            style={{ width: "90rem", height: "90rem", marginRight: "12rem", objectFit: "contain" }}
+          />
+        ) : null}
+        <div>
+          <div style={{ fontSize: "15rem" }}>{prefab.name}</div>
+          <div style={{ fontSize: "12rem", color: DIM_COLOR }}>{prefab.className}</div>
+        </div>
       </div>
 
       <PanelSectionRow
@@ -567,7 +594,7 @@ const Tree = ({
     {tree.map(category => (
       <PanelFoldout
         key={category.key}
-        initialExpanded={category.key === "cars"}
+        initialExpanded={categoryHasPrefab(category, selectedPrefabId) || category.key === "cars"}
         expandFromContent={false}
         focusKey={FOCUS_DISABLED}
         header={
@@ -586,7 +613,7 @@ const Tree = ({
         {category.classes.map(cls => (
           <PanelFoldout
             key={cls.name}
-            initialExpanded={cls.name === "Sedan"}
+            initialExpanded={classHasPrefab(cls, selectedPrefabId) || cls.name === "Sedan"}
             expandFromContent={false}
             focusKey={FOCUS_DISABLED}
             header={

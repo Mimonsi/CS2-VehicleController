@@ -57,6 +57,7 @@ namespace VehicleController.Systems
             public string Name;
             public string ClassName;
             public bool Custom;
+            public string Thumbnail;
             public AttrDto Probability;
             public AttrDto MaxSpeed;
             public AttrDto Acceleration;
@@ -325,11 +326,17 @@ namespace VehicleController.Systems
                 var className = classes.Count > 0 ? classes[0] : "Unclassified";
                 pack.PrefabOverrides.TryGetValue(prefabName, out var prefabOverride);
 
+                // The game renders a thumbnail of the actual model on demand (works for custom assets too).
+                string thumbnail = null;
+                if (_prefabSystem.TryGetPrefab(entity, out PrefabBase prefabBase))
+                    thumbnail = ImageSystem.GetThumbnail(prefabBase);
+
                 var prefabDto = new PrefabDto
                 {
                     Id = prefabName,
                     Name = prefabName,
                     ClassName = className,
+                    Thumbnail = thumbnail,
                     // Real "custom asset" (mod) detection needs prefab source info; not mislabeling
                     // vanilla-but-unclassified vehicles (trains/buses) as custom for now.
                     Custom = false,
