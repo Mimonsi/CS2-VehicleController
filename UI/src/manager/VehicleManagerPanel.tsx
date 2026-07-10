@@ -281,7 +281,7 @@ const PrefabRow = ({
   prefab: PrefabNode;
   selected: boolean;
   showInternal: boolean;
-  onSelect: (additive: boolean) => void;
+  onSelect: (additive: boolean, range: boolean) => void;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   // Scroll the selected row into view (e.g. after a deep-link from a vehicle's info panel).
@@ -299,7 +299,7 @@ const PrefabRow = ({
       ref={ref}
       onClick={e => {
         playClick();
-        onSelect(e.ctrlKey || e.metaKey);
+        onSelect(e.ctrlKey || e.metaKey, e.shiftKey);
       }}
       style={{
         padding: "6rem 10rem 6rem 34rem",
@@ -727,7 +727,7 @@ const Tree = ({
   expandAll: boolean;
   filterKey: string;
   showInternal: boolean;
-  onSelectPrefab: (id: string, additive: boolean) => void;
+  onSelectPrefab: (id: string, additive: boolean, range: boolean) => void;
   onSelectClass: (name: string) => void;
 }) => (
   <>
@@ -793,7 +793,7 @@ const Tree = ({
                 prefab={prefab}
                 selected={selectedIds.has(prefab.id)}
                 showInternal={showInternal}
-                onSelect={additive => onSelectPrefab(prefab.id, additive)}
+                onSelect={(additive, range) => onSelectPrefab(prefab.id, additive, range)}
               />
             ))}
           </PanelFoldout>
@@ -922,17 +922,31 @@ export const VehicleManagerPanel = ({
   const [showInternal, setShowInternal] = useState(false);
 
 
-  const selectPrefab = (id: string, additive: boolean) => {
+  const anchorRef = useRef<string | null>(null);
+  const selectPrefab = (id: string, additive: boolean, range: boolean) => {
     setSelectedClassName(null);
-    setSelectedIds(prev => {
-      if (additive) {
+    // Shift: select the contiguous range from the anchor to this row (in the visible order).
+    if (range && anchorRef.current) {
+      const a = orderedIds.indexOf(anchorRef.current);
+      const b = orderedIds.indexOf(id);
+      if (a !== -1 && b !== -1) {
+        const [lo, hi] = a <= b ? [a, b] : [b, a];
+        setSelectedIds(new Set(orderedIds.slice(lo, hi + 1)));
+        return; // keep the anchor for further shift-clicks
+      }
+    }
+    if (additive) {
+      setSelectedIds(prev => {
         const next = new Set(prev);
         if (next.has(id)) next.delete(id);
         else next.add(id);
         return next;
-      }
-      return new Set([id]);
-    });
+      });
+      anchorRef.current = id;
+      return;
+    }
+    setSelectedIds(new Set([id]));
+    anchorRef.current = id;
   };
   const selectClass = (name: string) => {
     setSelectedIds(new Set());
@@ -998,6 +1012,13 @@ export const VehicleManagerPanel = ({
   );
   const filterActive = search.trim() !== "" || inPackOnly;
   const filterKey = filterActive ? `${search}|${inPackOnly}` : "";
+
+  // Flat visible order of prefab ids, for shift-range selection.
+  const orderedIds = useMemo(() => {
+    const out: string[] = [];
+    for (const c of filteredTree) for (const cls of c.classes) for (const p of cls.prefabs) out.push(p.id);
+    return out;
+  }, [filteredTree]);
 
   const packsJson = useValue(packsJson$);
   const packInfo = useMemo<PacksInfo>(() => {

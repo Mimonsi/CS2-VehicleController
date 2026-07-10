@@ -53,7 +53,9 @@ namespace VehicleController.Systems
                 return false;
             if (EntityManager.TryGetComponent<PrefabRef>(selectedEntity, out var prefabRef))
                 return EntityManager.HasComponent<CarData>(prefabRef.m_Prefab)
-                       || EntityManager.HasComponent<TrainData>(prefabRef.m_Prefab);
+                       || EntityManager.HasComponent<TrainData>(prefabRef.m_Prefab)
+                       || EntityManager.HasComponent<WatercraftData>(prefabRef.m_Prefab)
+                       || EntityManager.HasComponent<AircraftData>(prefabRef.m_Prefab);
             return false;
         }
 

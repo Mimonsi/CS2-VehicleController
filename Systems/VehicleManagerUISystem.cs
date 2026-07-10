@@ -92,7 +92,13 @@ namespace VehicleController.Systems
             _prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
             _vehicleQuery = GetEntityQuery(new EntityQueryDesc
             {
-                Any = new[] { ComponentType.ReadOnly<CarData>(), ComponentType.ReadOnly<TrainData>() },
+                Any = new[]
+                {
+                    ComponentType.ReadOnly<CarData>(),
+                    ComponentType.ReadOnly<TrainData>(),
+                    ComponentType.ReadOnly<WatercraftData>(),
+                    ComponentType.ReadOnly<AircraftData>(),
+                },
             });
 
             _treeJson = new ValueBinding<string>(Group, "treeJson", "[]");
@@ -301,6 +307,8 @@ namespace VehicleController.Systems
             // Fixed display order.
             EnsureCat("cars", "Cars");
             EnsureCat("trains", "Trains");
+            EnsureCat("air", "Aircraft");
+            EnsureCat("ships", "Ships");
             EnsureCat("service", "Service");
 
             var entities = _vehicleQuery.ToEntityArray(Allocator.Temp);
@@ -318,6 +326,16 @@ namespace VehicleController.Systems
                 {
                     catKey = "trains";
                     catName = "Trains";
+                }
+                else if (EntityManager.HasComponent<WatercraftData>(entity))
+                {
+                    catKey = "ships";
+                    catName = "Ships";
+                }
+                else if (EntityManager.HasComponent<AircraftData>(entity))
+                {
+                    catKey = "air";
+                    catName = "Aircraft";
                 }
                 else if (EntityManager.HasComponent<PersonalCarData>(entity))
                 {

@@ -9,6 +9,7 @@ using Game.Common;
 using Game.Prefabs;
 using Unity.Collections;
 using Unity.Entities;
+using Unity.Mathematics;
 using VehicleController.Data;
 
 namespace VehicleController.Systems
@@ -50,7 +51,7 @@ namespace VehicleController.Systems
             Enabled = true;
             log = Mod.log;
 
-            _vehicleQuery = SystemAPI.QueryBuilder().WithAny<CarData, TrainData>().Build();
+            _vehicleQuery = SystemAPI.QueryBuilder().WithAny<CarData, TrainData, WatercraftData, AircraftData>().Build();
             _prefabSystem = World.GetOrCreateSystemManaged<PrefabSystem>();
 
             log.Info("VehicleConfigSystem created.");
@@ -130,6 +131,30 @@ namespace VehicleController.Systems
                     acceleration = trainData.m_Acceleration;
                     braking = trainData.m_Braking;
                 }
+                else if (EntityManager.TryGetComponent<WatercraftData>(entity, out var watercraftData))
+                {
+                    if (watercraftData.m_MaxSpeed == 0)
+                        return false;
+                    maxSpeed = watercraftData.m_MaxSpeed;
+                    acceleration = watercraftData.m_Acceleration;
+                    braking = watercraftData.m_Braking;
+                }
+                else if (EntityManager.TryGetComponent<HelicopterData>(entity, out var helicopterData))
+                {
+                    if (helicopterData.m_FlyingMaxSpeed == 0)
+                        return false;
+                    maxSpeed = helicopterData.m_FlyingMaxSpeed;
+                    acceleration = helicopterData.m_FlyingAcceleration;
+                    braking = 0f; // helicopters have no braking parameter
+                }
+                else if (EntityManager.TryGetComponent<AirplaneData>(entity, out var airplaneData))
+                {
+                    if (airplaneData.m_FlyingSpeed.y == 0)
+                        return false;
+                    maxSpeed = airplaneData.m_FlyingSpeed.y;
+                    acceleration = airplaneData.m_FlyingAcceleration;
+                    braking = airplaneData.m_FlyingBraking;
+                }
                 else
                 {
                     continue;
@@ -191,6 +216,26 @@ namespace VehicleController.Systems
                     trainData.m_Acceleration = resolved.Acceleration;
                     trainData.m_Braking = resolved.Braking;
                     EntityManager.SetComponentData(entity, trainData);
+                }
+                else if (EntityManager.TryGetComponent<WatercraftData>(entity, out var watercraftData))
+                {
+                    watercraftData.m_MaxSpeed = resolved.MaxSpeed;
+                    watercraftData.m_Acceleration = resolved.Acceleration;
+                    watercraftData.m_Braking = resolved.Braking;
+                    EntityManager.SetComponentData(entity, watercraftData);
+                }
+                else if (EntityManager.TryGetComponent<HelicopterData>(entity, out var helicopterData))
+                {
+                    helicopterData.m_FlyingMaxSpeed = resolved.MaxSpeed;
+                    helicopterData.m_FlyingAcceleration = resolved.Acceleration;
+                    EntityManager.SetComponentData(entity, helicopterData);
+                }
+                else if (EntityManager.TryGetComponent<AirplaneData>(entity, out var airplaneData))
+                {
+                    airplaneData.m_FlyingSpeed = new float2(Math.Min(airplaneData.m_FlyingSpeed.x, resolved.MaxSpeed), resolved.MaxSpeed);
+                    airplaneData.m_FlyingAcceleration = resolved.Acceleration;
+                    airplaneData.m_FlyingBraking = resolved.Braking;
+                    EntityManager.SetComponentData(entity, airplaneData);
                 }
 
                 if (EntityManager.TryGetComponent<PersonalCarData>(entity, out var personalCarData))
