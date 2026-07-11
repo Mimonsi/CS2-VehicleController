@@ -109,6 +109,10 @@
         <None Remove="Locale\*.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Resources\packs\" />
+    </ItemGroup>
+
     <Target Name="BuildUI" AfterTargets="AfterBuild">
         <Exec Command="npm run build" WorkingDirectory="$(ProjectDir)/UI" />
     </Target>

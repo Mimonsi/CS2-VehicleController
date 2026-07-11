@@ -23,7 +23,6 @@ namespace VehicleController.Systems
         private EntityQuery instanceQuery;
 
         private PrefabSystem prefabSystem;
-        private ProbabilityPack _currentProbabilityPack;
         public static VehicleCounterSystem Instance { get; private set; }
 
         /// <summary>

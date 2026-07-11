@@ -35,6 +35,7 @@ namespace VehicleController.Systems
 
         private PrefabSystem _prefabSystem;
         private EntityQuery _vehicleQuery;
+        private EntityQuery _instanceQuery;
         private ValueBinding<string> _treeJson;
         private ValueBinding<string> _globalJson;
         private ValueBinding<string> _classesJson;
@@ -58,6 +59,7 @@ namespace VehicleController.Systems
             public string ClassName;
             public bool Custom;
             public string Thumbnail;
+            public int Count;
             public AttrDto Probability;
             public AttrDto MaxSpeed;
             public AttrDto Acceleration;
@@ -100,6 +102,20 @@ namespace VehicleController.Systems
                     ComponentType.ReadOnly<AircraftData>(),
                 },
             });
+            // Live vehicle instances in the world (for per-prefab counts + jump-to-instance).
+            _instanceQuery = GetEntityQuery(new EntityQueryDesc
+            {
+                All = new[]
+                {
+                    ComponentType.ReadOnly<Game.Vehicles.Vehicle>(),
+                    ComponentType.ReadOnly<PrefabRef>(),
+                },
+                None = new[]
+                {
+                    ComponentType.ReadOnly<Game.Common.Deleted>(),
+                    ComponentType.ReadOnly<Game.Tools.Temp>(),
+                },
+            });
 
             _treeJson = new ValueBinding<string>(Group, "treeJson", "[]");
             AddBinding(_treeJson);
@@ -116,6 +132,7 @@ namespace VehicleController.Systems
             AddBinding(new TriggerBinding<string>(Group, "edit", OnEdit));
             AddBinding(new TriggerBinding<string>(Group, "classCmd", OnClassCmd));
             AddBinding(new TriggerBinding<string>(Group, "packCmd", OnPackCmd));
+            AddBinding(new TriggerBinding<string>(Group, "jumpTo", OnJumpTo));
 
             log.Info($"VehicleManagerUISystem created with group {Group}.");
         }
@@ -240,6 +257,63 @@ namespace VehicleController.Systems
             }
         }
 
+        // Counts live vehicle instances in the world, keyed by prefab name.
+        private Dictionary<string, int> CountInstancesByPrefab()
+        {
+            var counts = new Dictionary<string, int>();
+            var instances = _instanceQuery.ToEntityArray(Allocator.Temp);
+            foreach (var e in instances)
+            {
+                if (!EntityManager.TryGetComponent<PrefabRef>(e, out var pr))
+                    continue;
+                var name = _prefabSystem.GetPrefabName(pr.m_Prefab);
+                counts.TryGetValue(name, out var c);
+                counts[name] = c + 1;
+            }
+            instances.Dispose();
+            return counts;
+        }
+
+        // Moves the camera to follow a live instance of the given prefab, using the same
+        // orbit-follow mechanism the game uses when you follow a vehicle from its info panel.
+        private void OnJumpTo(string prefabName)
+        {
+            try
+            {
+                var camera = World.GetExistingSystemManaged<Game.Rendering.CameraUpdateSystem>();
+                if (camera?.orbitCameraController == null)
+                    return;
+
+                var instances = _instanceQuery.ToEntityArray(Allocator.Temp);
+                Entity found = Entity.Null;
+                foreach (var e in instances)
+                {
+                    if (EntityManager.TryGetComponent<PrefabRef>(e, out var pr) &&
+                        _prefabSystem.GetPrefabName(pr.m_Prefab) == prefabName)
+                    {
+                        found = e;
+                        break;
+                    }
+                }
+                instances.Dispose();
+
+                if (found == Entity.Null)
+                {
+                    log.Info($"Jump to instance: no live instance of '{prefabName}' found.");
+                    return;
+                }
+
+                var orbit = camera.orbitCameraController;
+                orbit.followedEntity = found;
+                orbit.TryMatchPosition(camera.activeCameraController);
+                camera.activeCameraController = orbit;
+            }
+            catch (Exception x)
+            {
+                log.Warn($"Jump to instance for '{prefabName}' failed: {x.Message}");
+            }
+        }
+
         private static string BuildGlobalJson()
         {
             var g = VehicleConfigSystem.Instance?.ActivePack?.Global;
@@ -311,6 +385,8 @@ namespace VehicleController.Systems
             EnsureCat("ships", "Ships");
             EnsureCat("service", "Service");
 
+            var counts = CountInstancesByPrefab();
+
             var entities = _vehicleQuery.ToEntityArray(Allocator.Temp);
             var seen = new HashSet<string>();
             foreach (var entity in entities)
@@ -364,6 +440,7 @@ namespace VehicleController.Systems
                     Name = LocaleHelper.Translate($"Assets.NAME[{prefabName}]", prefabName) ?? prefabName,
                     ClassName = className,
                     Thumbnail = thumbnail,
+                    Count = counts.TryGetValue(prefabName, out var instCount) ? instCount : 0,
                     // Real "custom asset" (mod) detection needs prefab source info; not mislabeling
                     // vanilla-but-unclassified vehicles (trains/buses) as custom for now.
                     Custom = false,

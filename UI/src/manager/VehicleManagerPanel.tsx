@@ -64,6 +64,9 @@ const sendDeleteClass = (className: string) =>
 const sendPackCmd = (op: string, name: string) =>
   trigger(MANAGER_GROUP, "packCmd", JSON.stringify({ op, name }));
 
+// UI → C#: move the camera to follow a live instance of this prefab.
+const sendJumpTo = (prefab: string) => trigger(MANAGER_GROUP, "jumpTo", prefab);
+
 // Play the game's standard UI sounds (so our controls feel like native ones).
 const playClick = () => trigger("audio", "playSound", "select-item", 1);
 const playHover = () => trigger("audio", "playSound", "hover-item", 1);
@@ -555,6 +558,26 @@ const DetailPanel = ({
             <div style={{ fontSize: "15rem" }}>{showInternal ? prefabs[0].id : prefabs[0].name}</div>
             <div style={{ fontSize: "12rem", color: DIM_COLOR }}>{prefabs[0].className}</div>
           </div>
+        </div>
+      )}
+
+      {!multi && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "10rem",
+          }}
+        >
+          <span style={{ fontSize: "12rem", color: DIM_COLOR }}>
+            {(prefabs[0].count ?? 0) === 1
+              ? "1 vehicle active in city"
+              : `${prefabs[0].count ?? 0} vehicles active in city`}
+          </span>
+          {(prefabs[0].count ?? 0) > 0 && (
+            <TxtButton onClick={() => sendJumpTo(prefabs[0].id)}>Jump to instance</TxtButton>
+          )}
         </div>
       )}
 
