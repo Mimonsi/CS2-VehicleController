@@ -17,7 +17,6 @@ export interface PrefabNode {
   className: string;
   custom?: boolean;
   thumbnail?: string;
-  count?: number; // live instances of this prefab currently in the world
   probability: AttrState; // percent, 100 = vanilla
   maxSpeed: AttrState; // km/h
   acceleration: AttrState; // m/s^2

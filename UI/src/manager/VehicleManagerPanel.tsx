@@ -21,6 +21,8 @@ const treeJson$ = bindValue<string>(MANAGER_GROUP, "treeJson", "[]");
 const globalJson$ = bindValue<string>(MANAGER_GROUP, "globalJson", "{}");
 const classesJson$ = bindValue<string>(MANAGER_GROUP, "classesJson", "[]");
 const packsJson$ = bindValue<string>(MANAGER_GROUP, "packsJson", "{}");
+// Live instance count of the currently focused prefab (refreshed on each selection).
+const selectedCount$ = bindValue<number>(MANAGER_GROUP, "selectedCount", 0);
 
 interface ClassInfo {
   name: string;
@@ -64,8 +66,10 @@ const sendDeleteClass = (className: string) =>
 const sendPackCmd = (op: string, name: string) =>
   trigger(MANAGER_GROUP, "packCmd", JSON.stringify({ op, name }));
 
-// UI → C#: move the camera to follow a live instance of this prefab.
+// UI → C#: move the camera to follow a random live instance of this prefab.
 const sendJumpTo = (prefab: string) => trigger(MANAGER_GROUP, "jumpTo", prefab);
+// UI → C#: ask for a fresh live instance count of this prefab (pushed back via selectedCount$).
+const requestCount = (prefab: string) => trigger(MANAGER_GROUP, "requestCount", prefab);
 
 // Play the game's standard UI sounds (so our controls feel like native ones).
 const playClick = () => trigger("audio", "playSound", "select-item", 1);
@@ -494,6 +498,13 @@ const DetailPanel = ({
   classes: ClassInfo[];
   showInternal: boolean;
 }) => {
+  // Live instance count for the focused prefab; re-requested whenever the single selection changes.
+  const liveCount = useValue(selectedCount$);
+  const singleId = prefabs.length === 1 ? prefabs[0].id : null;
+  useEffect(() => {
+    if (singleId) requestCount(singleId);
+  }, [singleId]);
+
   if (prefabs.length === 0) {
     return (
       <div style={{ padding: "20rem", color: DIM_COLOR }}>
@@ -571,11 +582,9 @@ const DetailPanel = ({
           }}
         >
           <span style={{ fontSize: "12rem", color: DIM_COLOR }}>
-            {(prefabs[0].count ?? 0) === 1
-              ? "1 vehicle active in city"
-              : `${prefabs[0].count ?? 0} vehicles active in city`}
+            {liveCount === 1 ? "1 vehicle active in city" : `${liveCount} vehicles active in city`}
           </span>
-          {(prefabs[0].count ?? 0) > 0 && (
+          {liveCount > 0 && (
             <TxtButton onClick={() => sendJumpTo(prefabs[0].id)}>Jump to instance</TxtButton>
           )}
         </div>

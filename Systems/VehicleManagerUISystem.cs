@@ -41,7 +41,9 @@ namespace VehicleController.Systems
         private ValueBinding<string> _classesJson;
         private ValueBinding<string> _packsJson;
         private ValueBinding<string> _openRequest;
+        private ValueBinding<int> _selectedCount;
         private int _openNonce;
+        private readonly System.Random _rng = new System.Random();
 
         // ---- DTOs (serialized to the UI; camelCased by the resolver) ------------
 
@@ -59,7 +61,6 @@ namespace VehicleController.Systems
             public string ClassName;
             public bool Custom;
             public string Thumbnail;
-            public int Count;
             public AttrDto Probability;
             public AttrDto MaxSpeed;
             public AttrDto Acceleration;
@@ -127,12 +128,15 @@ namespace VehicleController.Systems
             AddBinding(_packsJson);
             _openRequest = new ValueBinding<string>(Group, "openRequest", "{}");
             AddBinding(_openRequest);
+            _selectedCount = new ValueBinding<int>(Group, "selectedCount", 0);
+            AddBinding(_selectedCount);
             AddBinding(new TriggerBinding<string>(Group, "openManager", OnOpenManager));
             AddBinding(new TriggerBinding(Group, "refresh", RequestTreeUpdate));
             AddBinding(new TriggerBinding<string>(Group, "edit", OnEdit));
             AddBinding(new TriggerBinding<string>(Group, "classCmd", OnClassCmd));
             AddBinding(new TriggerBinding<string>(Group, "packCmd", OnPackCmd));
             AddBinding(new TriggerBinding<string>(Group, "jumpTo", OnJumpTo));
+            AddBinding(new TriggerBinding<string>(Group, "requestCount", OnRequestCount));
 
             log.Info($"VehicleManagerUISystem created with group {Group}.");
         }
@@ -257,24 +261,38 @@ namespace VehicleController.Systems
             }
         }
 
-        // Counts live vehicle instances in the world, keyed by prefab name.
-        private Dictionary<string, int> CountInstancesByPrefab()
+        // Pushes the live instance count of a single prefab to the UI. Requested when the
+        // detail panel focuses a prefab, so the count reflects the world at selection time.
+        private void OnRequestCount(string prefabName)
         {
-            var counts = new Dictionary<string, int>();
+            try
+            {
+                _selectedCount.Update(CollectInstances(prefabName).Count);
+            }
+            catch (Exception x)
+            {
+                log.Warn($"Count request for '{prefabName}' failed: {x.Message}");
+            }
+        }
+
+        // Returns every live instance entity of the given prefab.
+        private List<Entity> CollectInstances(string prefabName)
+        {
+            var matches = new List<Entity>();
             var instances = _instanceQuery.ToEntityArray(Allocator.Temp);
             foreach (var e in instances)
             {
-                if (!EntityManager.TryGetComponent<PrefabRef>(e, out var pr))
-                    continue;
-                var name = _prefabSystem.GetPrefabName(pr.m_Prefab);
-                counts.TryGetValue(name, out var c);
-                counts[name] = c + 1;
+                if (EntityManager.TryGetComponent<PrefabRef>(e, out var pr) &&
+                    _prefabSystem.GetPrefabName(pr.m_Prefab) == prefabName)
+                {
+                    matches.Add(e);
+                }
             }
             instances.Dispose();
-            return counts;
+            return matches;
         }
 
-        // Moves the camera to follow a live instance of the given prefab, using the same
+        // Moves the camera to follow a random live instance of the given prefab, using the same
         // orbit-follow mechanism the game uses when you follow a vehicle from its info panel.
         private void OnJumpTo(string prefabName)
         {
@@ -284,27 +302,16 @@ namespace VehicleController.Systems
                 if (camera?.orbitCameraController == null)
                     return;
 
-                var instances = _instanceQuery.ToEntityArray(Allocator.Temp);
-                Entity found = Entity.Null;
-                foreach (var e in instances)
-                {
-                    if (EntityManager.TryGetComponent<PrefabRef>(e, out var pr) &&
-                        _prefabSystem.GetPrefabName(pr.m_Prefab) == prefabName)
-                    {
-                        found = e;
-                        break;
-                    }
-                }
-                instances.Dispose();
-
-                if (found == Entity.Null)
+                var matches = CollectInstances(prefabName);
+                if (matches.Count == 0)
                 {
                     log.Info($"Jump to instance: no live instance of '{prefabName}' found.");
                     return;
                 }
 
+                var target = matches[_rng.Next(matches.Count)];
                 var orbit = camera.orbitCameraController;
-                orbit.followedEntity = found;
+                orbit.followedEntity = target;
                 orbit.TryMatchPosition(camera.activeCameraController);
                 camera.activeCameraController = orbit;
             }
@@ -385,8 +392,6 @@ namespace VehicleController.Systems
             EnsureCat("ships", "Ships");
             EnsureCat("service", "Service");
 
-            var counts = CountInstancesByPrefab();
-
             var entities = _vehicleQuery.ToEntityArray(Allocator.Temp);
             var seen = new HashSet<string>();
             foreach (var entity in entities)
@@ -440,7 +445,6 @@ namespace VehicleController.Systems
                     Name = LocaleHelper.Translate($"Assets.NAME[{prefabName}]", prefabName) ?? prefabName,
                     ClassName = className,
                     Thumbnail = thumbnail,
-                    Count = counts.TryGetValue(prefabName, out var instCount) ? instCount : 0,
                     // Real "custom asset" (mod) detection needs prefab source info; not mislabeling
                     // vanilla-but-unclassified vehicles (trains/buses) as custom for now.
                     Custom = false,
