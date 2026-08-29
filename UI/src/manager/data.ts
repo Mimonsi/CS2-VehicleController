@@ -11,16 +11,30 @@ export interface AttrState {
   source: string;
 }
 
+// One property across the cascade, as the detail table renders it.
+// `own`/`cls` are the editing pack's own entries (null = not set there); `winner` says which
+// layer currently wins, with `source` naming the pack when another active pack is responsible.
+export interface FieldState {
+  own: number | null;
+  cls: number | null;
+  vanilla: number;
+  effective: number;
+  winner: "own" | "class" | "vanilla" | "pack";
+  source?: string | null;
+}
+
 export interface PrefabNode {
   id: string;
   name: string;
   className: string;
   custom?: boolean;
   thumbnail?: string;
-  probability: AttrState; // percent, 100 = vanilla
-  maxSpeed: AttrState; // km/h
-  acceleration: AttrState; // m/s^2
-  braking: AttrState; // m/s^2
+  spawns?: boolean; // only naturally spawning vehicles have a spawn probability
+  edited?: boolean; // the editing pack sets a prefab-level value here
+  probability: FieldState; // percent, 100 = vanilla
+  maxSpeed: FieldState; // km/h
+  acceleration: FieldState; // m/s^2
+  braking: FieldState; // m/s^2
 }
 
 export interface ClassNode {
@@ -42,16 +56,42 @@ export interface CategoryNode {
   classes: ClassNode[];
 }
 
-const inherited = (value: number, source = "global"): AttrState => ({
-  value,
-  overridden: false,
+/** A class name offered by the assign dropdown. */
+export interface ClassInfo {
+  name: string;
+  custom: boolean;
+}
+
+/** One entry of the pack library. */
+export interface PackEntry {
+  name: string;
+  description: string;
+  readOnly: boolean;
+  active: boolean;
+}
+
+export interface PacksInfo {
+  /** Active packs in priority order (lowest wins), followed by the inactive ones. */
+  packs: PackEntry[];
+  /** The pack edits are written to. */
+  editTarget: string;
+}
+
+const inherited = (value: number, source = "global"): FieldState => ({
+  own: null,
+  cls: null,
+  vanilla: value,
+  effective: value,
+  winner: "vanilla",
   source,
 });
 
-const override = (value: number): AttrState => ({
-  value,
-  overridden: true,
-  source: "",
+const override = (value: number): FieldState => ({
+  own: value,
+  cls: null,
+  vanilla: value,
+  effective: value,
+  winner: "own",
 });
 
 export const VEHICLE_TREE: CategoryNode[] = [

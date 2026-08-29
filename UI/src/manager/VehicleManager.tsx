@@ -1,14 +1,12 @@
-import { bindValue, useValue } from "cs2/api";
+import { useValue } from "cs2/api";
 import { FloatingButton, Portal } from "cs2/ui";
 import React, { useEffect, useRef, useState } from "react";
 
+import { openRequest$ } from "./api";
 import { VehicleManagerPanel } from "./VehicleManagerPanel";
 import vcLogo from "../images/VC.png";
 
 const buttonSrc = vcLogo;
-const managerGroup = "VehicleController.VehicleManager";
-// A vehicle's Selected-Info panel can request opening the manager focused on its prefab.
-const openRequest$ = bindValue<string>(managerGroup, "openRequest", "{}");
 
 // Appended to "GameTopLeft": a toggle button that opens the floating Vehicle Manager window.
 // The panel is rendered through a Portal so it floats above the game UI.

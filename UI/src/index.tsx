@@ -16,6 +16,8 @@ const register: ModRegistrar = (moduleRegistry) =>
 
     // M2 prototype: floating Vehicle Manager window, opened via a top-left button.
     moduleRegistry.append("GameTopLeft", VehicleManager);
+    moduleRegistry.append("GameTopRight", VehicleManager);
+    moduleRegistry.append("GameBottomRight", VehicleManager);
 
     // Registration is complete.
     console.log(mod.id + " registration complete.");

@@ -1,11 +1,10 @@
-import { trigger } from "cs2/api";
 import { SelectedInfoSectionBase } from "cs2/bindings";
 import React from "react";
 
 import { ModuleResolver } from "../ModuleResolver";
+import { openManagerFor } from "./api";
 
 const linkGroup = "VehicleController.Systems.VehicleManagerLinkSection";
-const managerGroup = "VehicleController.VehicleManager";
 
 // Selected-Info-Panel section: shows an "Open in Vehicle Manager" button for the selected vehicle,
 // which opens the manager window focused on that prefab (see VehicleManagerLinkSection.cs).
@@ -22,7 +21,7 @@ export const SIPVehicleManagerLink = (componentList: any): any => {
           uppercase={true}
           right={
             <div
-              onClick={() => trigger(managerGroup, "openManager", props.prefabName)}
+              onClick={() => openManagerFor(props.prefabName)}
               style={{
                 cursor: "pointer",
                 padding: "3rem 10rem",

@@ -37,7 +37,6 @@ namespace VehicleController.Systems
         private EntityQuery _vehicleQuery;
         private EntityQuery _instanceQuery;
         private ValueBinding<string> _treeJson;
-        private ValueBinding<string> _globalJson;
         private ValueBinding<string> _classesJson;
         private ValueBinding<string> _packsJson;
         private ValueBinding<string> _openRequest;
@@ -54,6 +53,22 @@ namespace VehicleController.Systems
             public string Source;
         }
 
+        /// <summary>
+        /// One property across the cascade, as the detail table renders it: the editing pack's own
+        /// prefab value, its class value, the vanilla value, and the value actually in the game.
+        /// <see cref="Winner"/> says which layer currently wins ("own" | "class" | "vanilla" | "pack"),
+        /// with <see cref="Source"/> naming the pack when another active pack is responsible.
+        /// </summary>
+        private class FieldDto
+        {
+            public float? Own;
+            public float? Cls;
+            public float Vanilla;
+            public float Effective;
+            public string Winner;
+            public string Source;
+        }
+
         private class PrefabDto
         {
             public string Id;
@@ -61,10 +76,14 @@ namespace VehicleController.Systems
             public string ClassName;
             public bool Custom;
             public string Thumbnail;
-            public AttrDto Probability;
-            public AttrDto MaxSpeed;
-            public AttrDto Acceleration;
-            public AttrDto Braking;
+            /// <summary>True only for naturally spawning vehicles (personal cars); others hide probability.</summary>
+            public bool Spawns;
+            /// <summary>True when the editing pack sets any prefab-level value here (tree marker).</summary>
+            public bool Edited;
+            public FieldDto Probability;
+            public FieldDto MaxSpeed;
+            public FieldDto Acceleration;
+            public FieldDto Braking;
         }
 
         private class ClassDto
@@ -120,8 +139,6 @@ namespace VehicleController.Systems
 
             _treeJson = new ValueBinding<string>(Group, "treeJson", "[]");
             AddBinding(_treeJson);
-            _globalJson = new ValueBinding<string>(Group, "globalJson", "{}");
-            AddBinding(_globalJson);
             _classesJson = new ValueBinding<string>(Group, "classesJson", "[]");
             AddBinding(_classesJson);
             _packsJson = new ValueBinding<string>(Group, "packsJson", "{}");
@@ -210,7 +227,7 @@ namespace VehicleController.Systems
             public string Name;
         }
 
-        /// <summary>Applies a pack-bar command (switch / new / duplicate / rename / delete / export / import).</summary>
+        /// <summary>Applies a pack-bar command: stack management (add/remove/move/target) + pack ops.</summary>
         private void OnPackCmd(string json)
         {
             try
@@ -221,7 +238,12 @@ namespace VehicleController.Systems
                     return;
                 switch (cmd.Op)
                 {
-                    case "switch": config.SwitchPack(cmd.Name); break;
+                    case "add": config.AddToStack(cmd.Name); break;
+                    case "remove": config.RemoveFromStack(cmd.Name); break;
+                    case "toggle": config.TogglePack(cmd.Name); break;
+                    case "moveUp": config.MovePack(cmd.Name, -1); break;
+                    case "moveDown": config.MovePack(cmd.Name, +1); break;
+                    case "setTarget": config.SetEditTarget(cmd.Name); break;
                     case "new": config.NewPack(cmd.Name); break;
                     case "duplicate": config.DuplicatePack(cmd.Name); break;
                     case "rename": config.RenamePack(cmd.Name); break;
@@ -250,7 +272,6 @@ namespace VehicleController.Systems
             try
             {
                 _treeJson.Update(BuildTreeJson());
-                _globalJson.Update(BuildGlobalJson());
                 _classesJson.Update(BuildClassesJson());
                 _packsJson.Update(BuildPacksJson());
             }
@@ -321,28 +342,42 @@ namespace VehicleController.Systems
             }
         }
 
-        private static string BuildGlobalJson()
-        {
-            var g = VehicleConfigSystem.Instance?.ActivePack?.Global;
-            if (g == null)
-                return "{}";
-            return JsonConvert.SerializeObject(new
-            {
-                probability = g.ProbabilityFactor,
-                speed = g.SpeedFactor,
-                acceleration = g.AccelerationFactor,
-                braking = g.BrakingFactor,
-            });
-        }
-
-        // Active pack name + all available pack names for the pack bar.
+        // The pack library for the left column: active packs in priority order first (numbered),
+        // then the inactive ones. Each carries its description and read-only flag.
         private static string BuildPacksJson()
         {
-            var active = VehicleConfigSystem.Instance?.ActivePack?.Name ?? "Default";
-            var packs = VehiclePack.GetPackNames();
-            if (!packs.Contains(active))
-                packs.Insert(0, active); // the active pack may be new/unsaved
-            return JsonConvert.SerializeObject(new { active, packs });
+            var config = VehicleConfigSystem.Instance;
+            var packs = new List<object>();
+            var activeNames = new HashSet<string>();
+
+            if (config?.ActiveStack != null)
+            {
+                foreach (var p in config.ActiveStack)
+                {
+                    activeNames.Add(p.Name);
+                    packs.Add(new { name = p.Name, description = p.Description ?? "", readOnly = p.ReadOnly, active = true });
+                }
+            }
+
+            // Inactive packs still on disk: read their metadata so the library can describe them.
+            foreach (var name in VehiclePack.GetPackNames())
+            {
+                if (activeNames.Contains(name))
+                    continue;
+                string description = "";
+                bool readOnly = false;
+                try
+                {
+                    var p = VehiclePack.LoadFromFile(name);
+                    description = p.Description ?? "";
+                    readOnly = p.ReadOnly;
+                }
+                catch (Exception x) { log.Warn($"Could not read pack '{name}': {x.Message}"); }
+                packs.Add(new { name, description, readOnly, active = false });
+            }
+
+            var editTarget = config?.EditTarget?.Name ?? "";
+            return JsonConvert.SerializeObject(new { packs, editTarget });
         }
 
         // All assignable class names (built-in + this pack's custom classes) for the assign dropdown.
@@ -367,7 +402,98 @@ namespace VehicleController.Systems
                 return "[]";
 
             var vanilla = config.Vanilla;
-            var pack = config.ActivePack;
+            var stack = config.ActiveStack;
+            var editTarget = config.EditTarget;
+
+            var globals = config.CombinedGlobals();
+
+            // Walks the stack to find the winning value for one field: bottom-most pack wins, and
+            // within a pack a prefab override beats a class override. Returns which pack and level won.
+            (float? Val, string Pack, string Level) WinField(
+                string prefabName, List<string> classes, Func<VehicleOverride, float?> sel)
+            {
+                float? val = null; string pack = null; string level = null;
+                foreach (var p in stack)
+                {
+                    if (p.PrefabOverrides.TryGetValue(prefabName, out var po))
+                    {
+                        var x = sel(po);
+                        if (x != null) { val = x; pack = p.Name; level = "prefab"; continue; }
+                    }
+                    foreach (var cn in classes)
+                    {
+                        if (p.ClassOverrides.TryGetValue(cn, out var co))
+                        {
+                            var x = sel(co);
+                            if (x != null) { val = x; pack = p.Name; level = "class"; break; }
+                        }
+                    }
+                }
+                return (val, pack, level);
+            }
+
+            // Builds the cascade row the detail table renders. `own`/`cls` are the EDITING pack's
+            // own entries (what the two editable cells hold), independent of who currently wins.
+            FieldDto MakeField(
+                string prefabName, List<string> classes, string className,
+                Func<VehicleOverride, float?> sel, float vanillaValue, float scale, float globalFactor)
+            {
+                var win = WinField(prefabName, classes, sel);
+
+                float? own = null, cls = null;
+                if (editTarget != null)
+                {
+                    if (editTarget.PrefabOverrides.TryGetValue(prefabName, out var po)) own = sel(po);
+                    if (className != null && editTarget.ClassOverrides.TryGetValue(className, out var co)) cls = sel(co);
+                }
+
+                string winner = "vanilla";
+                if (win.Val != null)
+                {
+                    bool mine = editTarget != null && win.Pack == editTarget.Name;
+                    winner = mine ? (win.Level == "prefab" ? "own" : "class") : "pack";
+                }
+
+                return new FieldDto
+                {
+                    Own = own * scale,
+                    Cls = cls * scale,
+                    Vanilla = vanillaValue * scale,
+                    Effective = (win.Val ?? vanillaValue) * scale * globalFactor,
+                    Winner = winner,
+                    Source = winner == "pack" ? win.Pack : null,
+                };
+            }
+
+            // Probability is a percentage of vanilla (100 = vanilla) and only real for personal cars.
+            FieldDto MakeProbField(string prefabName, List<string> classes, string className)
+            {
+                var win = WinField(prefabName, classes, o => o.ProbabilityPercent);
+
+                float? own = null, cls = null;
+                if (editTarget != null)
+                {
+                    if (editTarget.PrefabOverrides.TryGetValue(prefabName, out var po)) own = po.ProbabilityPercent;
+                    if (className != null && editTarget.ClassOverrides.TryGetValue(className, out var co)) cls = co.ProbabilityPercent;
+                }
+
+                string winner = "vanilla";
+                if (win.Val != null)
+                {
+                    bool mine = editTarget != null && win.Pack == editTarget.Name;
+                    winner = mine ? (win.Level == "prefab" ? "own" : "class") : "pack";
+                }
+
+                return new FieldDto
+                {
+                    Own = own,
+                    Cls = cls,
+                    Vanilla = 100f,
+                    Effective = (win.Val ?? 100f) * globals.ProbabilityFactor,
+                    Winner = winner,
+                    Source = winner == "pack" ? win.Pack : null,
+                };
+            }
 
             var cats = new List<CategoryDto>();
             var catByKey = new Dictionary<string, CategoryDto>();
@@ -429,9 +555,8 @@ namespace VehicleController.Systems
                     catName = "Service";
                 }
 
-                var classes = pack.GetEffectiveClasses(prefabName);
+                var classes = config.GetEffectiveClasses(prefabName);
                 var className = classes.Count > 0 ? classes[0] : "Unclassified";
-                pack.PrefabOverrides.TryGetValue(prefabName, out var prefabOverride);
 
                 // The game renders a thumbnail of the actual model on demand (works for custom assets too).
                 string thumbnail = null;
@@ -448,23 +573,29 @@ namespace VehicleController.Systems
                     // Real "custom asset" (mod) detection needs prefab source info; not mislabeling
                     // vanilla-but-unclassified vehicles (trains/buses) as custom for now.
                     Custom = false,
-                    Probability = ProbAttr(prefabOverride, classes, pack),
-                    MaxSpeed = FloatAttr(prefabOverride, classes, pack, o => o.MaxSpeed, baseline.MaxSpeed, MsToKmh),
-                    Acceleration = FloatAttr(prefabOverride, classes, pack, o => o.Acceleration, baseline.Acceleration, 1f),
-                    Braking = FloatAttr(prefabOverride, classes, pack, o => o.Braking, baseline.Braking, 1f),
+                    // Spawn probability only exists for naturally spawning vehicles (personal cars).
+                    Spawns = catKey == "cars",
+                    Probability = MakeProbField(prefabName, classes, className),
+                    MaxSpeed = MakeField(prefabName, classes, className, o => o.MaxSpeed, baseline.MaxSpeed, MsToKmh, globals.SpeedFactor),
+                    Acceleration = MakeField(prefabName, classes, className, o => o.Acceleration, baseline.Acceleration, 1f, globals.AccelerationFactor),
+                    Braking = MakeField(prefabName, classes, className, o => o.Braking, baseline.Braking, 1f, globals.BrakingFactor),
                 };
+                prefabDto.Edited = prefabDto.MaxSpeed.Own != null || prefabDto.Acceleration.Own != null
+                                   || prefabDto.Braking.Own != null || prefabDto.Probability.Own != null;
 
                 var cat = EnsureCat(catKey, catName);
                 var idx = classIndex[catKey];
                 if (!idx.TryGetValue(className, out var classDto))
                 {
-                    pack.ClassOverrides.TryGetValue(className, out var classOver);
+                    // Class-level values are edited per pack, so the tree shows the edit-target pack's class override.
+                    VehicleOverride classOver = null;
+                    editTarget?.ClassOverrides.TryGetValue(className, out classOver);
                     classDto = new ClassDto
                     {
                         Name = className,
                         // "Unclassified" is a UI-only bucket with no real members to share values with.
                         Editable = className != "Unclassified",
-                        Custom = pack.CustomClasses.Contains(className),
+                        Custom = editTarget != null && editTarget.CustomClasses.Contains(className),
                         Probability = ClassProbAttr(classOver),
                         MaxSpeed = ClassFloatAttr(classOver, o => o.MaxSpeed, MsToKmh),
                         Acceleration = ClassFloatAttr(classOver, o => o.Acceleration, 1f),
@@ -506,44 +637,6 @@ namespace VehicleController.Systems
                     return new AttrDto { Value = v.Value * scale, Overridden = true, Source = "" };
             }
             return new AttrDto { Value = 0, Overridden = false, Source = "" };
-        }
-
-        private static AttrDto ProbAttr(VehicleOverride prefabOverride, List<string> classes, VehiclePack pack)
-        {
-            if (prefabOverride?.ProbabilityPercent != null)
-                return new AttrDto { Value = prefabOverride.ProbabilityPercent.Value, Overridden = true, Source = "" };
-            foreach (var className in classes)
-            {
-                if (pack.ClassOverrides.TryGetValue(className, out var o) && o.ProbabilityPercent != null)
-                    return new AttrDto { Value = o.ProbabilityPercent.Value, Overridden = false, Source = className };
-            }
-            return new AttrDto { Value = 100, Overridden = false, Source = "vanilla" };
-        }
-
-        private static AttrDto FloatAttr(
-            VehicleOverride prefabOverride,
-            List<string> classes,
-            VehiclePack pack,
-            Func<VehicleOverride, float?> selector,
-            float vanillaValue,
-            float scale)
-        {
-            if (prefabOverride != null)
-            {
-                var v = selector(prefabOverride);
-                if (v != null)
-                    return new AttrDto { Value = v.Value * scale, Overridden = true, Source = "" };
-            }
-            foreach (var className in classes)
-            {
-                if (pack.ClassOverrides.TryGetValue(className, out var o))
-                {
-                    var v = selector(o);
-                    if (v != null)
-                        return new AttrDto { Value = v.Value * scale, Overridden = false, Source = className };
-                }
-            }
-            return new AttrDto { Value = vanillaValue * scale, Overridden = false, Source = "vanilla" };
         }
     }
 }

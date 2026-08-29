@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Colossal.Core;
 using Colossal.Entities;
 using Colossal.Logging;
@@ -32,7 +33,11 @@ namespace VehicleController.Systems
         private PrefabSystem _prefabSystem;
 
         private readonly Dictionary<string, VanillaBaseline> _vanilla = new Dictionary<string, VanillaBaseline>();
-        private VehiclePack _active = new VehiclePack("Default");
+
+        // The layered active stack (index 0 = top of the list; the BOTTOM pack wins on conflict,
+        // like Minecraft resource packs). Edits target _stack[_editIndex].
+        private readonly List<VehiclePack> _stack = new List<VehiclePack>();
+        private int _editIndex;
 
         private bool _isIngame;
         private bool _vanillaReady;
@@ -40,7 +45,10 @@ namespace VehicleController.Systems
 
         public static VehicleConfigSystem Instance { get; private set; }
         public static bool IsIngame { get; private set; }
-        public VehiclePack ActivePack => _active;
+        public IReadOnlyList<VehiclePack> ActiveStack => _stack;
+        public VehiclePack EditTarget => (_editIndex >= 0 && _editIndex < _stack.Count) ? _stack[_editIndex] : null;
+        /// <summary>The pack edits are written to (edit target). Null only if the stack is somehow empty.</summary>
+        public VehiclePack ActivePack => EditTarget;
         public IReadOnlyDictionary<string, VanillaBaseline> Vanilla => _vanilla;
         public bool VanillaReady => _vanillaReady;
 
@@ -95,7 +103,7 @@ namespace VehicleController.Systems
                 return false; // data not ready yet, retry next frame
 
             _vanillaReady = true;
-            TryLoadActivePackFromDisk();
+            LoadStack();
             ApplyAll();
             _captureScheduled = false;
             return true;
@@ -187,7 +195,76 @@ namespace VehicleController.Systems
             return true;
         }
 
-        /// <summary>Resolves and writes the active pack's values to every vehicle prefab.</summary>
+        // ---- Layered resolution -------------------------------------------------
+        // Priority runs bottom-up (like Minecraft resource packs): the LOWEST pack in the list that
+        // defines a value wins on conflict. We walk the stack top→bottom without breaking, so each
+        // later (lower) pack overwrites — the last hit is the bottom-most one.
+
+        /// <summary>Effective classes for a prefab: the bottom-most active pack that assigns it wins; else built-in.</summary>
+        public List<string> GetEffectiveClasses(string prefabName)
+        {
+            List<string> assigned = null;
+            foreach (var pack in _stack)
+            {
+                var a = pack.AssignedClasses(prefabName);
+                if (a.Count > 0)
+                    assigned = a; // keep going; the lowest assigning pack wins
+            }
+            return assigned ?? new List<string>(VehicleClass.GetClassesForPrefab(prefabName));
+        }
+
+        /// <summary>
+        /// Resolves a prefab across the whole stack: for each field, the bottom-most pack that defines
+        /// it (prefab override → class override) wins; else vanilla. Then × the global multipliers.
+        /// </summary>
+        public ResolvedVehicle ResolveStacked(string prefabName, VanillaBaseline vanilla)
+        {
+            var classes = GetEffectiveClasses(prefabName);
+
+            int probPercent = 100;
+            foreach (var pack in _stack) { var v = pack.ProbabilityPercentFor(prefabName, classes); if (v != null) probPercent = v.Value; }
+
+            float maxSpeed = vanilla.MaxSpeed;
+            foreach (var pack in _stack) { var v = pack.MaxSpeedFor(prefabName, classes); if (v != null) maxSpeed = v.Value; }
+
+            float acceleration = vanilla.Acceleration;
+            foreach (var pack in _stack) { var v = pack.AccelerationFor(prefabName, classes); if (v != null) acceleration = v.Value; }
+
+            float braking = vanilla.Braking;
+            foreach (var pack in _stack) { var v = pack.BrakingFor(prefabName, classes); if (v != null) braking = v.Value; }
+
+            var g = CombinedGlobals();
+            int probability = (int)Math.Round(vanilla.Probability * (probPercent / 100f) * g.ProbabilityFactor);
+            probability = Math.Max(0, Math.Min(255, probability));
+
+            return new ResolvedVehicle
+            {
+                Probability = probability,
+                MaxSpeed = maxSpeed * g.SpeedFactor,
+                Acceleration = acceleration * g.AccelerationFactor,
+                Braking = braking * g.BrakingFactor,
+            };
+        }
+
+        /// <summary>
+        /// Multiplies the (UI-less) global multipliers of every active pack together. Untouched packs
+        /// are all 1.0, so this is a no-op unless a hand-written or shipped pack sets one.
+        /// </summary>
+        public GlobalMultipliers CombinedGlobals()
+        {
+            var g = new GlobalMultipliers();
+            foreach (var pack in _stack)
+            {
+                if (pack.Global == null) continue;
+                g.ProbabilityFactor *= pack.Global.ProbabilityFactor;
+                g.SpeedFactor *= pack.Global.SpeedFactor;
+                g.AccelerationFactor *= pack.Global.AccelerationFactor;
+                g.BrakingFactor *= pack.Global.BrakingFactor;
+            }
+            return g;
+        }
+
+        /// <summary>Resolves and writes the whole active stack's values to every vehicle prefab.</summary>
         private void ApplyAll()
         {
             if (!_vanillaReady)
@@ -201,7 +278,7 @@ namespace VehicleController.Systems
                 if (!_vanilla.TryGetValue(prefabName, out var baseline))
                     continue;
 
-                var resolved = _active.Resolve(prefabName, baseline);
+                var resolved = ResolveStacked(prefabName, baseline);
 
                 if (EntityManager.TryGetComponent<CarData>(entity, out var carData))
                 {
@@ -248,7 +325,7 @@ namespace VehicleController.Systems
                 count++;
             }
 
-            log.Info($"Applied vehicle pack '{_active.Name}' to {count} prefabs.");
+            log.Info($"Applied vehicle stack [{string.Join(", ", _stack.Select(p => p.Name))}] to {count} prefabs.");
 
             // Keep the Vehicle Manager window (if present) in sync with the applied values.
             VehicleManagerUISystem.Instance?.RequestTreeUpdate();
@@ -256,66 +333,54 @@ namespace VehicleController.Systems
 
         // ---- Public API ---------------------------------------------------------
 
-        public void SetActivePack(VehiclePack pack)
-        {
-            _active = pack ?? new VehiclePack("Default");
-            log.Info($"Active vehicle pack set to '{_active.Name}'.");
-            ApplyAll();
-        }
-
         public void Reapply() => ApplyAll();
 
         public void ResetToVanilla()
         {
-            _active = new VehiclePack("Default");
-            Persist();
+            _stack.Clear();
+            _stack.Add(new VehiclePack("Default"));
+            _editIndex = 0;
+            PersistEditTarget();
+            PersistStack();
             ApplyAll();
         }
 
         /// <summary>
-        /// Applies a single edit from the UI to the active pack, then persists and re-applies.
-        /// <paramref name="value"/> is expected in the pack's internal units (m/s for speed,
-        /// percent for probability); the UI converts before sending.
+        /// Applies a single prefab/class edit from the UI to the current edit-target pack, then
+        /// persists and re-applies. <paramref name="value"/> is in internal units (m/s for speed,
+        /// percent for probability). Global multipliers have no UI and are not edited here.
         /// </summary>
         public void Edit(string level, string key, string field, bool reset, float value)
         {
+            var target = EnsureEditTarget();
             switch (level)
             {
-                case "global":
-                    switch (field)
-                    {
-                        case "probability": _active.Global.ProbabilityFactor = value; break;
-                        case "maxSpeed": _active.Global.SpeedFactor = value; break;
-                        case "acceleration": _active.Global.AccelerationFactor = value; break;
-                        case "braking": _active.Global.BrakingFactor = value; break;
-                    }
-                    break;
                 case "prefab":
                 {
-                    _active.PrefabOverrides.TryGetValue(key, out var over);
+                    target.PrefabOverrides.TryGetValue(key, out var over);
                     over ??= new VehicleOverride();
                     SetOverrideField(over, field, reset, value);
-                    _active.SetPrefabOverride(key, over);
+                    target.SetPrefabOverride(key, over);
                     break;
                 }
                 case "class":
                 {
-                    _active.ClassOverrides.TryGetValue(key, out var over);
+                    target.ClassOverrides.TryGetValue(key, out var over);
                     over ??= new VehicleOverride();
                     SetOverrideField(over, field, reset, value);
-                    _active.SetClassOverride(key, over);
+                    target.SetClassOverride(key, over);
                     break;
                 }
             }
 
-            Persist();
+            PersistEditTarget();
             ApplyAll();
         }
 
         public void AssignClass(string prefabName, string className)
         {
-            _active.AssignPrefabToClass(prefabName, className);
-            Persist();
+            EnsureEditTarget().AssignPrefabToClass(prefabName, className);
+            PersistEditTarget();
             ApplyAll();
         }
 
@@ -323,23 +388,24 @@ namespace VehicleController.Systems
         {
             if (prefabNames == null)
                 return;
+            var target = EnsureEditTarget();
             foreach (var prefabName in prefabNames)
-                _active.AssignPrefabToClass(prefabName, className);
-            Persist();
+                target.AssignPrefabToClass(prefabName, className);
+            PersistEditTarget();
             ApplyAll();
         }
 
         public void RenameClass(string oldName, string newName)
         {
-            _active.RenameCustomClass(oldName, newName);
-            Persist();
+            EnsureEditTarget().RenameCustomClass(oldName, newName);
+            PersistEditTarget();
             ApplyAll();
         }
 
         public void DeleteClass(string name)
         {
-            _active.DeleteCustomClass(name);
-            Persist();
+            EnsureEditTarget().DeleteCustomClass(name);
+            PersistEditTarget();
             ApplyAll();
         }
 
@@ -348,14 +414,15 @@ namespace VehicleController.Systems
         {
             if (prefabs == null)
                 return;
+            var target = EnsureEditTarget();
             foreach (var prefabName in prefabs)
             {
-                _active.PrefabOverrides.TryGetValue(prefabName, out var over);
+                target.PrefabOverrides.TryGetValue(prefabName, out var over);
                 over ??= new VehicleOverride();
                 SetOverrideField(over, field, reset, value);
-                _active.SetPrefabOverride(prefabName, over);
+                target.SetPrefabOverride(prefabName, over);
             }
-            Persist();
+            PersistEditTarget();
             ApplyAll();
         }
 
@@ -370,109 +437,239 @@ namespace VehicleController.Systems
             }
         }
 
-        private void Persist()
+        // ---- Stack state helpers ------------------------------------------------
+
+        /// <summary>
+        /// Returns the pack edits are written to, guaranteeing it is writable. If only shipped
+        /// (read-only) packs are active, a personal pack is created so the first edit has a home.
+        /// </summary>
+        private VehiclePack EnsureEditTarget()
+        {
+            if (_editIndex >= 0 && _editIndex < _stack.Count && !_stack[_editIndex].ReadOnly)
+                return _stack[_editIndex];
+
+            var writable = _stack.FindIndex(p => !p.ReadOnly);
+            bool created = writable < 0;
+            if (created)
+            {
+                _stack.Add(new VehiclePack("My changes"));
+                writable = _stack.Count - 1;
+            }
+            _editIndex = writable;
+            if (created)
+                PersistStack(); // the new pack must survive a restart
+            return _stack[_editIndex];
+        }
+
+        private int IndexOfPack(string name) => _stack.FindIndex(p => p.Name == name);
+
+        // "_" is reserved for internal state files (_active.json), so packs may not start with it.
+        private static bool IsValidPackName(string name) =>
+            !string.IsNullOrWhiteSpace(name) && !name.StartsWith("_");
+
+        private static VehiclePack LoadOrNew(string name)
         {
             try
             {
-                if (!_active.ReadOnly)
-                    _active.SaveToFile();
+                if (VehiclePack.GetPackNames().Contains(name))
+                    return VehiclePack.LoadFromFile(name);
+            }
+            catch (Exception x) { Mod.log.Warn($"Could not load pack '{name}': {x.Message}"); }
+            return new VehiclePack(name);
+        }
+
+        // Saves the edit-target pack file (the only pack the user can be mutating).
+        private void PersistEditTarget()
+        {
+            var target = EditTarget;
+            if (target == null) return;
+            try
+            {
+                if (!target.ReadOnly)
+                    target.SaveToFile();
             }
             catch (Exception x)
             {
-                log.Warn($"Could not save vehicle pack '{_active.Name}': {x.Message}");
+                log.Warn($"Could not save vehicle pack '{target.Name}': {x.Message}");
             }
         }
 
-        private void TryLoadActivePackFromDisk()
+        // Saves the layered config (active pack order, edit target, global multipliers).
+        private void PersistStack()
         {
             try
             {
-                var name = VehiclePack.LoadActiveName();
-                if (!string.IsNullOrEmpty(name))
-                    _active = new VehiclePack(name); // remember the last active pack name even if it has no file yet
-                if (VehiclePack.GetPackNames().Contains(_active.Name))
-                    _active = VehiclePack.LoadFromFile(_active.Name);
+                VehiclePack.SaveStackConfig(new StackConfig
+                {
+                    Packs = _stack.Select(p => p.Name).ToList(),
+                    EditTarget = EditTarget?.Name,
+                });
+            }
+            catch (Exception x) { log.Warn($"Could not save stack config: {x.Message}"); }
+        }
+
+        private void LoadStack()
+        {
+            try
+            {
+                _stack.Clear();
+                var cfg = VehiclePack.LoadStackConfig();
+                if (cfg != null && cfg.Packs != null && cfg.Packs.Count > 0)
+                {
+                    foreach (var name in cfg.Packs)
+                        _stack.Add(LoadOrNew(name));
+                    _editIndex = Math.Max(0, _stack.FindIndex(p => p.Name == cfg.EditTarget));
+                }
+                else
+                {
+                    // Backward compat: single active-name marker from before layering.
+                    var legacy = VehiclePack.LoadActiveName();
+                    _stack.Add(LoadOrNew(string.IsNullOrEmpty(legacy) ? "Default" : legacy));
+                    _editIndex = 0;
+                }
             }
             catch (Exception x)
             {
-                log.Warn($"Could not load active vehicle pack '{_active.Name}': {x.Message}");
+                log.Warn($"Could not load vehicle stack: {x.Message}");
             }
+            EnsureEditTarget();
         }
 
+        // Replaces the whole stack with a single pack (used by the Debug helper button).
         public void ApplyPackByName(string name)
         {
-            try
-            {
-                SetActivePack(VehiclePack.LoadFromFile(name));
-            }
-            catch (Exception x)
-            {
-                log.Warn($"Could not load vehicle pack '{name}': {x.Message}");
-            }
+            if (string.IsNullOrWhiteSpace(name)) return;
+            _stack.Clear();
+            _stack.Add(LoadOrNew(name));
+            _editIndex = 0;
+            PersistStack();
+            ApplyAll();
         }
 
         // ---- Pack management ----------------------------------------------------
 
-        public void SwitchPack(string name)
+        /// <summary>
+        /// Adds an existing (or new) pack to the bottom of the stack (highest priority). It also becomes
+        /// the edit target unless it is read-only — edits to a shipped pack would be silently dropped.
+        /// </summary>
+        public void AddToStack(string name)
         {
             if (string.IsNullOrWhiteSpace(name)) return;
-            try
-            {
-                _active = VehiclePack.GetPackNames().Contains(name)
-                    ? VehiclePack.LoadFromFile(name)
-                    : new VehiclePack(name);
-                VehiclePack.SaveActiveName(_active.Name);
-                ApplyAll();
-            }
-            catch (Exception x) { log.Warn($"Could not switch to pack '{name}': {x.Message}"); }
+            if (IndexOfPack(name) >= 0) { SetEditTarget(name); return; }
+
+            var editName = EditTarget?.Name;
+            var pack = LoadOrNew(name);
+            _stack.Add(pack);
+            if (pack.ReadOnly)
+                _editIndex = Math.Max(0, _stack.FindIndex(p => p.Name == editName));
+            else
+                _editIndex = _stack.Count - 1;
+            PersistStack();
+            ApplyAll();
+        }
+
+        /// <summary>Activates an inactive pack, or deactivates an active one (the file is kept either way).</summary>
+        public void TogglePack(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return;
+            if (IndexOfPack(name) >= 0)
+                RemoveFromStack(name);
+            else
+                AddToStack(name);
+        }
+
+        /// <summary>Removes a pack from the active stack (its file is kept).</summary>
+        public void RemoveFromStack(string name)
+        {
+            var i = IndexOfPack(name);
+            if (i < 0) return;
+            var editName = EditTarget?.Name;
+            _stack.RemoveAt(i);
+            EnsureEditTarget();
+            if (editName != null && editName != name)
+                _editIndex = Math.Max(0, _stack.FindIndex(p => p.Name == editName));
+            PersistStack();
+            ApplyAll();
+        }
+
+        /// <summary>Moves a pack up (-1) or down (+1) in the priority order.</summary>
+        public void MovePack(string name, int delta)
+        {
+            var i = IndexOfPack(name);
+            if (i < 0) return;
+            int j = i + delta;
+            if (j < 0 || j >= _stack.Count) return;
+            var editName = EditTarget?.Name;
+            var p = _stack[i];
+            _stack.RemoveAt(i);
+            _stack.Insert(j, p);
+            _editIndex = Math.Max(0, _stack.FindIndex(x => x.Name == editName));
+            PersistStack();
+            ApplyAll();
+        }
+
+        /// <summary>Selects which active pack subsequent edits are written to. Read-only packs can't be targeted.</summary>
+        public void SetEditTarget(string name)
+        {
+            var i = IndexOfPack(name);
+            if (i < 0 || _stack[i].ReadOnly) return;
+            _editIndex = i;
+            PersistStack();
+            // Values are unchanged; just refresh the UI's edit-provenance/reset state.
+            VehicleManagerUISystem.Instance?.RequestTreeUpdate();
         }
 
         public void NewPack(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) return;
-            _active = new VehiclePack(name);
-            Persist();
-            VehiclePack.SaveActiveName(_active.Name);
+            if (!IsValidPackName(name)) return;
+            if (IndexOfPack(name) >= 0) { SetEditTarget(name); return; }
+            _stack.Add(new VehiclePack(name));
+            _editIndex = _stack.Count - 1;
+            PersistEditTarget();
+            PersistStack();
             ApplyAll();
         }
 
         public void DuplicatePack(string newName)
         {
-            if (string.IsNullOrWhiteSpace(newName)) return;
-            _active = _active.Duplicate(newName);
-            Persist();
-            VehiclePack.SaveActiveName(_active.Name);
+            if (!IsValidPackName(newName)) return;
+            var copy = EnsureEditTarget().Duplicate(newName);
+            _stack.Add(copy);
+            _editIndex = _stack.Count - 1;
+            PersistEditTarget();
+            PersistStack();
             ApplyAll();
         }
 
         public void RenamePack(string newName)
         {
-            if (string.IsNullOrWhiteSpace(newName) || newName == _active.Name) return;
-            var old = _active.Name;
-            _active.Name = newName;
-            Persist();
+            var target = EditTarget;
+            if (target == null || !IsValidPackName(newName) || newName == target.Name) return;
+            var old = target.Name;
+            target.Name = newName;
+            PersistEditTarget();
             VehiclePack.DeleteFile(old);
-            VehiclePack.SaveActiveName(_active.Name);
+            PersistStack();
             ApplyAll();
         }
 
         public void DeletePack(string name)
         {
             VehiclePack.DeleteFile(name);
-            if (_active.Name == name)
-            {
-                _active = new VehiclePack("Default");
-                VehiclePack.SaveActiveName(_active.Name);
-            }
-            ApplyAll();
+            if (IndexOfPack(name) >= 0)
+                RemoveFromStack(name); // persists + re-applies
+            else
+                VehicleManagerUISystem.Instance?.RequestTreeUpdate(); // refresh available list
         }
 
         public void ExportActiveToClipboard()
         {
+            var target = EditTarget;
+            if (target == null) return;
             try
             {
-                UnityEngine.GUIUtility.systemCopyBuffer = _active.ToJson();
-                log.Info($"Exported vehicle pack '{_active.Name}' to clipboard.");
+                UnityEngine.GUIUtility.systemCopyBuffer = target.ToJson();
+                log.Info($"Exported vehicle pack '{target.Name}' to clipboard.");
             }
             catch (Exception x) { log.Warn($"Could not export pack: {x.Message}"); }
         }
@@ -483,10 +680,11 @@ namespace VehicleController.Systems
             {
                 var incoming = VehiclePack.FromJson(UnityEngine.GUIUtility.systemCopyBuffer);
                 if (incoming == null) { log.Warn("Clipboard does not contain a valid vehicle pack."); return; }
-                _active.Merge(incoming, MergeConflictPolicy.TakeTheirs);
-                Persist();
+                var target = EnsureEditTarget();
+                target.Merge(incoming, MergeConflictPolicy.TakeTheirs);
+                PersistEditTarget();
                 ApplyAll();
-                log.Info($"Merged clipboard pack into '{_active.Name}'.");
+                log.Info($"Merged clipboard pack into '{target.Name}'.");
             }
             catch (Exception x) { log.Warn($"Could not import pack: {x.Message}"); }
         }
@@ -503,7 +701,6 @@ namespace VehicleController.Systems
             {
                 Description = "Example cascade pack for testing",
             };
-            pack.Global.SpeedFactor = 1.5f;
             pack.SetClassOverride("Sedan", new VehicleOverride { MaxSpeed = 60f, ProbabilityPercent = 150 });
             pack.SetPrefabOverride("Car01", new VehicleOverride { MaxSpeed = 80f });
             pack.SaveToFile();

@@ -100,6 +100,11 @@ namespace VehicleController.Data
         /// <summary>When true this pack is a shipped/shared template and must be duplicated before editing.</summary>
         public bool ReadOnly;
 
+        /// <summary>
+        /// Multipliers applied after the cascade resolves. There is no UI for these; they exist so a
+        /// hand-written or shipped pack can scale values. Multipliers of all active packs multiply
+        /// together, so an untouched pack (all 1.0) has no effect.
+        /// </summary>
         public GlobalMultipliers Global = new GlobalMultipliers();
 
         /// <summary>Overrides keyed by vehicle class name (see <see cref="VehicleClass"/>).</summary>
@@ -125,58 +130,7 @@ namespace VehicleController.Data
             Version = version;
         }
 
-        // ---- Cascade resolution -------------------------------------------------
-
-        /// <summary>
-        /// Returns the effective class names for a prefab: the built-in memberships plus any
-        /// user-assigned memberships from this pack, de-duplicated and order-preserving.
-        /// </summary>
-        public List<string> GetEffectiveClasses(string prefabName)
-        {
-            // Pack membership overrides built-in membership when the prefab is assigned in this pack,
-            // so a prefab can be moved to a custom class (and custom/unclassified assets get a home).
-            var assigned = new List<string>();
-            foreach (var pair in ClassMembership)
-                if (pair.Value != null && pair.Value.Contains(prefabName))
-                    assigned.Add(pair.Key);
-            if (assigned.Count > 0)
-                return assigned;
-            return new List<string>(VehicleClass.GetClassesForPrefab(prefabName));
-        }
-
-        /// <summary>
-        /// Resolves the final values for a prefab. Precedence per field:
-        /// prefab override → first class override that defines it → vanilla, then × global multiplier.
-        /// </summary>
-        public ResolvedVehicle Resolve(string prefabName, VanillaBaseline vanilla)
-        {
-            var classes = GetEffectiveClasses(prefabName);
-            PrefabOverrides.TryGetValue(prefabName, out var prefabOverride);
-
-            int probPercent = prefabOverride?.ProbabilityPercent
-                              ?? FirstClassValue<int>(classes, o => o.ProbabilityPercent)
-                              ?? 100;
-            float maxSpeed = prefabOverride?.MaxSpeed
-                             ?? FirstClassValue<float>(classes, o => o.MaxSpeed)
-                             ?? vanilla.MaxSpeed;
-            float acceleration = prefabOverride?.Acceleration
-                                 ?? FirstClassValue<float>(classes, o => o.Acceleration)
-                                 ?? vanilla.Acceleration;
-            float braking = prefabOverride?.Braking
-                            ?? FirstClassValue<float>(classes, o => o.Braking)
-                            ?? vanilla.Braking;
-
-            int probability = (int)Math.Round(vanilla.Probability * (probPercent / 100f) * Global.ProbabilityFactor);
-            probability = Math.Max(0, Math.Min(255, probability));
-
-            return new ResolvedVehicle
-            {
-                Probability = probability,
-                MaxSpeed = maxSpeed * Global.SpeedFactor,
-                Acceleration = acceleration * Global.AccelerationFactor,
-                Braking = braking * Global.BrakingFactor,
-            };
-        }
+        // ---- Cascade resolution (per-pack; the stack resolver lives in VehicleConfigSystem) -----
 
         private T? FirstClassValue<T>(List<string> classes, Func<VehicleOverride, T?> selector) where T : struct
         {
@@ -190,6 +144,43 @@ namespace VehicleController.Data
                 }
             }
             return null;
+        }
+
+        // ---- Per-pack field resolution (for the layered stack) ------------------
+        // Each returns this pack's value for a field, or null if this pack doesn't define one:
+        // its own prefab override wins, then the first class override over the given classes.
+        // The stack resolver (VehicleConfigSystem) walks packs top→bottom and takes the first hit.
+
+        public int? ProbabilityPercentFor(string prefabName, List<string> classes)
+        {
+            if (PrefabOverrides.TryGetValue(prefabName, out var po) && po.ProbabilityPercent != null)
+                return po.ProbabilityPercent;
+            return FirstClassValue<int>(classes, o => o.ProbabilityPercent);
+        }
+
+        public float? MaxSpeedFor(string prefabName, List<string> classes) => FieldFor(prefabName, classes, o => o.MaxSpeed);
+        public float? AccelerationFor(string prefabName, List<string> classes) => FieldFor(prefabName, classes, o => o.Acceleration);
+        public float? BrakingFor(string prefabName, List<string> classes) => FieldFor(prefabName, classes, o => o.Braking);
+
+        public float? FieldFor(string prefabName, List<string> classes, Func<VehicleOverride, float?> selector)
+        {
+            if (PrefabOverrides.TryGetValue(prefabName, out var po))
+            {
+                var v = selector(po);
+                if (v != null)
+                    return v;
+            }
+            return FirstClassValue<float>(classes, selector);
+        }
+
+        /// <summary>Classes this pack explicitly assigns the prefab to (empty if none).</summary>
+        public List<string> AssignedClasses(string prefabName)
+        {
+            var assigned = new List<string>();
+            foreach (var pair in ClassMembership)
+                if (pair.Value != null && pair.Value.Contains(prefabName))
+                    assigned.Add(pair.Key);
+            return assigned;
         }
 
         // ---- Editing helpers ----------------------------------------------------
@@ -294,9 +285,6 @@ namespace VehicleController.Data
                 foreach (var prefab in pair.Value)
                     AssignToClass(pair.Key, prefab);
             }
-
-            if (policy == MergeConflictPolicy.TakeTheirs)
-                Global = other.Global.Clone();
         }
 
         private static void MergeOverrides(
@@ -368,6 +356,8 @@ namespace VehicleController.Data
                 return new List<string>();
             return Directory.GetFiles(folder, "*.json")
                 .Select(Path.GetFileNameWithoutExtension)
+                // Files starting with "_" are internal state (e.g. _active.json), not packs.
+                .Where(n => !string.IsNullOrEmpty(n) && !n.StartsWith("_"))
                 .ToList();
         }
 
@@ -403,5 +393,39 @@ namespace VehicleController.Data
             var path = ActiveMarkerPath();
             return File.Exists(path) ? File.ReadAllText(path).Trim() : null;
         }
+
+        // ---- Active stack config -----------------------------------------------
+        // The layered configuration: which packs are active, in priority order (index 0 = top),
+        // which one edits target, and the single global multiplier set (lifted out of packs).
+
+        private static string StackConfigPath() => Path.Combine(PackFolder(), "_active.json");
+
+        public static void SaveStackConfig(StackConfig config)
+        {
+            var folder = PackFolder();
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+            File.WriteAllText(StackConfigPath(), JsonConvert.SerializeObject(config, Formatting.Indented));
+        }
+
+        /// <summary>Loads the active-stack config, or null if none exists yet (caller falls back).</summary>
+        public static StackConfig? LoadStackConfig()
+        {
+            var path = StackConfigPath();
+            if (!File.Exists(path))
+                return null;
+            try { return JsonConvert.DeserializeObject<StackConfig>(File.ReadAllText(path)); }
+            catch { return null; }
+        }
+    }
+
+    /// <summary>Persisted layered configuration (see <see cref="VehiclePack.SaveStackConfig"/>).</summary>
+    public class StackConfig
+    {
+        /// <summary>Active pack names, highest priority first (index 0 = top).</summary>
+        public List<string> Packs = new List<string>();
+
+        /// <summary>Name of the pack that edits are written to.</summary>
+        public string? EditTarget;
     }
 }
