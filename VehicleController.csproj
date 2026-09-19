@@ -2,7 +2,10 @@
 
     <PropertyGroup>
         <OutputType>Library</OutputType>
-        <TargetFramework>net472</TargetFramework>
+        <!--Mod.props (imported below) forces net48 + C# 9 anyway, because the imports come after
+            this block. net48 is what the game's Unity/Mono runtime expects. Anything that has to
+            win over Mod.props belongs in the PropertyGroup after the imports.-->
+        <TargetFramework>net48</TargetFramework>
         <Configurations>Debug;Release</Configurations>
 
         <!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
@@ -12,7 +15,6 @@
 
         <!--The file where mod information which is required for publishing mod on PDX mods are stored-->
         <PublishConfigurationPath>Properties\PublishConfiguration.xml</PublishConfigurationPath>
-        <LangVersion>default</LangVersion>
         <AssemblyVersion>0.4.0</AssemblyVersion>
         <FileVersion>0.4.0</FileVersion>
         <AssemblyName>VehicleController</AssemblyName>
@@ -24,6 +26,14 @@
     <!--Imports must be after PropertyGroup block-->
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props"/>
     <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets"/>
+
+    <!--Must stay AFTER the imports: Mod.props pins LangVersion to 9.0, and the last assignment
+        wins. The language version is a compile-time setting only, the output still targets net48.
+        Features that need runtime support (static abstract members, ref fields) stay unavailable,
+        and init/record/required would need their attributes declared by hand.-->
+    <PropertyGroup>
+        <LangVersion>12.0</LangVersion>
+    </PropertyGroup>
 
     <ItemGroup>
         <Reference Include="Colossal.AssetPipeline">

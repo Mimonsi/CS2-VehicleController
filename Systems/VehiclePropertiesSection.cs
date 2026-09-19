@@ -95,7 +95,9 @@ namespace VehicleController.Systems
             // Apply immediately to the prefab entity
             if (EntityManager.TryGetComponent<PersonalCarData>(prefabEntity, out var carData))
             {
-                carData.m_Probability = (byte)Math.Clamp(probability, 0, 255);
+                // math.clamp, not Math.Clamp: the latter only exists from .NET Core 2.0 on and is
+                // missing from the net48 reference assemblies this project compiles against.
+                carData.m_Probability = (byte)math.clamp(probability, 0, 255);
                 EntityManager.SetComponentData(prefabEntity, carData);
                 EntityManager.AddComponent<BatchesUpdated>(prefabEntity);
                 log.Info($"Set probability of {prefabName} to {probability}");

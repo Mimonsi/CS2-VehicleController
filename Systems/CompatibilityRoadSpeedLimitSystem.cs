@@ -94,11 +94,12 @@ namespace VehicleController.Systems
                 }
             }
             log.Info("Speed limit counts:");
-            // Sort by count descending
-            speedLimitCounts = new Dictionary<float, int>(speedLimitCounts.OrderByDescending(x => x.Value));
-            foreach (var key in speedLimitCounts.Keys)
+            // Log by count descending. Copying the ordered sequence back into a Dictionary would be
+            // pointless anyway (a Dictionary has no order), and the constructor taking an
+            // IEnumerable<KeyValuePair<,>> doesn't exist on net48.
+            foreach (var entry in speedLimitCounts.OrderByDescending(x => x.Value))
             {
-                log.Info($"Speed Limit {FormatSpeedLimit(key)}: {speedLimitCounts[key]} lanes");
+                log.Info($"Speed Limit {FormatSpeedLimit(entry.Key)}: {entry.Value} lanes");
             }
         }
 
@@ -131,7 +132,9 @@ namespace VehicleController.Systems
                                 carLane.m_DefaultSpeedLimit = roadData.m_SpeedLimit;
                                 EntityManager.SetComponentData(entity, carLane);
                                 
-                                entityAmountBySpeedLimit.TryAdd(carLane.m_SpeedLimit, 0);
+                                // No Dictionary.TryAdd on net48 — it arrived with .NET Core 2.0.
+                                if (!entityAmountBySpeedLimit.ContainsKey(carLane.m_SpeedLimit))
+                                    entityAmountBySpeedLimit[carLane.m_SpeedLimit] = 0;
                                 entityAmountBySpeedLimit[carLane.m_SpeedLimit]++;
                             }
                         }
@@ -148,7 +151,8 @@ namespace VehicleController.Systems
                                 trackLane.m_SpeedLimit = trackData.m_SpeedLimit;
                                 EntityManager.SetComponentData(entity, trackLane);
                                 
-                                entityAmountBySpeedLimit.TryAdd(trackLane.m_SpeedLimit, 0);
+                                if (!entityAmountBySpeedLimit.ContainsKey(trackLane.m_SpeedLimit))
+                                    entityAmountBySpeedLimit[trackLane.m_SpeedLimit] = 0;
                                 entityAmountBySpeedLimit[trackLane.m_SpeedLimit]++;
                             }
                         }

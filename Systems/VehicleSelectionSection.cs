@@ -19,7 +19,6 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine;
 using VehicleController.Data;
 using VehicleController.Components;
 
@@ -37,7 +36,6 @@ namespace VehicleController.Systems
         private new static ILog log;
         public static VehicleSelectionSection Instance;
         private EntityQuery _existingServiceVehicleQuery;
-        private EntityQuery _createdServiceVehicleQuery;
         private EntityQuery _serviceBuildingQuery;
         private static readonly VehicleClipboard Clipboard = new();
         private EndFrameBarrier _endFrameBarrier;
@@ -77,7 +75,6 @@ namespace VehicleController.Systems
             RegisterBindings();
             InitializeQueries();
 
-            RequireForUpdate(_createdServiceVehicleQuery);
             log.Info($"ChangeVehicleSection created with group {group}");
         }
 
@@ -131,8 +128,7 @@ namespace VehicleController.Systems
 
         private void InitializeQueries()
         {
-            _createdServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: true);
-            _existingServiceVehicleQuery = CreateServiceVehicleQuery(requireCreatedComponent: false);
+            _existingServiceVehicleQuery = CreateServiceVehicleQuery();
             _serviceBuildingQuery = GetEntityQuery(new EntityQueryDesc
             {
                 All = new[]
@@ -143,22 +139,15 @@ namespace VehicleController.Systems
             });
         }
 
-        private EntityQuery CreateServiceVehicleQuery(bool requireCreatedComponent)
+        private EntityQuery CreateServiceVehicleQuery()
         {
-            List<ComponentType> allComponents = new List<ComponentType>
-            {
-                ComponentType.ReadOnly<Game.Common.Owner>(),
-                ComponentType.ReadOnly<Car>()
-            };
-
-            if (requireCreatedComponent)
-            {
-                allComponents.Add(ComponentType.ReadOnly<Created>());
-            }
-
             return GetEntityQuery(new EntityQueryDesc
             {
-                All = allComponents.ToArray(),
+                All = new[]
+                {
+                    ComponentType.ReadOnly<Game.Common.Owner>(),
+                    ComponentType.ReadOnly<Car>()
+                },
                 Any = ServiceVehicleComponentTypes,
                 None = ServiceVehicleExcludedComponents
             });
@@ -175,14 +164,6 @@ namespace VehicleController.Systems
                             EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity)
                 .ToArray();
 
-            // Disable each vehicle's active effects synchronously before tagging it Deleted.
-            // Waiting for EffectControlSystem's own next update to do this (via the Deleted tag alone)
-            // isn't reliable here: a vehicle deleted right after its effects were freshly (re-)enabled
-            // (e.g. right after Apply) can get destroyed while an EnabledEffectData entry still has
-            // IsEnabled set, leaving it pointing at a destroyed owner entity - EffectTransformSystem
-            // then crashes on that entry every frame afterwards.
-            //DisableVehicleEffects(entities);
-
             EntityCommandBuffer commandBuffer = _endFrameBarrier.CreateCommandBuffer();
             foreach (Entity entity in entities)
             {
@@ -190,47 +171,6 @@ namespace VehicleController.Systems
             }
             log.Info("Deleted " + entities.Length + " vehicles for entity: " + selectedEntity);
             TriggerUpdate();
-        }
-
-        /// <summary>
-        /// Clears the IsEnabled flag on every active effect owned by the given entities, mirroring
-        /// what EffectControlSystem.EnabledActionJob.Disable() does for a Deleted entity. Done
-        /// synchronously (not as a scheduled job) since this only runs on a rare UI-triggered action.
-        /// </summary>
-        private void DisableVehicleEffects(IReadOnlyCollection<Entity> entities)
-        {
-            if (entities.Count == 0)
-                return;
-
-            NativeList<EnabledEffectData> enabledData = _effectControlSystem.GetEnabledData(false, out JobHandle deps);
-            deps.Complete();
-            log.Info($"DisableVehicleEffects: processing {entities.Count} entities, enabledData.Length={enabledData.Length}");
-
-            foreach (Entity entity in entities)
-            {
-                if (!EntityManager.TryGetBuffer(entity, true, out DynamicBuffer<EnabledEffect> effects))
-                {
-                    log.Info($"DisableVehicleEffects: {entity} has no EnabledEffect buffer");
-                    continue;
-                }
-
-                log.Info($"DisableVehicleEffects: {entity} has {effects.Length} EnabledEffect entries");
-                foreach (EnabledEffect effect in effects)
-                {
-                    if (effect.m_EnabledIndex < 0 || effect.m_EnabledIndex >= enabledData.Length)
-                    {
-                        log.Info($"DisableVehicleEffects: {entity} effectIndex={effect.m_EffectIndex} enabledIndex={effect.m_EnabledIndex} OUT OF BOUNDS (enabledData.Length={enabledData.Length})");
-                        continue;
-                    }
-
-                    EnabledEffectData data = enabledData[effect.m_EnabledIndex];
-                    log.Info($"DisableVehicleEffects: {entity} effectIndex={effect.m_EffectIndex} enabledIndex={effect.m_EnabledIndex} owner={data.m_Owner} prefab={data.m_Prefab} flagsBefore={data.m_Flags}");
-                    data.m_Flags &= ~EnabledEffectFlags.IsEnabled;
-                    data.m_Flags |= EnabledEffectFlags.EnabledUpdated | EnabledEffectFlags.Deleted;
-                    enabledData[effect.m_EnabledIndex] = data;
-                    log.Info($"DisableVehicleEffects: {entity} effectIndex={effect.m_EffectIndex} enabledIndex={effect.m_EnabledIndex} flagsAfter={data.m_Flags}");
-                }
-            }
         }
 
         private void ClearBufferClicked()
@@ -450,23 +390,14 @@ namespace VehicleController.Systems
         }
         
         /// <summary>
-        /// Applies prefab changes immediately to all existing service vehicles owned by the selected building.
+        /// "Apply to existing vehicles" is intentionally disabled: swapping the prefab of a live,
+        /// fully initialized vehicle leaves stale derived state (effects, search tree, audio) and
+        /// caused the orphaned-EnabledEffect crashes. New vehicles are enforced safely on spawn by
+        /// VehicleSpawnEnforcerSystem instead; use "delete owned vehicles" to force a re-spawn.
         /// </summary>
         private void ChangeNowClicked()
         {
-            log.Verbose("ChangeNow clicked");
-            NativeArray<Entity> existingServiceVehicleEntities = _existingServiceVehicleQuery.ToEntityArray(Allocator.Temp);
-            
-            // Filter by owner = selectedEntity
-            var entities = existingServiceVehicleEntities
-                .Where(e => EntityManager.HasComponent<Game.Common.Owner>(e) &&
-                            EntityManager.GetComponentData<Game.Common.Owner>(e).m_Owner == selectedEntity)
-                .ToArray();
-            
-            NativeArray<Entity> entitiesArray = new NativeArray<Entity>(entities, Allocator.Temp);
-            log.Debug($"Changing vehicle prefabs for {entitiesArray.Length} existing service vehicles.");
-            ChangeVehiclePrefabs(entitiesArray);
-            TriggerUpdate();
+            log.Info("Apply to existing vehicles is disabled; new vehicles are enforced on spawn.");
         }
 
         /// <summary>
@@ -544,82 +475,8 @@ namespace VehicleController.Systems
         /// <inheritdoc/>
         protected override void OnUpdate()
         {
-            if (Setting.Instance.EnableChangeVehicles)
-                VehicleCreated();
-        }
-        
-        /// <summary>
-        /// Picks a random allowed prefab and swaps the vehicle entity's PrefabRef.
-        /// Tags the entity as Updated/EffectsUpdated so the engine's own effect-control
-        /// and search-tree systems reconcile the now-stale effect state on their next update
-        /// (see Game.Effects.EffectControlSystem.EffectControlJob's WrongPrefab detection).
-        /// </summary>
-        private void ChangePrefabToRandomAllowedPrefab(Entity vehicleEntity, PrefabRef prefabRef,
-            DynamicBuffer<AllowedVehiclePrefab> allowedPrefabs)
-        {
-            // Collect all non-empty allowed vehicle prefab names
-            // (foreach instead of LINQ because DynamicBuffer doesn't implement IEnumerable)
-            var allowedVehicleNames = new List<string>();
-            foreach (var allowedPrefab in allowedPrefabs)
-            {
-                var name = allowedPrefab.PrefabName.ToString();
-                if (!string.IsNullOrEmpty(name))
-                    allowedVehicleNames.Add(name);
-            }
-
-            if (allowedVehicleNames.Count == 0)
-            {
-                log.Warn("No allowed vehicle prefabs found");
-                return;
-            }
-
-            // Select random allowed prefab
-            int index = UnityEngine.Random.Range(0, allowedVehicleNames.Count);
-            var newPrefabName = allowedVehicleNames[index];
-
-            if (m_PrefabSystem.TryGetPrefab(prefabRef, out VehiclePrefab currentPrefab))
-                log.Debug($"Changing {currentPrefab} Prefab to {newPrefabName}");
-            else
-                log.Debug($"Changing UNKNOWN Prefab to {newPrefabName}");
-
-            if (!TryResolvePrefab(newPrefabName, out PrefabBase newPrefab))
-            {
-                log.Warn($"Could not resolve prefab for name: {newPrefabName}. Aborting change.");
-                return;
-            }
-
-            if (!m_PrefabSystem.TryGetEntity(newPrefab, out Entity prefabEntity))
-            {
-                log.Warn("Could not find entity for new prefab: " + newPrefab.name);
-                return;
-            }
-
-            log.Debug("New Prefab: " + newPrefab.name);
-            prefabRef.m_Prefab = prefabEntity;
-            if (!EntityManager.Exists(vehicleEntity))
-            {
-                log.Warn("Potential Crash #2: Entity destroyed in meantime");
-                return;
-            }
-
-            log.Verbose("Setting prefabRef on vehicle entity: " + vehicleEntity + " to " + prefabRef.m_Prefab);
-            EntityCommandBuffer commandBuffer = _endFrameBarrier.CreateCommandBuffer();
-            commandBuffer.SetComponent(vehicleEntity, prefabRef);
-            commandBuffer.AddComponent<Updated>(vehicleEntity);
-            commandBuffer.AddComponent<EffectsUpdated>(vehicleEntity);
-            log.Verbose("Changed vehicle prefab to: " + newPrefab.name);
-        }
-
-        /// <summary>
-        /// Called each frame to handle newly created service vehicles.
-        /// </summary>
-        private void VehicleCreated()
-        {
-            NativeArray<Entity> entities = _createdServiceVehicleQuery.ToEntityArray(Allocator.Temp);
-            //EntityCommandBuffer buffer = m_Barrier.CreateCommandBuffer();
-            log.Verbose($"Calling Change Vehicle Prefabs for {entities.Length} created vehicles.");
-            ChangeVehiclePrefabs(entities);
-            log.Verbose("Finished Change Vehicle Prefabs");
+            // Enforcement of the allowed-vehicle selection moved to VehicleSpawnEnforcerSystem
+            // (Modification1/4B), which rebinds vehicles on spawn before vanilla initializes them.
         }
 
         /// <summary>
@@ -628,32 +485,6 @@ namespace VehicleController.Systems
         private void TriggerUpdate()
         {
             _selectedInfoUISystem.SetDirty();
-        }
-
-        /// <summary>
-        /// Iterates over the provided vehicle entities and replaces their prefab if needed.
-        /// </summary>
-        private void ChangeVehiclePrefabs(NativeArray<Entity> entities)
-        {
-            if (entities.Length == 0) // Performance skip if no results
-                return;
-
-            // Loop through all vehicles that were just created (might be multiple in one frame)
-            foreach (Entity entity in entities)
-            {
-                // Has Owner
-                if (EntityManager.TryGetComponent(entity, out Owner owner) && owner.m_Owner != Entity.Null)
-                {
-                    // Get allowed vehicle list from owner (service building)
-                    if (EntityManager.TryGetBuffer(owner.m_Owner, isReadOnly: true, out DynamicBuffer<AllowedVehiclePrefab> allowedVehicles))
-                    {
-                        if (EntityManager.TryGetComponent(entity, out PrefabRef prefabRef))
-                        {
-                            ChangePrefabToRandomAllowedPrefab(entity, prefabRef, allowedVehicles);
-                        }
-                    }
-                }
-            }
         }
 
         private List<ServiceType> GetServiceTypes()

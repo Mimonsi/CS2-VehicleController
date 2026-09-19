@@ -82,12 +82,18 @@ namespace VehicleController
             AssetDatabase.global.LoadSettings(nameof(VehicleController), m_Setting, new Setting(this));
             Setting.Instance = m_Setting;
 
-            // Experimental/unstable: swaps vehicle prefabs on spawn and manipulates VFX/audio/search effect
-            // state to support it. Gated on a persisted setting read here in OnLoad, so toggling it in the
-            // UI requires a restart before it takes effect. Must run after LoadSettings above, since the
-            // setting value has to be known before deciding whether to register the system.
+            // Experimental: per-building vehicle selection. The SIP section only edits the
+            // AllowedVehiclePrefab buffer (+ delete/clipboard); the actual prefab swap happens in the
+            // spawn enforcers below, which rebind newly Created vehicles at Modification1/4B — before
+            // vanilla initializes effects/search/rendering from the PrefabRef (see docs/VCF_ANALYSIS.md).
+            // Gated on a persisted setting read here in OnLoad, so toggling it in the UI requires a
+            // restart. Must run after LoadSettings above.
             if (EnableChangeVehicleSection && Setting.Instance.EnableExperimentalVehicleSelection)
+            {
                 updateSystem.UpdateAt<VehicleSelectionSection>(SystemUpdatePhase.UIUpdate);
+                updateSystem.UpdateAt<VehicleSpawnEnforcerEarlySystem>(SystemUpdatePhase.Modification1);
+                updateSystem.UpdateAfter<VehicleSpawnEnforcerParkedSystem, Game.Common.ModificationBarrier4B>(SystemUpdatePhase.Modification4B);
+            }
             //if (EnableProbabilitySystem || EnablePropertySystem) // TODO: Re-enabled
                 //updateSystem.UpdateAt<VehiclePropertiesSection>(SystemUpdatePhase.UIUpdate);
 
